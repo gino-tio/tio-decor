@@ -8,6 +8,7 @@
 - `designs/c.html`：方案 C，一體海洋盆 8260＋TOTO CES8E810GCN
 - `designs/d.html`：方案 D，座廁後面留空（鏡櫃 60×97，層架離地 145）
 - `designs/e.html`：方案 E，升高鏡櫃（底離地 140／130／125 可揀）
+- `designs/f.html`：方案 F，INAX SARAS 座廁
 - `files/mirror_height_options.xlsx`：鏡櫃高度比較表
 
 3D 用 three.js（jsDelivr CDN），純靜態，用 GitHub Pages 發佈。
