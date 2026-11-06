@@ -35,7 +35,7 @@ button.on{background:#c9a46a;border-color:#c9a46a;color:#1d1f22;font-weight:600}
     <li>門：闊 77、高約 230，門框離後牆（鏡櫃牆）70</li>
     <li>浴缸玻璃屏：固定、全透明，離後牆 73.5，高 180（由浴缸邊計）</li>
     <li>對住鏡櫃嗰幅牆：全身鏡闊 60＋防水電視（鏡左邊雲石牆 59）</li>
-    <li>天花：浴缸上面冷氣槽＋線形風口、Panasonic 浴室寶、檢修口、筒燈</li>
+    <li>天花：浴缸上面平天花線形冷氣風口、Panasonic 浴室寶、檢修口、筒燈</li>
     <li>窄枱改白色，同海洋盆一樣</li>
   </ul>
   <h3>設計內容</h3>
@@ -171,7 +171,8 @@ wall(W,D,new THREE.Vector3(W/2,0,D/2),0,-Math.PI/2,new THREE.MeshStandardMateria
 wall(W,D,new THREE.Vector3(W/2,H,D/2),0,Math.PI/2,new THREE.MeshStandardMaterial({color:0xf3f1ec,roughness:.9}));
 // downlights + exhaust fan
 [[110,60],[110,130]].forEach(([x,z])=>{const d=new THREE.Mesh(new THREE.CircleGeometry(4,24),M.led);d.rotation.x=Math.PI/2;d.position.set(x,H-0.3,z);add(d);});
-box(22,18,D,M.white,11,H-9,D/2);for(let i=0;i<30;i++)box(0.4,6,0.5,M.black,22.2,H-12,4+i*5.3);
+// flush linear AC grille in the ceiling over the tub
+box(8,0.3,D-10,M.white,10,H-0.15,D/2);for(let i=0;i<40;i++)box(6,0.3,0.6,M.black,10,H-0.35,8+i*3.75);
 box(38,1.2,30,M.white,110,H-0.6,100);for(let i=0;i<5;i++)box(2,0.6,18,M.black,99+i*3.6,H-1.4,98);box(6,0.6,18,M.inner,123,H-1.4,98);
 box(60,0.3,45,M.inner,150,H-0.2,135);
 
@@ -192,9 +193,14 @@ slab(0,0,75,D,52,2,M.top,{holes:[rr(THREE.Path,7,7,68,D-7,10)]});
 const tubIn=new THREE.Mesh(new THREE.BoxGeometry(61,38,D-14),new THREE.MeshStandardMaterial({color:0xf5f5f3,roughness:.15,side:THREE.BackSide}));
 tubIn.position.set(37.5,35,D/2);add(tubIn);
 const glass=new THREE.Mesh(new THREE.PlaneGeometry(75,180),M.glass);glass.position.set(37.5,54+90,73.5);add(glass);
-box(75,0.6,0.6,M.chrome,37.5,54.3,73.5);
 
-const spout=box(3,3,16,M.chrome,8,68,30);spout.rotation.y=Math.PI/2;spout.position.set(8,68,40);
+// tub mixer + spout + slide rail shower on the back wall (z=0), centred over the tub
+box(14,6,4,M.chrome,40,72,2);box(3,2,6,M.chrome,47,77,5);
+{const sp=new THREE.Mesh(new THREE.CylinderGeometry(1,1,12,16),M.chrome);sp.rotation.x=Math.PI/2;sp.position.set(40,66,7);add(sp);}
+{const rail=new THREE.Mesh(new THREE.CylinderGeometry(1,1,70,16),M.chrome);rail.position.set(40,135,2.5);add(rail);}
+box(4,4,4,M.chrome,40,150,4);
+{const hd=new THREE.Mesh(new THREE.CylinderGeometry(5.5,5.5,2,24),M.chrome);hd.rotation.x=Math.PI/2.6;hd.position.set(40,162,9);add(hd);}
+box(26,2,10,M.chrome,26,115,5);
 
 // ---------- backsplash + ledge
 const fl=new THREE.Mesh(new THREE.PlaneGeometry(125,16),new THREE.MeshStandardMaterial({map:(()=>{const t=flutedTex.clone();t.needsUpdate=true;t.repeat.set(16,1);return t;})(),roughness:.35,metalness:.4}));
