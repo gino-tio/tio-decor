@@ -33,7 +33,7 @@ button.on{background:#c9a46a;border-color:#c9a46a;color:#1d1f22;font-weight:600}
   <h3>實量（11 月 6 日）</h3>
   <ul>
     <li>門：闊 77、高約 230，門框離後牆（鏡櫃牆）70，另一邊貼住對面牆 → 房深約 148.5</li>
-    <li>浴缸玻璃屏：固定、全透明，離後牆 73.5，高 180（由浴缸邊計）</li>
+    <li>浴缸玻璃屏：固定、全透明，沿浴缸邊（浴缸同座廁之間），由後牆伸出 73.5，高 180（由浴缸邊計）</li>
     <li>對住鏡櫃嗰幅牆：全身鏡闊 60＋防水電視（鏡左邊雲石牆 59）</li>
     <li>天花：浴缸上面平天花線形冷氣風口、Panasonic 浴室寶、檢修口、筒燈</li>
     <li>窄枱改白色，同海洋盆一樣</li>
@@ -212,8 +212,8 @@ slab(0,0,75,D,0,52,tubTile,{holes:[rr(THREE.Path,7,7,68,D-7,10)]});
 slab(0,0,75,D,52,2,M.top,{holes:[rr(THREE.Path,7,7,68,D-7,10)]});
 const tubIn=new THREE.Mesh(new THREE.BoxGeometry(61,38,D-14),new THREE.MeshStandardMaterial({color:0xf5f5f3,roughness:.15,side:THREE.BackSide}));
 tubIn.position.set(37.5,35,D/2);add(tubIn);
-const glass=new THREE.Mesh(new THREE.PlaneGeometry(75,180),M.glass);glass.position.set(37.5,54+90,73.5);add(glass);
-{const em=new THREE.MeshStandardMaterial({color:0xcfe3e0,roughness:.1,transparent:true,opacity:.55});box(0.8,180,0.8,em,74.6,144,73.5);box(75,0.8,0.8,em,37.5,233.6,73.5);}
+const glass=new THREE.Mesh(new THREE.PlaneGeometry(73.5,180),M.glass);glass.rotation.y=Math.PI/2;glass.position.set(74.5,54+90,36.75);add(glass);
+{const em=new THREE.MeshStandardMaterial({color:0xcfe3e0,roughness:.1,transparent:true,opacity:.55});box(0.8,180,0.8,em,74.5,144,73.5);box(0.8,0.8,73.5,em,74.5,233.6,36.75);}
 
 // tub mixer + spout + slide rail shower on the back wall (z=0), centred over the tub
 box(14,6,4,M.chrome,40,72,2);box(3,2,6,M.chrome,47,77,5);
