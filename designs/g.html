@@ -33,7 +33,8 @@ button.on{background:#c9a46a;border-color:#c9a46a;color:#1d1f22;font-weight:600}
   <h3>實量（11 月 6 日）</h3>
   <ul>
     <li>門：闊 77、高約 230，門框離後牆（鏡櫃牆）70</li>
-    <li>浴缸玻璃屏：固定，離後牆 73.5，高 180（由浴缸邊計），後面一段用浴簾</li>
+    <li>浴缸玻璃屏：固定、全透明，離後牆 73.5，高 180（由浴缸邊計）</li>
+    <li>對住鏡櫃嗰幅牆：全身鏡闊 60＋防水電視（鏡左邊雲石牆 59）</li>
     <li>天花：浴缸上面冷氣槽＋線形風口、Panasonic 浴室寶、檢修口、筒燈</li>
     <li>窄枱改白色，同海洋盆一樣</li>
   </ul>
@@ -87,6 +88,7 @@ button.on{background:#c9a46a;border-color:#c9a46a;color:#1d1f22;font-weight:600}
 <script type="module">
 import * as THREE from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+import {Reflector} from 'three/addons/objects/Reflector.js';
 import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
 
 const W=200, D=165, H=240, CT=90;
@@ -150,7 +152,7 @@ const M={
   mirror:new THREE.MeshStandardMaterial({color:0xe8eef0,roughness:.07,metalness:1}),
   led:new THREE.MeshStandardMaterial({color:0xfff2d6,emissive:0xffe2b0,emissiveIntensity:2.2}),
   white:new THREE.MeshStandardMaterial({color:0xf2f1ee,roughness:.6}),
-  glass:new THREE.MeshPhysicalMaterial({color:0xcfe9ec,transparent:true,opacity:.16,roughness:0,metalness:0,side:THREE.DoubleSide,depthWrite:false}),
+  glass:new THREE.MeshPhysicalMaterial({color:0xffffff,transparent:true,opacity:.06,roughness:0,metalness:0,side:THREE.DoubleSide,depthWrite:false}),
   inner:new THREE.MeshStandardMaterial({color:0xdcdad6,roughness:.5}),
 };
 const add=(m,p)=>{(p||scene).add(m);return m;};
@@ -191,8 +193,6 @@ const tubIn=new THREE.Mesh(new THREE.BoxGeometry(61,38,D-14),new THREE.MeshStand
 tubIn.position.set(37.5,35,D/2);add(tubIn);
 const glass=new THREE.Mesh(new THREE.PlaneGeometry(75,180),M.glass);glass.position.set(37.5,54+90,73.5);add(glass);
 box(75,0.6,0.6,M.chrome,37.5,54.3,73.5);
-// shower curtain on the tub front, back wall -> glass
-box(0.8,0.8,73.5,M.chrome,75,212,36.75);{const cm=new THREE.MeshStandardMaterial({color:0xece6da,roughness:.95,side:THREE.DoubleSide});for(let i=0;i<10;i++){const p=new THREE.Mesh(new THREE.PlaneGeometry(4.2,150),cm);p.position.set(73+(i%2)*1.2,136,3.5+i*7);p.rotation.y=Math.PI/2+(i%2?0.5:-0.5);add(p);}}
 
 const spout=box(3,3,16,M.chrome,8,68,30);spout.rotation.y=Math.PI/2;spout.position.set(8,68,40);
 
@@ -231,6 +231,18 @@ slab(140.5,0,199.5,30,18.75,2.5,M.wood,{rFL:8});
 box(3,228,74,new THREE.MeshStandardMaterial({map:doorTex,roughness:.55}),W-1.5,114,108.5);
 box(1.5,230,1.5,M.wood,W-0.75,115,70.75);box(1.5,230,1.5,M.wood,W-0.75,115,146.25);box(1.5,1.5,77,M.wood,W-0.75,229.25,108.5);
 box(4,1.5,10,M.chrome,W-4,100,80);
+
+
+// ---------- front wall (opposite the mirror cabinet): full-height mirror 60 wide + wall TV on it
+{const MW=60,MH=228,MXc=108;
+ const ref=new Reflector(new THREE.PlaneGeometry(MW,MH),{textureWidth:1024,textureHeight:1024,color:0xb8bcbe});
+ ref.rotation.y=Math.PI;ref.position.set(MXc,MH/2+1,D-0.6);add(ref);
+ box(MW+1.2,1.2,1,M.chrome,MXc,MH+1.6,D-0.5);box(1,MH,1,M.chrome,MXc-MW/2-0.6,MH/2+1,D-0.5);box(1,MH,1,M.chrome,MXc+MW/2+0.6,MH/2+1,D-0.5);
+ const tv=new THREE.Group();tv.position.set(MXc+6,100,D-2);add(tv);
+ box(46,30,2.2,M.black,0,0,0,tv);
+ const scr=new THREE.Mesh(new THREE.PlaneGeometry(42,24),new THREE.MeshStandardMaterial({color:0x223a5c,emissive:0x2b5f9a,emissiveIntensity:0.9,roughness:.2}));
+ scr.rotation.y=Math.PI;scr.position.set(0,2,-1.15);tv.add(scr);
+ for(let i=0;i<7;i++)box(1.6,0.6,0.3,M.led,-6+i*2,-12.5,-1.2,tv);}
 
 // ---------- mirror cabinet 120 x 97 x 13, rounded corners, light band on all four sides, 3 mirror doors
 const mc=new THREE.Group();add(mc);
@@ -333,7 +345,7 @@ const tLab=label('INAX SARAS 100572BW10',[107.5,64,50],'710×385×472');
 const tDim=dim([86,1,0],[86,1,71]);const tLen=label('71 離牆',[78,5,35]);
 label('開蓋頂約 92（估）',[107.5,96,22],null,5);dim([129,0,20],[129,92,20]);
 const trapLab=label('坑距 305（貼牆）',[107.5,20,82]);
-label('門 77×230，離後牆 70',[W-3,170,108.5]);dim([W-1,240-1,0],[W-1,239,70]);label('70',[W-3,232,35],null,5);
+label('全身鏡 60×228＋電視',[108,190,D-4],null,5);label('門 77×230，離後牆 70',[W-3,170,108.5]);dim([W-1,240-1,0],[W-1,239,70]);label('70',[W-3,232,35],null,5);
 label('置物板 59×30 圓角（離地約20）',[170,26,34],null,5);label('淡水入水（示意）',[90,26,6],null,5);label('INAX 遙控',[136,87,42],null,5);
 
 // ---------- state + UI
