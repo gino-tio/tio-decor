@@ -37,12 +37,13 @@ button.on{background:#c9a46a;border-color:#c9a46a;color:#1d1f22;font-weight:600}
     <li>入牆龍頭，出水嘴要夠長（約 20cm）先過到後面平台</li>
     <li>盆櫃下面置物板，近座廁嗰邊圓角，離地約 20、深 30</li>
     <li>TOTO CES8E810GCN 692×386×512，前端離完成牆面 702</li>
-    <li>TOTO 遙控面板 290×43，可貼盆櫃側邊</li>
+    <li>TOTO 遙控 290×43：說明書要求裝喺側牆、離地 770–950mm、對住座廁前端；而家擺盆櫃側面</li>
     <li>鏡櫃 120×97 圓角，四邊透光燈帶，三道鏡門</li>
   </ul>
   <h3>施工要點</h3>
   <ul>
-    <li>淡水入水位：座廁左後方，R1/2，離地約 17.5</li>
+    <li>淡水入水（牆身）：Rc1/2，離地 175±10，偏離中線左 115±10（說明書）</li>
+    <li>⚠ 說明書：座廁後面牆離地 1400mm 以內唔好有層架／櫃，否則遙控訊號差。窄枱同鏡櫃底都喺範圍內，要同 TOTO 確認</li>
     <li>電源線長 1.2m，插蘇要喺範圍內</li>
     <li>坑距 305 配 HP102T3、400 配 HP102T4，拆舊廁後實量先買</li>
     <li>海洋盆係擺喺櫃面，唔使開石；櫃身要做 60 闊配盆</li>
@@ -209,7 +210,7 @@ const under=new THREE.PointLight(0xffd9a0,0.5,90,0);under.position.set(170,40,40
 box(6,10,1.2,M.chrome,170,99,0.8);
 const fs=new THREE.Mesh(new THREE.CylinderGeometry(1.1,1.1,22,20),M.chrome);fs.rotation.x=Math.PI/2;fs.position.set(170,99,12);add(fs);
 box(1.2,1.2,6,M.chrome,175.5,101,3.5);
-box(0.8,4.3,29,new THREE.MeshStandardMaterial({color:0xd9dadc,metalness:.6,roughness:.3}),140.5,70,24);
+box(0.8,4.3,29,new THREE.MeshStandardMaterial({color:0xd9dadc,metalness:.6,roughness:.3}),140.5,80,42);
 const floorDrain=new THREE.Mesh(new THREE.CircleGeometry(5,24),M.chrome);floorDrain.rotation.x=-Math.PI/2;floorDrain.position.set(152,0.2,38);add(floorDrain);
 // open shelf under vanity (like the existing one), drain stays reachable in front
 slab(140.5,0,199.5,30,18.75,2.5,M.wood,{rFL:8});
@@ -259,31 +260,35 @@ function ext(shape,depth,mat,y,parent,bevel=0){const m=new THREE.Mesh(new THREE.
 const cer2=M.ceramic.clone();cer2.side=THREE.DoubleSide;
 function tOutline(){const hw=19.3,zs=30,ze=69.2,rc=5;const s=new THREE.Shape();s.moveTo(-hw+rc,0);s.lineTo(hw-rc,0);s.quadraticCurveTo(hw,0,hw,-rc);
   s.lineTo(hw,-zs);s.absellipse(0,-zs,hw,ze-zs,0,Math.PI,true);s.lineTo(-hw,-rc);s.quadraticCurveTo(-hw,0,-hw+rc,0);return s;}
-{const P=tOutline().getSpacedPoints(180),L=[[0,.84],[3,.855],[9,.89],[18,.935],[27,.97],[34,.99],[40,1]];
+{const P=tOutline().getSpacedPoints(180),L=[[0,.84],[3,.855],[9,.89],[18,.935],[27,.97],[33,.99],[38.6,1]];
  const pos=[],idx=[],n=P.length;
  L.forEach(([y,k])=>P.forEach(p=>pos.push(p.x*k,y,-p.y*k)));
  for(let i=0;i<L.length-1;i++)for(let j=0;j<n-1;j++){const a=i*n+j,b=a+1,c=a+n,d=c+1;idx.push(a,c,b,b,c,d);}
  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setIndex(idx);g.computeVertexNormals();
  toilet.add(new THREE.Mesh(g,cer2));
  const cap=tOutline();const h=new THREE.Path();h.absellipse(0,-47,12,17,0,Math.PI*2,true);cap.holes.push(h);
- const cm=new THREE.Mesh(new THREE.ShapeGeometry(cap,24),cer2);cm.rotation.x=-Math.PI/2;cm.position.y=40;toilet.add(cm);
- const bw=new THREE.Mesh(new THREE.SphereGeometry(1,32,16,0,Math.PI*2,Math.PI/2,Math.PI/2),cer2);bw.scale.set(12,14,17);bw.position.set(0,40,47);toilet.add(bw);}
+ const cm=new THREE.Mesh(new THREE.ShapeGeometry(cap,24),cer2);cm.rotation.x=-Math.PI/2;cm.position.y=38.6;toilet.add(cm);
+ const bw=new THREE.Mesh(new THREE.SphereGeometry(1,32,16,0,Math.PI*2,Math.PI/2,Math.PI/2),cer2);bw.scale.set(12,14,17);bw.position.set(0,38.6,47);toilet.add(bw);}
 const water=new THREE.Mesh(new THREE.CircleGeometry(1,32),new THREE.MeshStandardMaterial({color:0xc9d6da,roughness:.05}));
 water.scale.set(8,11,1);water.rotation.x=-Math.PI/2;water.position.set(0,31,49);toilet.add(water);
-// thick round seat ring, low flat function deck at the back, big full-cover lid hinged behind the deck
+// per TOTO CAD: body top/seat line ~385, rear hood under lid, full-cover lid sloping 512 (rear) -> ~430 (front), hinged ~5cm from wall
 const seatS=dShape(18.3,30,68,20);const hole=new THREE.Path();hole.absellipse(0,-47,12,17,0,Math.PI*2,true);seatS.holes.push(hole);
-ext(seatS,1.6,M.ceramic,41,toilet,0.8);
-ext(rr(THREE.Shape,-17,3,17,20,3),1.8,M.ceramic,40.5,toilet,0.7);
-[-3,-1,1,3].forEach(x=>box(0.6,0.2,0.6,new THREE.MeshStandardMaterial({color:0x7be3a8,emissive:0x52d68a,emissiveIntensity:1.5}),x,43.1,16,toilet));
-box(30,0.15,0.4,M.inner,0,43.05,19.6,toilet);
+ext(seatS,1.6,M.ceramic,38.6,toilet,0.6);
+{const pr=new THREE.Shape();pr.moveTo(1,38);pr.lineTo(1,48.2);pr.quadraticCurveTo(1,48.6,2,48.6);pr.lineTo(6,48.6);pr.lineTo(22.5,40.2);pr.lineTo(22.5,38);pr.lineTo(1,38);
+ const m=new THREE.Mesh(new THREE.ExtrudeGeometry(pr,{depth:35.6,bevelEnabled:true,bevelSize:0.8,bevelThickness:0.8,bevelSegments:3}),M.ceramic);
+ m.rotation.y=-Math.PI/2;m.position.x=17.8;toilet.add(m);
+ const gm=new THREE.MeshStandardMaterial({color:0x7be3a8,emissive:0x52d68a,emissiveIntensity:1.5});
+ [-3,-1,1,3].forEach(x=>{const d=box(0.6,0.2,0.6,gm,x,45.1,14.4,toilet);d.rotation.x=0.47;});}
 function tOut(hw,zs,ze,z0,rc){const s=new THREE.Shape();s.moveTo(-hw+rc,-z0);s.lineTo(hw-rc,-z0);s.quadraticCurveTo(hw,-z0,hw,-z0-rc);
   s.lineTo(hw,-zs);s.absellipse(0,-zs,hw,ze-zs,0,Math.PI,true);s.lineTo(-hw,-z0-rc);s.quadraticCurveTo(-hw,-z0,-hw+rc,-z0);return s;}
-const lid=new THREE.Group();lid.position.set(0,43.4,8);toilet.add(lid);
-{const m=new THREE.Mesh(new THREE.ExtrudeGeometry(tOut(16.8,30,66.7,2.5,4),{depth:3,curveSegments:36,bevelEnabled:true,bevelSize:2.5,bevelThickness:2.4,bevelSegments:6}),M.ceramic);
- m.rotation.x=-Math.PI/2;m.position.set(0,2.4,-8);lid.add(m);}
+const LID_CLOSED=0.122,LID_OPEN=-1.50;               // closed slope ~7deg; open ~86deg (stops just short of the wall)
+const lid=new THREE.Group();lid.position.set(0,48.6,4.5);toilet.add(lid);
+{const m=new THREE.Mesh(new THREE.ExtrudeGeometry(tOut(17.3,26,62.5,0,5),{depth:1.6,curveSegments:36,bevelEnabled:true,bevelSize:1.5,bevelThickness:1,bevelSegments:5}),M.ceramic);
+ m.rotation.x=-Math.PI/2;m.position.set(0,1,0);lid.add(m);}
+lid.rotation.x=LID_CLOSED;
 toilet.position.set(107.5,0,0);
 const filler=box(65,15,5,tubTile,107.5,7.5,2.5);filler.visible=false;
-box(2.5,2.5,3,M.chrome,92,17.5,1.5);                 // fresh-water stop valve
+box(2.5,2.5,3,M.chrome,96,17.5,1.5);                 // fresh-water stop valve
 box(7,7,0.8,M.white,84,38,0.5);                     // socket for TOTO
 
 // ---------- shadows
@@ -312,9 +317,10 @@ dim([78,MY1+3,15],[198,MY1+3,15]);label('鏡櫃 120×97×13 圓角',[138,MY1+9,1
 label('一體海洋盆 8260',[170,104,32],'600×500 · 盆內570×370 深130 · 無孔');dim([139,BT,51],[139,CT,51]);label('6.3',[135,BT+3,53],null,5);
 const tLab=label('TOTO CES8E810GCN',[107.5,70,50],'692×386×512');
 const tDim=dim([86,1,0],[86,1,70.2]);const tLen=label('70.2 離牆',[78,5,35]);
+label('開蓋頂約 114（估，按 CAD）',[107.5,118,8],null,5);dim([129,0,6],[129,114,6]);
 const trapLab=label('去水件 400版（貼牆）',[107.5,20,82]);
 label('門（門框 1.5）',[W-3,170,90]);
-label('置物板 59×30 圓角（離地約20）',[170,26,34],null,5);label('淡水入水 R1/2 離地17.5',[88,26,6],null,5);label('TOTO 遙控面板',[136,77,24],null,5);
+label('置物板 59×30 圓角（離地約20）',[170,26,34],null,5);label('淡水入水 Rc1/2 離地175±10、偏左115±10',[90,26,6],null,5);label('TOTO 遙控（側牆 77–95）',[136,87,42],null,5);
 
 // ---------- state + UI
 const st={mlight:true,mirror:false,lid:false,dims:true,info:false,trap:'400'};
@@ -345,7 +351,7 @@ const lerp=(a,b,k)=>a+(b-a)*k;
 renderer.setAnimationLoop(()=>{
   if(anim){let k=Math.min(1,(performance.now()-anim.s)/700);k=k*k*(3-2*k);
     camera.position.lerpVectors(anim.p0,anim.p,k);controls.target.lerpVectors(anim.t0,anim.t,k);if(k>=1)anim=null;}
-  lid.rotation.x=lerp(lid.rotation.x,st.lid?-1.48:0,0.12);
+  lid.rotation.x=lerp(lid.rotation.x,st.lid?LID_OPEN:LID_CLOSED,0.12);
   doors.forEach(d=>d.p.rotation.y=lerp(d.p.rotation.y,st.mirror?-d.dir*1.35:0,0.12));
   controls.update();renderer.render(scene,camera);});
 </script>
