@@ -105,7 +105,7 @@ const canvas=document.getElementById('c');
 const renderer=new THREE.WebGLRenderer({canvas,antialias:true});
 renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));
 renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
-renderer.toneMapping=THREE.AgXToneMapping; renderer.toneMappingExposure=1.05;RectAreaLightUniformsLib.init();
+renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.0;RectAreaLightUniformsLib.init();
 const scene=new THREE.Scene(); scene.background=new THREE.Color(0x1d1f22);
 const pmrem=new THREE.PMREMGenerator(renderer);
 scene.environment=pmrem.fromScene(new RoomEnvironment(),0.04).texture;
@@ -116,7 +116,7 @@ controls.enableDamping=true; controls.dampingFactor=0.08;
 controls.minDistance=40; controls.maxDistance=700;
 
 // ---------- lights
-scene.add(new THREE.HemisphereLight(0xfff3e4,0x2a2622,0.35));
+scene.add(new THREE.HemisphereLight(0xfff3e4,0x2a2622,0.2));
 // warm 3000K recessed downlights with soft shadows
 [[110,55],[110,125],[38,75]].forEach(([x,z],i)=>{const l=new THREE.SpotLight(0xffd9a8,9000,0,Math.PI/3.2,0.85,2);l.position.set(x,239,z);l.target.position.set(x,0,z);
   l.castShadow=i<2;l.shadow.mapSize.set(1024,1024);l.shadow.bias=-0.0004;l.shadow.radius=6;scene.add(l,l.target);});
@@ -172,7 +172,7 @@ const M={
   mirror:new THREE.MeshStandardMaterial({color:0xe8eef0,roughness:.07,metalness:1}),
   led:new THREE.MeshStandardMaterial({color:0xfff2d6,emissive:0xffe2b0,emissiveIntensity:2.2}),
   white:new THREE.MeshStandardMaterial({color:0xf2f1ee,roughness:.6}),
-  glass:new THREE.MeshPhysicalMaterial({color:0xf4fbfb,transparent:true,opacity:.1,reflectivity:.5,clearcoat:1,roughness:0,metalness:0,side:THREE.DoubleSide,depthWrite:false}),
+  glass:new THREE.MeshPhysicalMaterial({color:0xffffff,transparent:true,opacity:.035,roughness:0,metalness:0,side:THREE.DoubleSide,depthWrite:false}),
   inner:new THREE.MeshStandardMaterial({color:0xdcdad6,roughness:.5}),
 };
 const add=(m,p)=>{(p||scene).add(m);return m;};
@@ -213,6 +213,7 @@ slab(0,0,75,D,52,2,M.top,{holes:[rr(THREE.Path,7,7,68,D-7,10)]});
 const tubIn=new THREE.Mesh(new THREE.BoxGeometry(61,38,D-14),new THREE.MeshStandardMaterial({color:0xf5f5f3,roughness:.15,side:THREE.BackSide}));
 tubIn.position.set(37.5,35,D/2);add(tubIn);
 const glass=new THREE.Mesh(new THREE.PlaneGeometry(75,180),M.glass);glass.position.set(37.5,54+90,73.5);add(glass);
+{const em=new THREE.MeshStandardMaterial({color:0xcfe3e0,roughness:.1,transparent:true,opacity:.55});box(0.8,180,0.8,em,74.6,144,73.5);box(75,0.8,0.8,em,37.5,233.6,73.5);}
 
 // tub mixer + spout + slide rail shower on the back wall (z=0), centred over the tub
 box(14,6,4,M.chrome,40,72,2);box(3,2,6,M.chrome,47,77,5);
@@ -260,9 +261,9 @@ box(1.2,1.2,6,M.chrome,175.5,101,3.5);
  g.fillStyle='#8a8a8a';g.font='12px Arial';g.fillText('NOZZLE POSITION',130,236);g.fillText('SPRAY STRENGTH',440,236);g.fillText('WATER TEMP',700,200);g.fillText('SEAT TEMP',830,200);
  g.fillStyle='#9fd8f0';for(let i=0;i<6;i++){g.beginPath();g.arc(410+i*14,190,4,0,7);g.fill();}
  const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=8;
- const body=box(1.6,7.8,23.4,new THREE.MeshStandardMaterial({color:0xe9e9e7,roughness:.35}),140.2,75,32);
+ const body=box(1.6,7.8,23.4,new THREE.MeshStandardMaterial({color:0xe9e9e7,roughness:.35}),140.2,75,28);
  const face=new THREE.Mesh(new THREE.PlaneGeometry(23.2,7.6),new THREE.MeshStandardMaterial({map:t,roughness:.3}));
- face.rotation.y=-Math.PI/2;face.position.set(139.38,75,32);add(face);}
+ face.rotation.y=-Math.PI/2;face.position.set(139.38,75,28);add(face);}
 const floorDrain=new THREE.Mesh(new THREE.CircleGeometry(5,24),M.chrome);floorDrain.rotation.x=-Math.PI/2;floorDrain.position.set(152,0.2,38);add(floorDrain);
 // open shelf under vanity (like the existing one), drain stays reachable in front
 slab(140.5,0,199.5,30,18.75,2.5,M.wood,{rFL:8});
@@ -300,9 +301,9 @@ box(117,94,0.8,M.inner,138,MYC,0.5,mc);
 box(3,5,1,M.white,190,MY0+9,1.4,mc);box(3,5,1,M.white,86,MY0+9,1.4,mc);
 // halo on the wall around all four sides
 const glowMat=new THREE.MeshBasicMaterial({map:tex(256,256,(g,w,h)=>{const gr=g.createLinearGradient(0,h,0,0);gr.addColorStop(0,'rgba(255,226,180,0.8)');gr.addColorStop(1,'rgba(255,226,180,0)');g.fillStyle=gr;g.fillRect(0,0,w,h);}),transparent:true,blending:THREE.AdditiveBlending,depthWrite:false});
-const halos=[];
+const halos=[];const _noHalo=true;
 [[124,24,138,MY1+12,0],[124,14,138,MY0-7,Math.PI],[22,97,MX0-11,MYC,Math.PI/2],[22,97,MX1+11,MYC,-Math.PI/2]].forEach(([w,h,x,y,r])=>{
-  const g=new THREE.Mesh(new THREE.PlaneGeometry(r%Math.PI?h:w,r%Math.PI?w:h),glowMat);g.rotation.z=r;g.position.set(x,y,0.3+halos.length*0.02);add(g);halos.push(g);});
+  const g=new THREE.Mesh(new THREE.PlaneGeometry(r%Math.PI?h:w,r%Math.PI?w:h),glowMat);g.rotation.z=r;g.position.set(x,y,0.3+halos.length*0.02);add(g);halos.push(g);g.material=g.material.clone();g.material.opacity=0.35;});
 const mLights=[[138,MY1+6,6,0.45,70],[138,MY0-4,12,0.6,60],[MX0-4,MYC,10,0.3,60],[MX1+4,MYC,10,0.3,60]].map(([x,y,z,i,d])=>{const l=new THREE.PointLight(0xffe7c4,i,d,0);l.position.set(x,y,z);l.userData.i=i;add(l);return l;});
 function setMirrorLight(on){lightMat.emissiveIntensity=on?1.5:0;halos.forEach(h=>h.visible=on);mLights.forEach(l=>l.intensity=on?l.userData.i:0);}
 const doors=[];const DW=(MX1-MX0-2.8)/3,DX0=MX0+1.4;
@@ -359,7 +360,7 @@ box(7,7,0.8,M.white,84,38,0.5);                     // socket for TOTO
 
 // soft area light from the mirror cabinet light band
 {const ra=new THREE.RectAreaLight(0xffe6c4,5,118,4);ra.position.set(138,MY0-1,10);ra.lookAt(138,0,30);add(ra);
- const ra2=new THREE.RectAreaLight(0xffe6c4,2.5,118,95);ra2.position.set(138,MYC,14.5);ra2.lookAt(138,MYC,200);add(ra2);}
+ const ra2=new THREE.RectAreaLight(0xffe6c4,1.2,118,95);ra2.position.set(138,MYC,14.5);ra2.lookAt(138,MYC,200);add(ra2);}
 // ---------- shadows
 scene.traverse(o=>{if(o.isMesh&&o.material!==M.glass&&o.material!==M.led){o.receiveShadow=true;if(!o.geometry.type.startsWith('Plane'))o.castShadow=true;}});
 
@@ -389,7 +390,7 @@ const tDim=dim([86,1,0],[86,1,71]);const tLen=label('71 離牆',[78,5,35]);
 label('開蓋頂約 92（估）',[107.5,96,22],null,5);dim([129,0,20],[129,92,20]);
 const trapLab=label('坑距 305（貼牆）',[107.5,20,82]);
 label('全身鏡 60×228＋電視',[108,190,D-4],null,5);label('門 77×230，離後牆 70',[W-3,170,108.5]);dim([W-1,240-1,0],[W-1,239,70]);label('70',[W-3,232,35],null,5);
-label('置物板 59×30 圓角（離地約20）',[170,26,34],null,5);label('淡水入水（示意）',[90,26,6],null,5);label('INAX 遙控 234×78',[136,82,32],null,5);
+label('置物板 59×30 圓角（離地約20）',[170,26,34],null,5);label('淡水入水（示意）',[90,26,6],null,5);label('INAX 遙控 234×78',[136,82,28],null,5);
 
 // ---------- state + UI
 const st={mlight:true,mirror:false,lid:false,dims:false,info:false,trap:'400'};
@@ -415,8 +416,8 @@ group('[data-view]',b=>go(b.dataset.view));
 
 let composer=null;
 try{composer=new EffectComposer(renderer);composer.addPass(new RenderPass(scene,camera));
-  const ao=new GTAOPass(scene,camera,innerWidth,innerHeight);ao.updateGtaoMaterial({radius:18,distanceExponent:1.5,thickness:6,scale:1.1,samples:12});ao.blendIntensity=0.85;composer.addPass(ao);
-  composer.addPass(new UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight),0.32,0.55,0.86));
+  const ao=new GTAOPass(scene,camera,innerWidth,innerHeight);ao.updateGtaoMaterial({radius:18,distanceExponent:1.5,thickness:6,scale:1.1,samples:12});ao.blendIntensity=0.6;composer.addPass(ao);
+  composer.addPass(new UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight),0.12,0.3,0.95));
   composer.addPass(new OutputPass());composer.addPass(new SMAAPass(innerWidth*renderer.getPixelRatio(),innerHeight*renderer.getPixelRatio()));
 }catch(e){console.warn('post off',e);composer=null;}
 function resize(){const w=innerWidth,h=innerHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();if(composer)composer.setSize(w,h);}

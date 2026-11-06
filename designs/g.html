@@ -241,9 +241,9 @@ box(1.2,1.2,6,M.chrome,175.5,101,3.5);
  g.fillStyle='#8a8a8a';g.font='12px Arial';g.fillText('NOZZLE POSITION',130,236);g.fillText('SPRAY STRENGTH',440,236);g.fillText('WATER TEMP',700,200);g.fillText('SEAT TEMP',830,200);
  g.fillStyle='#9fd8f0';for(let i=0;i<6;i++){g.beginPath();g.arc(410+i*14,190,4,0,7);g.fill();}
  const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=8;
- const body=box(1.6,7.8,23.4,new THREE.MeshStandardMaterial({color:0xe9e9e7,roughness:.35}),140.2,75,32);
+ const body=box(1.6,7.8,23.4,new THREE.MeshStandardMaterial({color:0xe9e9e7,roughness:.35}),140.2,75,28);
  const face=new THREE.Mesh(new THREE.PlaneGeometry(23.2,7.6),new THREE.MeshStandardMaterial({map:t,roughness:.3}));
- face.rotation.y=-Math.PI/2;face.position.set(139.38,75,32);add(face);}
+ face.rotation.y=-Math.PI/2;face.position.set(139.38,75,28);add(face);}
 const floorDrain=new THREE.Mesh(new THREE.CircleGeometry(5,24),M.chrome);floorDrain.rotation.x=-Math.PI/2;floorDrain.position.set(152,0.2,38);add(floorDrain);
 // open shelf under vanity (like the existing one), drain stays reachable in front
 slab(140.5,0,199.5,30,18.75,2.5,M.wood,{rFL:8});
@@ -367,7 +367,7 @@ const tDim=dim([86,1,0],[86,1,71]);const tLen=label('71 離牆',[78,5,35]);
 label('開蓋頂約 92（估）',[107.5,96,22],null,5);dim([129,0,20],[129,92,20]);
 const trapLab=label('坑距 305（貼牆）',[107.5,20,82]);
 label('全身鏡 60×228＋電視',[108,190,D-4],null,5);label('門 77×230，離後牆 70',[W-3,170,108.5]);dim([W-1,240-1,0],[W-1,239,70]);label('70',[W-3,232,35],null,5);
-label('置物板 59×30 圓角（離地約20）',[170,26,34],null,5);label('淡水入水（示意）',[90,26,6],null,5);label('INAX 遙控 234×78',[136,82,32],null,5);
+label('置物板 59×30 圓角（離地約20）',[170,26,34],null,5);label('淡水入水（示意）',[90,26,6],null,5);label('INAX 遙控 234×78',[136,82,28],null,5);
 
 // ---------- state + UI
 const st={mlight:true,mirror:false,lid:false,dims:true,info:false,trap:'400'};
