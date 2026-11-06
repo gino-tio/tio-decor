@@ -253,17 +253,31 @@ const doors=[];const DW=(MX1-MX0-2.8)/3,DX0=MX0+1.4;
 function dShape(hw,zs,ze,z0=0){const s=new THREE.Shape();s.moveTo(-hw,-z0);s.lineTo(hw,-z0);s.lineTo(hw,-zs);
   s.absellipse(0,-zs,hw,ze-zs,0,Math.PI,true);s.lineTo(-hw,-z0);return s;}
 const toilet=new THREE.Group();add(toilet);
-function ext(shape,depth,mat,y,parent,bevel=0){const m=new THREE.Mesh(new THREE.ExtrudeGeometry(shape,{depth,curveSegments:28,bevelEnabled:bevel>0,bevelSize:bevel,bevelThickness:bevel,bevelSegments:3}),mat);
+function ext(shape,depth,mat,y,parent,bevel=0){const m=new THREE.Mesh(new THREE.ExtrudeGeometry(shape,{depth,curveSegments:28,bevelEnabled:bevel>0,bevelSize:bevel,bevelThickness:bevel,bevelSegments:4}),mat);
   m.rotation.x=-Math.PI/2;m.position.y=y;parent.add(m);return m;}
-ext(dShape(18.5,30,68.4),36.5,M.ceramic,0.8,toilet,0.8);
+// CES8E810GCN look: egg-shaped skirted body that tapers toward the floor, rear function cover with a sloped front, full-cover lid flush with it
+const cer2=M.ceramic.clone();cer2.side=THREE.DoubleSide;
+function tOutline(){const hw=19.3,zs=30,ze=69.2,rc=5;const s=new THREE.Shape();s.moveTo(-hw+rc,0);s.lineTo(hw-rc,0);s.quadraticCurveTo(hw,0,hw,-rc);
+  s.lineTo(hw,-zs);s.absellipse(0,-zs,hw,ze-zs,0,Math.PI,true);s.lineTo(-hw,-rc);s.quadraticCurveTo(-hw,0,-hw+rc,0);return s;}
+{const P=tOutline().getSpacedPoints(180),L=[[0,.84],[3,.855],[9,.89],[18,.935],[27,.97],[34,.99],[40,1]];
+ const pos=[],idx=[],n=P.length;
+ L.forEach(([y,k])=>P.forEach(p=>pos.push(p.x*k,y,-p.y*k)));
+ for(let i=0;i<L.length-1;i++)for(let j=0;j<n-1;j++){const a=i*n+j,b=a+1,c=a+n,d=c+1;idx.push(a,c,b,b,c,d);}
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setIndex(idx);g.computeVertexNormals();
+ toilet.add(new THREE.Mesh(g,cer2));
+ const cap=tOutline();const h=new THREE.Path();h.absellipse(0,-47,12,17,0,Math.PI*2,true);cap.holes.push(h);
+ const cm=new THREE.Mesh(new THREE.ShapeGeometry(cap,24),cer2);cm.rotation.x=-Math.PI/2;cm.position.y=40;toilet.add(cm);
+ const bw=new THREE.Mesh(new THREE.SphereGeometry(1,32,16,0,Math.PI*2,Math.PI/2,Math.PI/2),cer2);bw.scale.set(12,14,17);bw.position.set(0,40,47);toilet.add(bw);}
 const water=new THREE.Mesh(new THREE.CircleGeometry(1,32),new THREE.MeshStandardMaterial({color:0xc9d6da,roughness:.05}));
-water.scale.set(12,17,1);water.rotation.x=-Math.PI/2;water.position.set(0,38.2,46);toilet.add(water);
-const seatS=dShape(18.6,30,68.6,24);const hole=new THREE.Path();hole.absellipse(0,-46,12,17,0,Math.PI*2,true);seatS.holes.push(hole);
-ext(seatS,1.8,M.ceramic,38.9,toilet);
-const fu=new THREE.Shape();const fp=rr(THREE.Shape,-18,0,18,23,3);ext(fp,12.2,M.ceramic,39,toilet);
-box(1,1,0.4,new THREE.MeshStandardMaterial({color:0x3aa0ff,emissive:0x3aa0ff,emissiveIntensity:2}),0,47,23.1,toilet);
-const lid=new THREE.Group();lid.position.set(0,40.8,24);toilet.add(lid);
-ext(dShape(18.8,6,45.2),2.2,M.ceramic,0,lid);
+water.scale.set(8,11,1);water.rotation.x=-Math.PI/2;water.position.set(0,31,49);toilet.add(water);
+const seatS=dShape(19,30,69,27);const hole=new THREE.Path();hole.absellipse(0,-47,12,17,0,Math.PI*2,true);seatS.holes.push(hole);
+ext(seatS,0.6,M.ceramic,40,toilet);
+{const pr=new THREE.Shape();pr.moveTo(1,41);pr.lineTo(1,50.2);pr.lineTo(15,50.2);pr.lineTo(26,45.5);pr.lineTo(26,41);pr.lineTo(1,41);
+ const m=new THREE.Mesh(new THREE.ExtrudeGeometry(pr,{depth:36.6,bevelEnabled:true,bevelSize:1,bevelThickness:1,bevelSegments:4}),M.ceramic);
+ m.rotation.y=-Math.PI/2;m.position.x=18.3;toilet.add(m);}
+box(0.8,0.8,0.3,new THREE.MeshStandardMaterial({color:0x3aa0ff,emissive:0x3aa0ff,emissiveIntensity:2}),0,48,21.5,toilet);
+const lid=new THREE.Group();lid.position.set(0,41.6,27);toilet.add(lid);
+ext(dShape(18.3,3,41.2),2.6,M.ceramic,1,lid,1);
 toilet.position.set(107.5,0,0);
 const filler=box(65,15,5,tubTile,107.5,7.5,2.5);filler.visible=false;
 box(2.5,2.5,3,M.chrome,92,17.5,1.5);                 // fresh-water stop valve
