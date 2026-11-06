@@ -267,14 +267,17 @@ function tOutline(){const hw=19.3,zs=30,ze=69.2,rc=5;const s=new THREE.Shape();s
  const bw=new THREE.Mesh(new THREE.SphereGeometry(1,32,16,0,Math.PI*2,Math.PI/2,Math.PI/2),cer2);bw.scale.set(12,14,17);bw.position.set(0,40,47);toilet.add(bw);}
 const water=new THREE.Mesh(new THREE.CircleGeometry(1,32),new THREE.MeshStandardMaterial({color:0xc9d6da,roughness:.05}));
 water.scale.set(8,11,1);water.rotation.x=-Math.PI/2;water.position.set(0,31,49);toilet.add(water);
-const seatS=dShape(19,30,69,27);const hole=new THREE.Path();hole.absellipse(0,-47,12,17,0,Math.PI*2,true);seatS.holes.push(hole);
-ext(seatS,0.6,M.ceramic,40,toilet);
-{const pr=new THREE.Shape();pr.moveTo(1,41);pr.lineTo(1,50.2);pr.lineTo(15,50.2);pr.lineTo(26,45.5);pr.lineTo(26,41);pr.lineTo(1,41);
- const m=new THREE.Mesh(new THREE.ExtrudeGeometry(pr,{depth:36.6,bevelEnabled:true,bevelSize:1,bevelThickness:1,bevelSegments:4}),M.ceramic);
- m.rotation.y=-Math.PI/2;m.position.x=18.3;toilet.add(m);}
-box(0.8,0.8,0.3,new THREE.MeshStandardMaterial({color:0x3aa0ff,emissive:0x3aa0ff,emissiveIntensity:2}),0,48,21.5,toilet);
-const lid=new THREE.Group();lid.position.set(0,41.6,27);toilet.add(lid);
-ext(dShape(18.3,3,41.2),2.6,M.ceramic,1,lid,1);
+// thick round seat ring, low flat function deck at the back, big full-cover lid hinged behind the deck
+const seatS=dShape(18.3,30,68,20);const hole=new THREE.Path();hole.absellipse(0,-47,12,17,0,Math.PI*2,true);seatS.holes.push(hole);
+ext(seatS,1.6,M.ceramic,41,toilet,0.8);
+ext(rr(THREE.Shape,-17,3,17,20,3),1.8,M.ceramic,40.5,toilet,0.7);
+[-3,-1,1,3].forEach(x=>box(0.6,0.2,0.6,new THREE.MeshStandardMaterial({color:0x7be3a8,emissive:0x52d68a,emissiveIntensity:1.5}),x,43.1,16,toilet));
+box(30,0.15,0.4,M.inner,0,43.05,19.6,toilet);
+function tOut(hw,zs,ze,z0,rc){const s=new THREE.Shape();s.moveTo(-hw+rc,-z0);s.lineTo(hw-rc,-z0);s.quadraticCurveTo(hw,-z0,hw,-z0-rc);
+  s.lineTo(hw,-zs);s.absellipse(0,-zs,hw,ze-zs,0,Math.PI,true);s.lineTo(-hw,-z0-rc);s.quadraticCurveTo(-hw,-z0,-hw+rc,-z0);return s;}
+const lid=new THREE.Group();lid.position.set(0,43.4,8);toilet.add(lid);
+{const m=new THREE.Mesh(new THREE.ExtrudeGeometry(tOut(16.8,30,66.7,2.5,4),{depth:3,curveSegments:36,bevelEnabled:true,bevelSize:2.5,bevelThickness:2.4,bevelSegments:6}),M.ceramic);
+ m.rotation.x=-Math.PI/2;m.position.set(0,2.4,-8);lid.add(m);}
 toilet.position.set(107.5,0,0);
 const filler=box(65,15,5,tubTile,107.5,7.5,2.5);filler.visible=false;
 box(2.5,2.5,3,M.chrome,128,25,1.5);                 // fresh-water stop valve
@@ -339,7 +342,7 @@ const lerp=(a,b,k)=>a+(b-a)*k;
 renderer.setAnimationLoop(()=>{
   if(anim){let k=Math.min(1,(performance.now()-anim.s)/700);k=k*k*(3-2*k);
     camera.position.lerpVectors(anim.p0,anim.p,k);controls.target.lerpVectors(anim.t0,anim.t,k);if(k>=1)anim=null;}
-  lid.rotation.x=lerp(lid.rotation.x,st.lid?-1.55:0,0.12);
+  lid.rotation.x=lerp(lid.rotation.x,st.lid?-1.48:0,0.12);
   doors.forEach(d=>d.p.rotation.y=lerp(d.p.rotation.y,st.mirror?-d.dir*1.35:0,0.12));
   controls.update();renderer.render(scene,camera);});
 </script>
