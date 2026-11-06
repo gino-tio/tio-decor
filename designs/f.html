@@ -37,7 +37,8 @@ button.on{background:#c9a46a;border-color:#c9a46a;color:#1d1f22;font-weight:600}
     <li>入牆龍頭，出水嘴要夠長（約 20cm）先過到後面平台</li>
     <li>盆櫃下面置物板，近座廁嗰邊圓角，離地約 20、深 30</li>
     <li>INAX SARAS 100572BW10：深 710 × 闊 385 × 高 472，矮身、全包裙邊，後面方形機身，蓋只蓋座圈；S 型去水坑距 305（P 型 120 要另購 CF-G20PG-SET）；沖水 5.0／3.5L；220V；水壓 0.1MPa 以上</li>
-    <li>遙控暫時擺盆櫃側面；INAX 要求嘅位置要睇安裝說明書</li>
+    <li>INAX 遙控 234×78mm，嵌喺盆櫃側面向住座廁，離地約 75。安裝圖建議喺側牆、離後牆 550–930，盆櫃只深 50，所以位置偏後，要試吓坐低撳唔撳到</li>
+    <li>INAX 安裝圖：座廁兩邊離牆／障礙 ≥70、兩牆之間 ≥700。浴缸邊到盆櫃之間得約 65（盆櫃係吊櫃，地下夠位，但膝頭位要試）</li>
     <li>鏡櫃 120×97 圓角，四邊透光燈帶，三道鏡門</li>
   </ul>
   <h3>施工要點</h3>
@@ -211,7 +212,21 @@ const under=new THREE.PointLight(0xffd9a0,0.5,90,0);under.position.set(170,40,40
 box(6,10,1.2,M.chrome,170,99,0.8);
 const fs=new THREE.Mesh(new THREE.CylinderGeometry(1.1,1.1,22,20),M.chrome);fs.rotation.x=Math.PI/2;fs.position.set(170,99,12);add(fs);
 box(1.2,1.2,6,M.chrome,175.5,101,3.5);
-box(0.8,4.3,29,new THREE.MeshStandardMaterial({color:0xd9dadc,metalness:.6,roughness:.3}),140.5,80,42);
+// INAX SARAS wall remote 234 x 78 mm, flush-mounted on the vanity side facing the toilet
+{const c=document.createElement('canvas');c.width=936;c.height=312;const g=c.getContext('2d');
+ g.fillStyle='#f4f4f3';g.beginPath();g.roundRect(0,0,936,312,26);g.fill();
+ g.fillStyle='#7c7c7c';g.font='bold 30px Arial';g.textAlign='center';g.fillText('INAX',468,44);
+ const big=['STOP','POSTERIOR','FEMININE','DRYER','FLUSH/FULL','FLUSH/PARTIAL'];
+ big.forEach((t,i)=>{const x=78+i*156;g.fillStyle='#ffffff';g.shadowColor='rgba(0,0,0,.18)';g.shadowBlur=10;g.beginPath();g.roundRect(x-52,74,104,96,22);g.fill();g.shadowBlur=0;
+   g.fillStyle='#9a9a9a';g.font='14px Arial';g.fillText(t,x,66);
+   g.fillStyle=i==0?'#d6303a':'#555';g.font='bold 40px Arial';g.fillText(['■','ᘺ','♀','≋','◎','◎'][i],x,136);});
+ [[60,'∧'],[200,'∨'],[350,'−'],[530,'+'],[700,'≈'],[830,'♨']].forEach(([x,t])=>{g.fillStyle='#fff';g.shadowColor='rgba(0,0,0,.15)';g.shadowBlur=8;g.beginPath();g.roundRect(x-26,206,52,48,12);g.fill();g.shadowBlur=0;g.fillStyle='#666';g.font='26px Arial';g.fillText(t,x,240);});
+ g.fillStyle='#8a8a8a';g.font='12px Arial';g.fillText('NOZZLE POSITION',130,236);g.fillText('SPRAY STRENGTH',440,236);g.fillText('WATER TEMP',700,200);g.fillText('SEAT TEMP',830,200);
+ g.fillStyle='#9fd8f0';for(let i=0;i<6;i++){g.beginPath();g.arc(410+i*14,190,4,0,7);g.fill();}
+ const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=8;
+ const body=box(1.6,7.8,23.4,new THREE.MeshStandardMaterial({color:0xe9e9e7,roughness:.35}),140.2,75,32);
+ const face=new THREE.Mesh(new THREE.PlaneGeometry(23.2,7.6),new THREE.MeshStandardMaterial({map:t,roughness:.3}));
+ face.rotation.y=-Math.PI/2;face.position.set(139.38,75,32);add(face);}
 const floorDrain=new THREE.Mesh(new THREE.CircleGeometry(5,24),M.chrome);floorDrain.rotation.x=-Math.PI/2;floorDrain.position.set(152,0.2,38);add(floorDrain);
 // open shelf under vanity (like the existing one), drain stays reachable in front
 slab(140.5,0,199.5,30,18.75,2.5,M.wood,{rFL:8});
@@ -323,7 +338,7 @@ const tDim=dim([86,1,0],[86,1,71]);const tLen=label('71 離牆',[78,5,35]);
 label('開蓋頂約 92（估）',[107.5,96,22],null,5);dim([129,0,20],[129,92,20]);
 const trapLab=label('坑距 305（貼牆）',[107.5,20,82]);
 label('門（門框 1.5）',[W-3,170,90]);
-label('置物板 59×30 圓角（離地約20）',[170,26,34],null,5);label('淡水入水（示意）',[90,26,6],null,5);label('INAX 遙控',[136,87,42],null,5);
+label('置物板 59×30 圓角（離地約20）',[170,26,34],null,5);label('淡水入水（示意）',[90,26,6],null,5);label('INAX 遙控 234×78',[136,82,32],null,5);
 
 // ---------- state + UI
 const st={mlight:true,mirror:false,lid:false,dims:true,info:false,trap:'400'};
