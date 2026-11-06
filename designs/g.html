@@ -32,7 +32,7 @@ button.on{background:#c9a46a;border-color:#c9a46a;color:#1d1f22;font-weight:600}
 <div id="info">
   <h3>實量（11 月 6 日）</h3>
   <ul>
-    <li>門：闊 77、高約 230，門框離後牆（鏡櫃牆）70</li>
+    <li>門：闊 77、高約 230，門框離後牆（鏡櫃牆）70，另一邊貼住對面牆 → 房深約 148.5</li>
     <li>浴缸玻璃屏：固定、全透明，離後牆 73.5，高 180（由浴缸邊計）</li>
     <li>對住鏡櫃嗰幅牆：全身鏡闊 60＋防水電視（鏡左邊雲石牆 59）</li>
     <li>天花：浴缸上面平天花線形冷氣風口、Panasonic 浴室寶、檢修口、筒燈</li>
@@ -91,7 +91,7 @@ import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import {Reflector} from 'three/addons/objects/Reflector.js';
 import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
 
-const W=200, D=165, H=240, CT=90;
+const W=200, D=148.5, H=240, CT=90;
 const canvas=document.getElementById('c');
 const renderer=new THREE.WebGLRenderer({canvas,antialias:true});
 renderer.setPixelRatio(Math.min(devicePixelRatio,2));
@@ -170,11 +170,11 @@ const ft=floorTex.clone();ft.needsUpdate=true;ft.repeat.set(W/60,D/60);
 wall(W,D,new THREE.Vector3(W/2,0,D/2),0,-Math.PI/2,new THREE.MeshStandardMaterial({map:ft,roughness:.25}));
 wall(W,D,new THREE.Vector3(W/2,H,D/2),0,Math.PI/2,new THREE.MeshStandardMaterial({color:0xf3f1ec,roughness:.9}));
 // downlights + exhaust fan
-[[110,60],[110,130]].forEach(([x,z])=>{const d=new THREE.Mesh(new THREE.CircleGeometry(4,24),M.led);d.rotation.x=Math.PI/2;d.position.set(x,H-0.3,z);add(d);});
+[[110,55],[110,125]].forEach(([x,z])=>{const d=new THREE.Mesh(new THREE.CircleGeometry(4,24),M.led);d.rotation.x=Math.PI/2;d.position.set(x,H-0.3,z);add(d);});
 // flush linear AC grille in the ceiling over the tub
 box(8,0.3,D-10,M.white,10,H-0.15,D/2);for(let i=0;i<40;i++)box(6,0.3,0.6,M.black,10,H-0.35,8+i*3.75);
 box(38,1.2,30,M.white,110,H-0.6,100);for(let i=0;i<5;i++)box(2,0.6,18,M.black,99+i*3.6,H-1.4,98);box(6,0.6,18,M.inner,123,H-1.4,98);
-box(60,0.3,45,M.inner,150,H-0.2,135);
+box(60,0.3,45,M.inner,150,H-0.2,110);
 
 // ---------- shape helpers (x = right, z = toward viewer)
 function rr(P,x0,z0,x1,z1,r){const p=new P();p.moveTo(x0+r,-z0);p.lineTo(x1-r,-z0);p.quadraticCurveTo(x1,-z0,x1,-(z0+r));p.lineTo(x1,-(z1-r));
