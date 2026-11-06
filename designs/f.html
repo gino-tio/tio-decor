@@ -43,7 +43,7 @@ button.on{background:#c9a46a;border-color:#c9a46a;color:#1d1f22;font-weight:600}
   <h3>施工要點</h3>
   <ul>
     <li>淡水入水位置：未有 INAX 安裝圖，3D 位置只係示意</li>
-    <li>蓋鉸位喺後面機身前面（離牆約 23），開蓋頂約 94、離牆約 20，唔會撞到 65×10 窄枱同鏡櫃（估算，要實物確認）</li>
+    <li>蓋鉸位喺後面機身前面（離牆約 23），開蓋頂約 92、離牆約 18，唔會撞到 65×10 窄枱同鏡櫃（估算，要實物確認）</li>
     <li>⚠ 坑距只有 305：估計實際坑距 355–405，座廁後面會有 5–10cm 隙，要砌平台／假牆補，或者改去水</li>
     <li>電源線長 1.2m，插蘇要喺範圍內</li>
     <li>拆舊廁後實量坑距；細過 305 要改去水，大過 305 要補平台</li>
@@ -251,36 +251,44 @@ const doors=[];const DW=(MX1-MX0-2.8)/3,DX0=MX0+1.4;
   const mr=new THREE.Mesh(new THREE.ShapeGeometry(rxy(x0+0.6,MY0+2,x1-0.6,MY1-2,r2),12),M.mirror);mr.position.z=1.41;p.add(mr);
   doors.push({p,dir});});
 
-// ---------- INAX SARAS 100572BW10 (D710 x W385 x H472), low profile, skirted, squared rear function unit, lid covers seat only
-function dShape(hw,zs,ze,z0=0){const s=new THREE.Shape();s.moveTo(-hw,-z0);s.lineTo(hw,-z0);s.lineTo(hw,-zs);
-  s.absellipse(0,-zs,hw,ze-zs,0,Math.PI,true);s.lineTo(-hw,-z0);return s;}
+// ---------- INAX SARAS 100572BW10 (D710 x W385 x H472) — per product photos:
+// plan = straight sides, near-square rear, wide rounded front; side = vertical back, flat top, front face slanting in toward the floor;
+// squared rear function unit flush with the closed lid; blue LED line around the rim; lid covers seat only, hinged at the unit.
 const toilet=new THREE.Group();add(toilet);
 function ext(shape,depth,mat,y,parent,bevel=0){const m=new THREE.Mesh(new THREE.ExtrudeGeometry(shape,{depth,curveSegments:28,bevelEnabled:bevel>0,bevelSize:bevel,bevelThickness:bevel,bevelSegments:4}),mat);
   m.rotation.x=-Math.PI/2;m.position.y=y;parent.add(m);return m;}
 const cer2=M.ceramic.clone();cer2.side=THREE.DoubleSide;
-function tOut(hw,zs,ze,z0,rc){const s=new THREE.Shape();s.moveTo(-hw+rc,-z0);s.lineTo(hw-rc,-z0);s.quadraticCurveTo(hw,-z0,hw,-z0-rc);
-  s.lineTo(hw,-zs);s.absellipse(0,-zs,hw,ze-zs,0,Math.PI,true);s.lineTo(-hw,-z0-rc);s.quadraticCurveTo(-hw,-z0,-hw+rc,-z0);return s;}
-{const P=tOut(19.25,28,71,0,4).getSpacedPoints(180),L=[[0,.88],[6,.9],[14,.94],[24,.975],[32,.995],[38.5,1]];
- const pos=[],idx=[],n=P.length;
- L.forEach(([y,k])=>P.forEach(p=>pos.push(p.x*(0.5+0.5*k),y,-p.y*k)));
- for(let i=0;i<L.length-1;i++)for(let j=0;j<n-1;j++){const a=i*n+j,b=a+1,c=a+n,d=c+1;idx.push(a,c,b,b,c,d);}
+function plan(hw,z0,z1,rb,rf){const s=new THREE.Shape();
+  s.moveTo(0,-z1);                                              // start at front centre so lofted layers line up
+  s.lineTo(hw-rf,-z1);s.absarc(hw-rf,-(z1-rf),rf,-Math.PI/2,0,false);
+  s.lineTo(hw,-(z0+rb));if(rb)s.absarc(hw-rb,-(z0+rb),rb,0,Math.PI/2,false);
+  s.lineTo(-hw+rb,-z0);if(rb)s.absarc(-hw+rb,-(z0+rb),rb,Math.PI/2,Math.PI,false);
+  s.lineTo(-hw,-(z1-rf));s.absarc(-hw+rf,-(z1-rf),rf,Math.PI,Math.PI*1.5,false);s.lineTo(0,-z1);return s;}
+const HW=19.25,RB=3.5,RF=15,TBT=40;
+{const L=[[0,18.4,56.5,12],[1.5,18.9,59.5,13.5],[5,19.15,61.5,14.5],[15,19.25,64.5,15],[28,19.25,67.8,15],[TBT,19.25,70.2,15]];
+ const N=200,pos=[],idx=[];
+ L.forEach(([y,hw,zf,rf])=>plan(hw,0,zf,RB,rf).getSpacedPoints(N).forEach(p=>pos.push(p.x,y,-p.y)));
+ const n=N+1;for(let i=0;i<L.length-1;i++)for(let j=0;j<n-1;j++){const a=i*n+j,b=a+1,c=a+n,d=c+1;idx.push(a,b,c,b,d,c);}
  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setIndex(idx);g.computeVertexNormals();
  toilet.add(new THREE.Mesh(g,cer2));
- const cap=tOut(19.25,28,71,0,4);const h=new THREE.Path();h.absellipse(0,-49,12,17,0,Math.PI*2,true);cap.holes.push(h);
- const cm=new THREE.Mesh(new THREE.ShapeGeometry(cap,24),cer2);cm.rotation.x=-Math.PI/2;cm.position.y=38.5;toilet.add(cm);
- const bw=new THREE.Mesh(new THREE.SphereGeometry(1,32,16,0,Math.PI*2,Math.PI/2,Math.PI/2),cer2);bw.scale.set(12,14,17);bw.position.set(0,38.5,49);toilet.add(bw);}
+ const cap=plan(HW,0,70.2,RB,RF);const h=new THREE.Path();h.absellipse(0,-48,12,16.5,0,Math.PI*2,true);cap.holes.push(h);
+ const cm=new THREE.Mesh(new THREE.ShapeGeometry(cap,32),cer2);cm.rotation.x=-Math.PI/2;cm.position.y=TBT;toilet.add(cm);
+ const bw=new THREE.Mesh(new THREE.SphereGeometry(1,32,16,0,Math.PI*2,Math.PI/2,Math.PI/2),cer2);bw.scale.set(12,15,16.5);bw.position.set(0,TBT,48);toilet.add(bw);}
 const water=new THREE.Mesh(new THREE.CircleGeometry(1,32),new THREE.MeshStandardMaterial({color:0xc9d6da,roughness:.05}));
-water.scale.set(8,11,1);water.rotation.x=-Math.PI/2;water.position.set(0,30,51);toilet.add(water);
-// rear function unit: squared, flat top at 472, LED strip on the front face
-ext(rr(THREE.Shape,-18.2,1,18.2,22,4),8.2,M.ceramic,38.5,toilet,0.5);
-box(10,0.5,0.3,new THREE.MeshStandardMaterial({color:0x9fd8ff,emissive:0x6cc4ff,emissiveIntensity:2}),0,44,22.6,toilet);
-// seat ring + lid (covers seat only), hinged in front of the function unit
-const seatS=dShape(18.6,28,70.5,23);const hole=new THREE.Path();hole.absellipse(0,-49,12,17,0,Math.PI*2,true);seatS.holes.push(hole);
-ext(seatS,1.6,M.ceramic,38.6,toilet,0.6);
-const LID_CLOSED=0,LID_OPEN=-1.62;
-const lid=new THREE.Group();lid.position.set(0,41.2,23.5);toilet.add(lid);
-{const m=new THREE.Mesh(new THREE.ExtrudeGeometry(tOut(17.6,6,46.5,0.5,3),{depth:1.4,curveSegments:36,bevelEnabled:true,bevelSize:1.2,bevelThickness:1,bevelSegments:5}),M.ceramic);
- m.rotation.x=-Math.PI/2;m.position.set(0,1,0);lid.add(m);}
+water.scale.set(7.5,10,1);water.rotation.x=-Math.PI/2;water.position.set(0,30.5,50);toilet.add(water);
+// blue LED line around the rim
+const ledBlue=new THREE.MeshStandardMaterial({color:0xbfe6ff,emissive:0x5ab8ff,emissiveIntensity:2.2});
+{const r=plan(HW+0.05,0,70.25,RB,RF);r.holes.push(plan(HW-0.35,0.4,69.85,RB-0.3,RF-0.4));ext(r,0.35,ledBlue,TBT+0.05,toilet);}
+// rear function unit: squared box, flat top at 47.2, INAX logo light on top
+ext(plan(HW,0,20.5,RB,1.5),7.2-0.6,M.ceramic,TBT,toilet,0.6);
+ext(rr(THREE.Shape,-3,12,3,15,1.5),0.15,ledBlue,47.2,toilet);
+// seat (flat, follows the plan) + lid flush with the unit top
+const seatS=plan(HW-0.4,21,69.8,1,RF-0.4);const sh=new THREE.Path();sh.absellipse(0,-48,11.5,15.5,0,Math.PI*2,true);seatS.holes.push(sh);
+ext(seatS,2.2,M.ceramic,TBT+0.4,toilet,0.4);
+const LID_CLOSED=0,LID_OPEN=-1.6;
+const lid=new THREE.Group();lid.position.set(0,43.2,21);toilet.add(lid);
+{const m=new THREE.Mesh(new THREE.ExtrudeGeometry(plan(HW-0.6,0,49.4,1,RF-0.6),{depth:2.6,curveSegments:32,bevelEnabled:true,bevelSize:0.6,bevelThickness:0.7,bevelSegments:4}),M.ceramic);
+ m.rotation.x=-Math.PI/2;m.position.set(0,0.7,0);lid.add(m);}
 toilet.position.set(107.5,0,0);
 const filler=box(65,15,5,tubTile,107.5,7.5,2.5);filler.visible=false;
 box(2.5,2.5,3,M.chrome,96,17.5,1.5);                 // fresh-water stop valve
@@ -312,7 +320,7 @@ dim([78,MY1+3,15],[198,MY1+3,15]);label('鏡櫃 120×97×13 圓角',[138,MY1+9,1
 label('一體海洋盆 8260',[170,104,32],'600×500 · 盆內570×370 深130 · 無孔');dim([139,BT,51],[139,CT,51]);label('6.3',[135,BT+3,53],null,5);
 const tLab=label('INAX SARAS 100572BW10',[107.5,64,50],'710×385×472');
 const tDim=dim([86,1,0],[86,1,71]);const tLen=label('71 離牆',[78,5,35]);
-label('開蓋頂約 94（估）',[107.5,98,24],null,5);dim([129,0,22],[129,94,22]);
+label('開蓋頂約 92（估）',[107.5,96,22],null,5);dim([129,0,20],[129,92,20]);
 const trapLab=label('坑距 305（貼牆）',[107.5,20,82]);
 label('門（門框 1.5）',[W-3,170,90]);
 label('置物板 59×30 圓角（離地約20）',[170,26,34],null,5);label('淡水入水（示意）',[90,26,6],null,5);label('INAX 遙控',[136,87,42],null,5);
