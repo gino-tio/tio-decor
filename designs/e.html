@@ -44,7 +44,7 @@ button.on{background:#c9a46a;border-color:#c9a46a;color:#1d1f22;font-weight:600}
   <h3>施工要點</h3>
   <ul>
     <li>淡水入水（牆身）：Rc1/2，離地 175±10，偏離中線左 115±10（說明書）</li>
-    <li>符合說明書：鏡櫃底升到離地 1400mm，座廁後牆 1400 以下冇層架／櫃；開蓋頂約 114 唔會撞</li>
+    <li>鏡櫃底可揀離地 140／130／125。140 符合說明書；130、125 低過 1400mm，遙控訊號可能受影響（要同 TOTO 確認），但開蓋頂約 114 都唔會撞。140 時，座廁後牆 1400 以下冇層架／櫃；開蓋頂約 114 唔會撞</li>
     <li>鏡櫃頂離地約 237，要確認天花／假天花高度同抽氣扇位</li>
     <li>電源線長 1.2m，插蘇要喺範圍內</li>
     <li>坑距 305 配 HP102T3、400 配 HP102T4，拆舊廁後實量先買</li>
@@ -72,6 +72,11 @@ button.on{background:#c9a46a;border-color:#c9a46a;color:#1d1f22;font-weight:600}
   <div class="row"><span>去水件</span>
     <button data-trap="400" class="on">400版</button>
     <button data-trap="305">305版</button>
+  </div>
+  <div class="row"><span>鏡櫃底</span>
+    <button data-mh="140" class="on">離地 140</button>
+    <button data-mh="130">130</button>
+    <button data-mh="125">125</button>
   </div>
 </div>
 
@@ -315,7 +320,17 @@ dim([201,93,0],[201,93,50]);label('50',[204,97,25]);
 dim([203,0,51],[203,90,51]);label('離地 90',[208,45,51]);
 dim([144,43,52],[144,90,52]);label('總高 47',[152,55,58]);
 
-dim([78,MY1+3,15],[198,MY1+3,15]);label('鏡櫃 120×97×13 圓角',[138,MY1+9,15]);label('四邊透光燈帶',[MX1+6,MY0+40,16],null,5);dim([76,CT,14],[76,MY0,14]);label('50',[71,CT+25,14]);label('鏡櫃底離地 140（≥1400）',[60,MY0+3,14],null,5);label('鏡櫃頂離地 237',[60,MY1-3,14],null,5);
+const mdims=new THREE.Group();dims.add(mdims);const _dimsRef=dims;
+function mirrorLabels(h){mdims.clear();const y0=h,y1=h+97;
+  const ok=h>=140;
+  const L=(t,p,sub,sz)=>{const sp=label(t,p,sub,sz);_dimsRef.remove(sp);mdims.add(sp);return sp;};
+  const D=(a,b)=>{const l=dim(a,b);_dimsRef.remove(l);mdims.add(l);};
+  D([78,y1+3,15],[198,y1+3,15]);L('鏡櫃 120×97×13 圓角',[138,y1+9,15]);L('四邊透光燈帶',[MX1+6,y0+40,16],null,5);
+  D([76,CT,14],[76,y0,14]);L(String(h-CT),[71,(CT+y0)/2,14]);
+  L('鏡櫃底離地 '+h+(ok?'（≥1400 ✓）':'（<1400 ⚠ 遙控訊號）'),[60,y0+3,14],null,5);L('鏡櫃頂離地 '+(h+97),[60,y1-3,14],null,5);}
+const mBase=halos.map(x=>x.position.y),lBase=mLights.map(x=>x.position.y);
+function setMirrorH(h){const dy=h-140;mc.position.y=dy;halos.forEach((x,i)=>x.position.y=mBase[i]+dy);mLights.forEach((x,i)=>x.position.y=lBase[i]+dy);mirrorLabels(h);}
+mirrorLabels(140);
 label('一體海洋盆 8260',[170,104,32],'600×500 · 盆內570×370 深130 · 無孔');dim([139,BT,51],[139,CT,51]);label('6.3',[135,BT+3,53],null,5);
 const tLab=label('TOTO CES8E810GCN',[107.5,70,50],'692×386×512');
 const tDim=dim([86,1,0],[86,1,70.2]);const tLen=label('70.2 離牆',[78,5,35]);
@@ -333,6 +348,7 @@ function setTop(v){M.top.map=v==='glow'?glowTopTex:greyTopTex;M.top.emissiveMap=
 document.querySelectorAll('[data-tog]').forEach(b=>b.onclick=()=>{const k=b.dataset.tog;st[k]=!st[k];b.classList.toggle('on',st[k]);
   if(k==='dims')dims.visible=st.dims;if(k==='mlight')setMirrorLight(st.mlight);if(k==='info')document.getElementById('info').classList.toggle('show',st.info);});
 const group=(sel,fn)=>document.querySelectorAll(sel).forEach(b=>b.onclick=()=>{document.querySelectorAll(sel).forEach(x=>x.classList.remove('on'));b.classList.add('on');fn(b);});
+group('[data-mh]',b=>setMirrorH(+b.dataset.mh));
 group('[data-top]',b=>setTop(b.dataset.top));
 const trapTexts={'400':'去水件 400版（貼牆）','305':'去水件 305版（後面補5cm平台）'};
 group('[data-trap]',b=>{setTrap(b.dataset.trap);dims.remove(st._tl||trapLab);st._tl=label(trapTexts[b.dataset.trap],[107.5,20,82+toilet.position.z]);});
