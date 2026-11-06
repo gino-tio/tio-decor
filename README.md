@@ -10,6 +10,7 @@
 - `designs/e.html`：方案 E，升高鏡櫃（底離地 140／130／125 可揀）
 - `designs/f.html`：方案 F，INAX SARAS 座廁
 - `designs/g.html`：方案 G，實量尺寸＋INAX SARAS，白色窄枱
+- `designs/h.html`：方案 H，擬真效果圖（同 G 設計，渲染升級）
 - `files/mirror_height_options.xlsx`：鏡櫃高度比較表
 
 3D 用 three.js（jsDelivr CDN），純靜態，用 GitHub Pages 發佈。
