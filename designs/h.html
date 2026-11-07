@@ -43,6 +43,7 @@ button.on{background:#c9a46a;border-color:#c9a46a;color:#1d1f22;font-weight:600}
     <li>一體陶瓷海洋盆 8260：600×500，前邊厚 6.3，盆內 570×370 深 130，後面 12cm 平台，無龍頭孔</li>
     <li>盆櫃 60×50 吊櫃，連盆總高 47，盆面離地 90，左前弧邊，兩格拉櫃</li>
     <li>入牆龍頭，出水嘴要夠長（約 20cm）先過到後面平台</li>
+    <li>盆櫃左邊下面加返雲石托柱（闊 7、深 40，地台到櫃底），唔再完全凌空</li>
     <li>盆櫃下面置物板，近座廁嗰邊圓角，離地約 20、深 30</li>
     <li>INAX SARAS 100572BW10：深 710 × 闊 385 × 高 472，矮身、全包裙邊，後面方形機身，蓋只蓋座圈；S 型去水坑距 305（P 型 120 要另購 CF-G20PG-SET）；沖水 5.0／3.5L；220V；水壓 0.1MPa 以上</li>
     <li>INAX 遙控 234×78mm，嵌喺盆櫃側面向住座廁，離地約 75。安裝圖建議喺側牆、離後牆 550–930，盆櫃只深 50，所以位置偏後，要試吓坐低撳唔撳到</li>
@@ -362,6 +363,9 @@ box(1.2,1.2,6,M.chrome,175.5,101,3.5);
 const floorDrain=new THREE.Mesh(new THREE.CircleGeometry(5,24),M.chrome);floorDrain.rotation.x=-Math.PI/2;floorDrain.position.set(152,0.2,38);add(floorDrain);
 // open shelf under vanity (like the existing one), drain stays reachable in front
 slab(140.5,0,199.5,30,18.75,2.5,M.wood,{rFL:8});
+// marble-clad support pier under the vanity (left side), like the existing one — vanity no longer fully floating
+{const pt=wallTex.clone();pt.needsUpdate=true;pt.repeat.set(0.02,0.012);const pm=new THREE.MeshPhysicalMaterial({map:pt,roughness:.35,clearcoat:.6,clearcoatRoughness:.12});
+ box(7,43,40,pm,144.5,21.5,20,);}
 
 // ---------- door on right wall (1.5cm frame)
 const bathDoor=new THREE.Group();bathDoor.position.set(W-1.5,0,145.5);add(bathDoor);
