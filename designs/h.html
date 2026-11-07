@@ -78,7 +78,8 @@ button.on{background:#c9a46a;border-color:#c9a46a;color:#1d1f22;font-weight:600}
     <button data-view="basin">盆位</button>
   </div>
   <div class="row"><span>開關</span>
-    <button data-tog="mirror">鏡櫃門</button>
+    <button data-tog="mirror">開鏡櫃</button>
+    <button data-tog="door">開廁所門</button>
     <button data-tog="lid">座廁蓋</button>
     <button data-tog="mlight" class="on">鏡櫃燈</button>
     <button data-tog="dims">尺寸</button>
@@ -96,6 +97,10 @@ button.on{background:#c9a46a;border-color:#c9a46a;color:#1d1f22;font-weight:600}
     <button data-mh="125">125</button>
     <button data-mh="130">130</button>
     <button data-mh="140">140</button>
+  </div>
+  <div class="row"><span>鏡櫃門</span>
+    <button data-md="3" class="on">三門</button>
+    <button data-md="2">兩門</button>
   </div>
   <div class="row" id="trapRow"><span>坑距</span>
     <button data-trap="400" class="on">坑距 305（貼牆）</button>
@@ -203,7 +208,14 @@ function wall(w,h,pos,ry,rx=0,mat){const t=wallTex.clone();t.needsUpdate=true;t.
   m.position.copy(pos);m.rotation.set(rx,ry,0);m.receiveShadow=true;return add(m);}
 wall(W,H,new THREE.Vector3(W/2,H/2,0),0);
 wall(D,H,new THREE.Vector3(0,H/2,D/2),Math.PI/2);
-wall(D,H,new THREE.Vector3(W,H/2,D/2),-Math.PI/2);
+// door wall with a real doorway (z 70.75–146.25, h 230) + hallway beyond
+wall(70,H,new THREE.Vector3(W,H/2,35),-Math.PI/2);
+wall(D-146.25,H,new THREE.Vector3(W,H/2,(146.25+D)/2),-Math.PI/2);
+wall(75.5,H-230,new THREE.Vector3(W,(H+230)/2,108.5),-Math.PI/2);
+{const hm=new THREE.MeshStandardMaterial({color:0xd8cfc2,roughness:.8});const hf=new THREE.MeshStandardMaterial({color:0x9b7f62,roughness:.6});
+ const f=new THREE.Mesh(new THREE.PlaneGeometry(120,140),hf);f.rotation.x=-Math.PI/2;f.position.set(W+60,0,108.5);add(f);
+ const bw=new THREE.Mesh(new THREE.PlaneGeometry(140,240),hm);bw.rotation.y=-Math.PI/2;bw.position.set(W+120,120,108.5);add(bw);
+ const hl=new THREE.PointLight(0xffe2bf,0.6,0,0);hl.position.set(W+60,220,108.5);add(hl);}
 wall(W,H,new THREE.Vector3(W/2,H/2,D),Math.PI);
 const ft=floorTex.clone();ft.needsUpdate=true;ft.repeat.set(W/60,D/60);
 wall(W,D,new THREE.Vector3(W/2,0,D/2),0,-Math.PI/2,new THREE.MeshPhysicalMaterial({map:ft,roughness:.22,clearcoat:.8,clearcoatRoughness:.08}));
@@ -288,9 +300,10 @@ const floorDrain=new THREE.Mesh(new THREE.CircleGeometry(5,24),M.chrome);floorDr
 slab(140.5,0,199.5,30,18.75,2.5,M.wood,{rFL:8});
 
 // ---------- door on right wall (1.5cm frame)
-box(3,228,74,new THREE.MeshStandardMaterial({map:doorTex,roughness:.55}),W-1.5,114,108.5);
+const bathDoor=new THREE.Group();bathDoor.position.set(W-1.5,0,145.5);add(bathDoor);
+box(3,228,74,new THREE.MeshStandardMaterial({map:doorTex,roughness:.55}),0,114,-37,bathDoor);
 box(1.5,230,1.5,M.wood,W-0.75,115,70.75);box(1.5,230,1.5,M.wood,W-0.75,115,146.25);box(1.5,1.5,77,M.wood,W-0.75,229.25,108.5);
-box(4,1.5,10,M.chrome,W-4,100,80);
+box(4,1.5,10,M.chrome,-2.5,100,-65.5,bathDoor);box(4,1.5,10,M.chrome,2.5,100,-65.5,bathDoor);
 
 
 // ---------- front wall (opposite the mirror cabinet): full-height mirror 60 wide + wall TV on it
@@ -325,14 +338,19 @@ const halos=[];const _noHalo=true;
   const g=new THREE.Mesh(new THREE.PlaneGeometry(r%Math.PI?h:w,r%Math.PI?w:h),glowMat);g.rotation.z=r;g.position.set(x,y,0.3+halos.length*0.02);add(g);halos.push(g);g.material=g.material.clone();g.material.opacity=0.35;});
 const mLights=[[138,MY1+6,6,0.45,70],[138,MY0-4,12,0.6,60],[MX0-4,MYC,10,0.3,60],[MX1+4,MYC,10,0.3,60]].map(([x,y,z,i,d])=>{const l=new THREE.PointLight(0xffe7c4,i,d,0);l.position.set(x,y,z);l.userData.i=i;add(l);return l;});
 function setMirrorLight(on){lightMat.emissiveIntensity=on?1.5:0;halos.forEach(h=>h.visible=on);mLights.forEach(l=>l.intensity=on?l.userData.i:0);}
-const doors=[];const DW=(MX1-MX0-2.8)/3,DX0=MX0+1.4;
-[[DX0,1,[MR-1.4,0,0,MR-1.4]],[DX0+DW,1,[0,0,0,0]],[MX1-1.4,-1,[0,MR-1.4,MR-1.4,0]]].forEach(([hx,dir,rad])=>{
+const doors=[],doorSets={};
+function buildDoors(n){const set=[];const DW=(MX1-MX0-2.8)/n,DX0=MX0+1.4;
+ const spec=n===3?[[DX0,1,[MR-1.4,0,0,MR-1.4]],[DX0+DW,1,[0,0,0,0]],[MX1-1.4,-1,[0,MR-1.4,MR-1.4,0]]]:[[DX0,1,[MR-1.4,0,0,MR-1.4]],[MX1-1.4,-1,[0,MR-1.4,MR-1.4,0]]];
+ spec.forEach(([hx,dir,rad])=>{
   const p=new THREE.Group();p.position.set(hx,0,MD);mc.add(p);
   const x0=dir>0?0.1:-(DW-0.1),x1=dir>0?DW-0.1:-0.1;
   const fr=new THREE.Mesh(new THREE.ExtrudeGeometry(rxy(x0,MY0+1.4,x1,MY1-1.4,rad),{depth:1.4,bevelEnabled:false,curveSegments:12}),M.black);p.add(fr);
   const r2=rad.map(r=>r?Math.max(r-0.6,0.5):0);
   const mr=new THREE.Mesh(new THREE.ShapeGeometry(rxy(x0+0.6,MY0+2,x1-0.6,MY1-2,r2),12),M.mirror);mr.position.z=1.41;p.add(mr);
-  doors.push({p,dir});});
+  const d={p,dir};doors.push(d);set.push(d);});
+ doorSets[n]=set;}
+buildDoors(3);buildDoors(2);doorSets[2].forEach(d=>d.p.visible=false);
+function setMirrorDoors(n){doorSets[3].forEach(d=>d.p.visible=n===3);doorSets[2].forEach(d=>d.p.visible=n===2);}
 
 // ---------- INAX SARAS 100572BW10 (D710 x W385 x H472) — per product photos:
 // plan = straight sides, near-square rear, wide rounded front; side = vertical back, flat top, front face slanting in toward the floor;
@@ -447,7 +465,7 @@ label('全身鏡 60×228＋電視',[108,190,D-4],null,5);label('門 77×230，�
 label('置物板 59×30 圓角（離地約20）',[170,26,34],null,5);label('淡水入水（示意）',[90,26,6],null,5);label('INAX 遙控 234×78',[136,82,24],null,5);
 
 // ---------- state + UI
-const st={wc:'inax',ledge:true,mh:MY0,mlight:true,mirror:false,lid:false,dims:false,info:false,trap:'400'};
+const st={door:false,wc:'inax',ledge:true,mh:MY0,mlight:true,mirror:false,lid:false,dims:false,info:false,trap:'400'};
 function setWC(v){st.wc=v;const t=v==='toto';toilet.visible=!t;toiletT.visible=t;
   dims.remove(tLab);tLab=t?label('TOTO CES8E810GCN',[107.5,70,50],'692×386×512'):label('INAX SARAS 100572BW10',[107.5,64,50],'710×385×472');
   lidI.forEach(o=>o.visible=!t);lidTl.forEach(o=>o.visible=t);
@@ -465,7 +483,7 @@ document.querySelectorAll('[data-tog]').forEach(b=>b.onclick=()=>{const k=b.data
 const group=(sel,fn)=>document.querySelectorAll(sel).forEach(b=>b.onclick=()=>{document.querySelectorAll(sel).forEach(x=>x.classList.remove('on'));b.classList.add('on');fn(b);});
 group('[data-top]',b=>setTop(b.dataset.top));
 const trapTexts={'400':'坑距 305（貼牆）','305':'坑距 355：後面補 5cm 平台'};
-group('[data-wc]',b=>setWC(b.dataset.wc));group('[data-ledge]',b=>setLedge(b.dataset.ledge==='on'));group('[data-mh]',b=>setMirrorH(+b.dataset.mh));
+group('[data-md]',b=>setMirrorDoors(+b.dataset.md));group('[data-wc]',b=>setWC(b.dataset.wc));group('[data-ledge]',b=>setLedge(b.dataset.ledge==='on'));group('[data-mh]',b=>setMirrorH(+b.dataset.mh));
 group('[data-trap]',b=>{setTrap(b.dataset.trap);dims.remove(st._tl||trapLab);st._tl=label(trapTexts[b.dataset.trap],[107.5,20,82+toilet.position.z]);});
 
 const views={hero:[[175,150,140],[95,95,30]],front:[[118,165,330],[125,95,35]],door:[[165,170,175],[100,80,10]],top:[[115,440,150],[115,0,80]],
@@ -491,7 +509,7 @@ renderer.setAnimationLoop(()=>{
   if(anim){let k=Math.min(1,(performance.now()-anim.s)/700);k=k*k*(3-2*k);
     camera.position.lerpVectors(anim.p0,anim.p,k);controls.target.lerpVectors(anim.t0,anim.t,k);if(k>=1)anim=null;}
   lid.rotation.x=lerp(lid.rotation.x,st.lid?LID_OPEN:LID_CLOSED,0.12);lidT.rotation.x=lerp(lidT.rotation.x,st.lid?LIDT_OPEN:LIDT_CLOSED,0.12);
-  doors.forEach(d=>d.p.rotation.y=lerp(d.p.rotation.y,st.mirror?-d.dir*1.35:0,0.12));
+  bathDoor.rotation.y=lerp(bathDoor.rotation.y,st.door?1.45:0,0.1);doors.forEach(d=>d.p.rotation.y=lerp(d.p.rotation.y,st.mirror?-d.dir*1.35:0,0.12));
   controls.update();if(composer)composer.render();else renderer.render(scene,camera);});
 </script>
 </body>
