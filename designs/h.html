@@ -31,13 +31,18 @@ button.on{background:#c9a46a;border-color:#c9a46a;color:#1d1f22;font-weight:600}
   <p>擬真效果圖：暖光筒燈、軟陰影、環境光遮蔽、燈帶泛光 · 撳「尺寸」睇數</p>
 </div>
 <div id="info">
-  <h3>實量（11 月 6 日）</h3>
+  <h3>已揀（11 月 7 日）</h3>
   <ul>
-    <li>門：闊 77、高約 230，門框離後牆（鏡櫃牆）70，另一邊貼住對面牆 → 房深約 148.5</li>
-    <li>浴缸玻璃屏：固定、全透明，沿浴缸邊（浴缸同座廁之間），由後牆伸出 73.5，高 180（由浴缸邊計）</li>
-    <li>對住鏡櫃嗰幅牆：全身鏡闊 60＋防水電視（鏡左邊雲石牆 59）</li>
-    <li>天花：浴缸上面平天花線形冷氣風口、Panasonic 浴室寶、檢修口、筒燈</li>
-    <li>窄枱改白色，同海洋盆一樣</li>
+    <li>座廁 TOTO CES8E810GCN；陶瓷海洋盆；盆櫃落地（石腳＋櫃底維修口通地台去水）</li>
+    <li>鏡櫃兩門，底離地 125（頂 222，離假天花 8）；窄枱暫時保留</li>
+  </ul>
+  <h3>實量</h3>
+  <ul>
+    <li>房闊 200、房深 148.5、地到假天花 230</li>
+    <li>浴缸高 45、外闊 73（盆內 60，前邊 8、其他邊 5）；玻璃屏企喺前邊，高 180</li>
+    <li>門 77×230，離鏡櫃牆 70，向內開，鉸近全身鏡</li>
+    <li>全身鏡闊 60，離門牆 59；電視 27×18</li>
+    <li>舊座廁背離牆 25（暗水箱），坑距要拆廁先量到</li>
   </ul>
   <h3>設計內容</h3>
   <ul>
@@ -100,7 +105,6 @@ button.on{background:#c9a46a;border-color:#c9a46a;color:#1d1f22;font-weight:600}
     <button data-mh="106" class="on">106</button>
     <button data-mh="125">125</button>
     <button data-mh="130">130</button>
-    <button data-mh="140">140</button>
   </div>
   <div class="row"><span>洗手盆</span>
     <button data-basin="ocean" class="on">陶瓷海洋盆</button>
@@ -167,7 +171,7 @@ import {OutputPass} from 'three/addons/postprocessing/OutputPass.js';
 import {RectAreaLightUniformsLib} from 'three/addons/lights/RectAreaLightUniformsLib.js';
 import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
 
-const W=200, D=148.5, H=240, CT=90;
+const W=200, D=148.5, H=230, CT=90;
 const canvas=document.getElementById('c');
 const renderer=new THREE.WebGLRenderer({canvas,antialias:true});
 renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));
@@ -185,7 +189,7 @@ controls.minDistance=40; controls.maxDistance=700;
 // ---------- lights
 scene.add(new THREE.HemisphereLight(0xfff3e4,0x2a2622,0.2));
 // warm 3000K recessed downlights with soft shadows
-[[110,55],[110,125],[38,75]].forEach(([x,z],i)=>{const l=new THREE.SpotLight(0xffd9a8,9000,0,Math.PI/3.2,0.85,2);l.position.set(x,239,z);l.target.position.set(x,0,z);
+[[110,55],[110,125],[38,75]].forEach(([x,z],i)=>{const l=new THREE.SpotLight(0xffd9a8,9000,0,Math.PI/3.2,0.85,2);l.position.set(x,H-1,z);l.target.position.set(x,0,z);
   l.castShadow=i<2;l.shadow.mapSize.set(1024,1024);l.shadow.bias=-0.0004;l.shadow.radius=6;scene.add(l,l.target);});
 const sun=new THREE.DirectionalLight(0xfff1dc,0.25);
 sun.position.set(170,320,260); sun.target.position.set(110,0,40);
@@ -284,18 +288,18 @@ function slab(x0,z0,x1,z1,y0,t,mat,{rFL=0,holes=[]}={}){
 MK('tub');
 // ---------- bathtub (left)
 const tubTile=new THREE.MeshStandardMaterial({map:(()=>{const t=wallTex.clone();t.needsUpdate=true;t.repeat.set(0.016,0.008);return t;})(),roughness:.3});
-slab(0,0,75,D,0,52,tubTile,{holes:[rr(THREE.Path,7,7,68,D-7,10)]});
-slab(0,0,75,D,52,2,M.top,{holes:[rr(THREE.Path,7,7,68,D-7,10)]});
-const tubIn=new THREE.Mesh(new THREE.BoxGeometry(61,38,D-14),new THREE.MeshStandardMaterial({color:0xf5f5f3,roughness:.15,side:THREE.BackSide}));
-tubIn.position.set(37.5,35,D/2);add(tubIn);
+slab(0,0,73,D,0,43,tubTile,{holes:[rr(THREE.Path,5,5,65,D-5,8)]});
+slab(0,0,73,D,43,2,M.top,{holes:[rr(THREE.Path,5,5,65,D-5,8)]});
+const tubIn=new THREE.Mesh(new THREE.BoxGeometry(60,32,D-10),new THREE.MeshStandardMaterial({color:0xf5f5f3,roughness:.15,side:THREE.BackSide}));
+tubIn.position.set(35,29,D/2);add(tubIn);
 MK('glass');
-const glass=new THREE.Mesh(new THREE.PlaneGeometry(73.5,180),M.glass);glass.rotation.y=Math.PI/2;glass.position.set(74.5,54+90,36.75);add(glass);
-{const em=new THREE.MeshStandardMaterial({color:0xcfe3e0,roughness:.1,transparent:true,opacity:.55});box(0.8,180,0.8,em,74.5,144,73.5);box(0.8,180,0.8,em,74.5,144,0.4);box(0.8,0.8,73.5,em,74.5,233.6,36.75);box(0.8,0.8,73.5,em,74.5,54.4,36.75);}
+const glass=new THREE.Mesh(new THREE.PlaneGeometry(73.5,180),M.glass);glass.rotation.y=Math.PI/2;glass.position.set(69,45+90,36.75);add(glass);
+{const em=new THREE.MeshStandardMaterial({color:0xcfe3e0,roughness:.1,transparent:true,opacity:.55});box(0.8,180,0.8,em,69,135,73.5);box(0.8,180,0.8,em,69,135,0.4);box(0.8,0.8,73.5,em,69,224.6,36.75);box(0.8,0.8,73.5,em,69,45.4,36.75);}
 
 MK('shower');
 // tub mixer + spout + slide rail shower on the back wall (z=0), centred over the tub
-box(14,6,4,M.chrome,40,72,2);box(3,2,6,M.chrome,47,77,5);
-{const sp=new THREE.Mesh(new THREE.CylinderGeometry(1,1,12,16),M.chrome);sp.rotation.x=Math.PI/2;sp.position.set(40,66,7);add(sp);}
+box(14,6,4,M.chrome,35,65,2);box(3,2,6,M.chrome,42,70,5);
+{const sp=new THREE.Mesh(new THREE.CylinderGeometry(1,1,12,16),M.chrome);sp.rotation.x=Math.PI/2;sp.position.set(35,59,7);add(sp);}
 {const rail=new THREE.Mesh(new THREE.CylinderGeometry(1,1,70,16),M.chrome);rail.position.set(40,135,2.5);add(rail);}
 box(4,4,4,M.chrome,40,150,4);
 {const hd=new THREE.Mesh(new THREE.CylinderGeometry(5.5,5.5,2,24),M.chrome);hd.rotation.x=Math.PI/2.6;hd.position.set(40,162,9);add(hd);}
@@ -413,7 +417,8 @@ const floorKit=new THREE.Group();add(floorKit);floorKit.visible=false;
 const lowerA=new THREE.Group(),lowerB=new THREE.Group();floorKit.add(lowerA,lowerB);
 {const pt=wallTex.clone();pt.needsUpdate=true;pt.repeat.set(0.02,0.02);
  const pm=new THREE.MeshPhysicalMaterial({map:pt,roughness:.35,clearcoat:.6,clearcoatRoughness:.12});
- const pl=slab(143,0,198,44,0,10,pm,{rFL:4});floorKit.add(pl);
+ const pl=slab(143,0,198,44,0,10,pm,{rFL:4,holes:[rr(THREE.Path,147,4,194,40,1)]});floorKit.add(pl);
+ box(22,0.5,22,new THREE.MeshStandardMaterial({color:0x9da3a8,metalness:.7,roughness:.35}),156,10.6,31,floorKit);box(6,0.6,1,M.black,156,10.9,40.5,floorKit);
  box(55,0.3,0.4,new THREE.MeshStandardMaterial({color:0x2a2a2a,roughness:.9}),170.5,10.1,44.1,floorKit); // silicone line
  [[lowerA,6,'a'],[lowerB,12,'b']].forEach(([L,R,k])=>{['big','small'].forEach(sz=>{const r=sz==='big'?R:(k==='a'?2.5:4);const g=new THREE.Group();g.userData.sz=sz;L.add(g);
    const mat=k==='a'?M.wood:walnutM,xs=k==='a'?141+r+0.2:(sz==='big'?160.5:145.5);
@@ -431,15 +436,15 @@ box(4,1.5,10,M.chrome,-2.5,100,-65.5,bathDoor);box(4,1.5,10,M.chrome,2.5,100,-65
 
 MK('fullmirror');
 // ---------- front wall (opposite the mirror cabinet): full-height mirror 60 wide + wall TV on it
-{const MW=60,MH=228,MXc=108;
+{const MW=60,MH=226,MXc=111;
  const ref=new Reflector(new THREE.PlaneGeometry(MW,MH),{textureWidth:1024,textureHeight:1024,color:0xb8bcbe});
  ref.rotation.y=Math.PI;ref.position.set(MXc,MH/2+1,D-0.6);add(ref);
  box(MW+1.2,1.2,1,M.chrome,MXc,MH+1.6,D-0.5);box(1,MH,1,M.chrome,MXc-MW/2-0.6,MH/2+1,D-0.5);box(1,MH,1,M.chrome,MXc+MW/2+0.6,MH/2+1,D-0.5);
- MK('tv');const tv=new THREE.Group();tv.position.set(MXc+6,100,D-2);add(tv);
- box(46,30,2.2,M.black,0,0,0,tv);
- const scr=new THREE.Mesh(new THREE.PlaneGeometry(42,24),new THREE.MeshStandardMaterial({color:0x223a5c,emissive:0x2b5f9a,emissiveIntensity:0.9,roughness:.2}));
- scr.rotation.y=Math.PI;scr.position.set(0,2,-1.15);tv.add(scr);
- for(let i=0;i<7;i++)box(1.6,0.6,0.3,M.led,-6+i*2,-12.5,-1.2,tv);}
+ MK('tv');const tv=new THREE.Group();tv.position.set(MXc,115,D-2);add(tv);
+ box(27,18,2,M.black,0,0,0,tv);
+ const scr=new THREE.Mesh(new THREE.PlaneGeometry(25,14.5),new THREE.MeshStandardMaterial({color:0x223a5c,emissive:0x2b5f9a,emissiveIntensity:0.9,roughness:.2}));
+ scr.rotation.y=Math.PI;scr.position.set(0,0.8,-1.05);tv.add(scr);
+ for(let i=0;i<5;i++)box(1,0.4,0.3,M.led,-4+i*2,-7.6,-1.05,tv);}
 
 MK('mcab');
 // ---------- mirror cabinet 120 x 97 x 13, rounded corners, light band on all four sides, 3 mirror doors
@@ -591,7 +596,7 @@ dim([203,0,51],[203,90,51]);label('離地 90',[208,45,51]);
 dim([144,43,52],[144,90,52]);label('總高 47',[152,55,58]);
 const ledgeDims=[dim([75,92,11],[140,92,11]),label('窄枱 65×10',[107.5,97,12])];
 let mirDims=[];function mirrorLabels(h){mirDims.forEach(o=>dims.remove(o));const y0=h,y1=h+97;
-  mirDims=[dim([78,y1+3,15],[198,y1+3,15]),label('鏡櫃 120×97×13 圓角',[138,y1+9,15]),label('四邊透光燈帶',[MX1+6,y0+40,16],null,5),
+  mirDims=[dim([198.5,y1,15],[198.5,H,15]),label('離假天花 '+(H-y1),[192,(y1+H)/2,16],null,5),dim([78,y1+3,15],[198,y1+3,15]),label('鏡櫃 120×97×13 圓角',[138,y1+9,15]),label('四邊透光燈帶',[MX1+6,y0+40,16],null,5),
    dim([76,CT,14],[76,y0,14]),label(String(h-CT),[71,(CT+y0)/2,14]),label('鏡櫃底離地 '+h+'、頂 '+(h+97),[60,y0+3,14],null,5)];}
 mirrorLabels(MY0);
 const _lA0=dims.children.length;label('一體海洋盆 8260',[170,104,32],'600×500 · 盆內570×370 深130 · 無孔');dim([139,BT,51],[139,CT,51]);label('6.3',[135,BT+3,53],null,5);const lblA=dims.children.slice(_lA0);
@@ -600,7 +605,7 @@ let tLab=label('INAX SARAS 100572BW10',[107.5,64,50],'710×385×472');
 const tDim=dim([86,1,0],[86,1,71]);const tLen=label('71 離牆',[78,5,35]);
 const lidI=[label('開蓋頂約 92（估）',[107.5,96,22],null,5),dim([129,0,20],[129,92,20])];const lidTl=[label('開蓋頂約 114（按 CAD 估）',[107.5,118,8],null,5),dim([129,0,6],[129,114,6])];lidTl.forEach(o=>o.visible=false);
 const trapLab=label('坑距 305（貼牆）',[107.5,20,82]);
-label('全身鏡 60×228＋電視',[108,190,D-4],null,5);label('門 77×230，離後牆 70',[W-3,170,108.5]);dim([W-1,240-1,0],[W-1,239,70]);label('70',[W-3,232,35],null,5);
+label('全身鏡 60（離門牆 59）＋電視 27×18',[111,190,D-4],null,5);label('門 77×230，離後牆 70',[W-3,170,108.5]);dim([W-1,240-1,0],[W-1,239,70]);label('70',[W-3,232,35],null,5);
 label('置物板 59×30 圓角（離地約20）',[170,26,34],null,5);label('淡水入水（示意）',[90,26,6],null,5);label('INAX 遙控 234×78',[136,82,24],null,5);
 
 // ---------- state + UI
@@ -609,7 +614,7 @@ function setWC(v){st.wc=v;const t=v==='toto';toilet.visible=!t;toiletT.visible=t
   dims.remove(tLab);tLab=t?label('TOTO CES8E810GCN',[107.5,70,50],'692×386×512'):label('INAX SARAS 100572BW10',[107.5,64,50],'710×385×472');
   lidI.forEach(o=>o.visible=!t);lidTl.forEach(o=>o.visible=t);
   document.getElementById('trapRow').style.display=t?'none':'';setTrap(t?'400':st.trap);}
-function setFloor(on){st.floor=on;floorKit.visible=on;shelfMesh.visible=!on;floorDrain.position.z=on?58:38;floorDrain.position.x=on?160:152;setBasin(st.basin);}
+function setFloor(on){st.floor=on;floorKit.visible=on;shelfMesh.visible=!on;setBasin(st.basin);}
 function setCorner(c){st.corner=c;const big=c==='big';
   if(st.basin==='ocean'){aBig.visible=big;aSmall.visible=!big;}else{aBig.visible=aSmall.visible=false;}
   bBig.visible=big;bSmall.visible=!big;[lowerA,lowerB].forEach(L=>L.children.forEach(g=>{if(g.userData.sz)g.visible=(g.userData.sz==='big')===big;}));}
@@ -644,6 +649,8 @@ function go(v,instant){let [p,t]=views[v];p=new THREE.Vector3(...p);t=new THREE.
   if(instant){camera.position.copy(p);controls.target.copy(t);return;}
   anim={p0:camera.position.clone(),t0:controls.target.clone(),p,t,s:performance.now()};}
 group('[data-view]',b=>go(b.dataset.view));
+// chosen spec (11/7): TOTO, ocean basin, floor-standing, 2-door mirror cabinet at 125, ledge kept
+['[data-wc=toto]','[data-basin=ocean]','[data-floor=on]','[data-md="2"]','[data-mh="125"]','[data-ledge=on]'].forEach(q=>{const b=document.querySelector(q);if(b)b.click();});
 
 let composer=null;
 try{composer=new EffectComposer(renderer);composer.addPass(new RenderPass(scene,camera));
