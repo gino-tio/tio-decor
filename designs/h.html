@@ -80,6 +80,7 @@ button.on{background:#c9a46a;border-color:#c9a46a;color:#1d1f22;font-weight:600}
   <div class="row"><span>開關</span>
     <button data-tog="mirror">開鏡櫃</button>
     <button data-tog="door">開廁所門</button>
+    <button data-tog="cab">開盆櫃</button>
     <button data-tog="lid">座廁蓋</button>
     <button data-tog="mlight" class="on">鏡櫃燈</button>
     <button data-tog="dims">尺寸</button>
@@ -105,6 +106,10 @@ button.on{background:#c9a46a;border-color:#c9a46a;color:#1d1f22;font-weight:600}
     <button data-stone="muse">繆斯白</button>
     <button data-stone="fish">魚肚白</button>
     <button data-stone="green">普拉達綠</button>
+  </div>
+  <div class="row"><span>盆櫃木色</span>
+    <button data-wood="own" class="on">原木色</button>
+    <button data-wood="door">同門色</button>
   </div>
   <div class="row"><span>鏡櫃門</span>
     <button data-md="3" class="on">三門</button>
@@ -267,6 +272,25 @@ const fl=new THREE.Mesh(new THREE.PlaneGeometry(125,16),new THREE.MeshStandardMa
 fl.position.set(137.5,98,0.3);add(fl);
 const ledge=slab(75,0,140,10,CT-3,3,M.ceramic,{rFL:4});
 
+
+// ---------- openable drawers with interior organisers
+const drawers=[];
+const carcassM=new THREE.MeshStandardMaterial({color:0xece8e1,roughness:.7});
+function makeDrawer(parent,x0,x1,y0,y1,zf,depth,frontMat,opt={}){
+  const g=new THREE.Group();g.position.z=0;parent.add(g);const w=x1-x0,h=y1-y0,cx=(x0+x1)/2,ih=Math.max(h-5,6);
+  box(w,h,1.4,frontMat,cx,(y0+y1)/2,zf-0.7,g);
+  if(opt.handle!==false)box(Math.min(38,w-6),1.2,1.4,M.black,cx,y1-2.2,zf+0.5,g);
+  const zb=zf-1.4-depth, zc=zf-1.4-depth/2;
+  box(1.2,ih,depth,carcassM,x0+1.4,y0+1.5+ih/2,zc,g);box(1.2,ih,depth,carcassM,x1-1.4,y0+1.5+ih/2,zc,g);
+  box(w-2.8,1,depth,carcassM,cx,y0+1.5,zc,g);
+  if(opt.uCut){const cw=opt.uCut;box((w-cw)/2-1.4,ih,1.2,carcassM,x0+1.4+((w-cw)/2-1.4)/2,y0+1.5+ih/2,zb+0.6,g);box((w-cw)/2-1.4,ih,1.2,carcassM,x1-1.4-((w-cw)/2-1.4)/2,y0+1.5+ih/2,zb+0.6,g);
+    box(1.2,ih,depth*0.45,carcassM,cx-cw/2,y0+1.5+ih/2,zb+depth*0.225,g);box(1.2,ih,depth*0.45,carcassM,cx+cw/2,y0+1.5+ih/2,zb+depth*0.225,g);
+    box(cw,ih,1.2,carcassM,cx,y0+1.5+ih/2,zb+depth*0.45,g);}
+  else box(w-2.8,ih,1.2,carcassM,cx,y0+1.5+ih/2,zb+0.6,g);
+  (opt.div||[]).forEach(fx=>box(0.8,ih*0.7,depth*(opt.uCut?0.5:0.95),carcassM,x0+w*fx,y0+1.5+ih*0.35,zf-1.4-depth*(opt.uCut?0.25:0.475),g));
+  if(opt.tray){box(w*0.3,0.8,depth*0.35,carcassM,x0+w*0.2,y0+1.5+ih*0.55,zf-1.4-depth*0.2,g);}
+  drawers.push({g,travel:opt.travel||depth*0.85});return g;}
+const woodTexOwn=M.wood.map,doorWoodT=tex(512,512,(g,w,h)=>wood(g,w,h,'#a98762','#6d4e30'),0.02,0.02);
 const _vA0=scene.children.length;
 // ---------- vanity: one-piece ceramic "ocean basin" 8260 (600 x 500, front lip 63, bowl 570 x 370 x 130, back deck 120, no tap hole)
 const BT=CT-6.3; // basin bottom edge / cabinet top
@@ -281,10 +305,12 @@ const bowl=new THREE.Mesh(new THREE.BoxGeometry(56,13,35.7),new THREE.MeshStanda
 bowl.position.set(170,CT-6.5+0.01,30.15);add(bowl);
 const drain=new THREE.Mesh(new THREE.CircleGeometry(2.2,24),M.chrome);drain.rotation.x=-Math.PI/2;drain.position.set(170,CT-12.9,32);add(drain);
 box(4,0.8,0.3,M.black,170,CT-3,12.3);
-box(52,0.5,0.6,M.black,173.6,63.5,49.1);
 box(0.5,40,0.6,M.black,147.2,63.3,49.1);
-box(38,1.3,1.6,M.black,175,BT-1.3,49.8);box(38,1.3,1.6,M.black,175,61.6,49.8);
+
 box(56,0.5,1,M.led,170,42.7,45);
+{const tm=new THREE.MeshStandardMaterial({color:0xbfc2c4,metalness:.8,roughness:.3});const t1=new THREE.Mesh(new THREE.CylinderGeometry(1.6,1.6,10,16),tm);t1.position.set(170,72,32);add(t1);const t2=new THREE.Mesh(new THREE.CylinderGeometry(1.6,1.6,31,16),tm);t2.rotation.x=Math.PI/2;t2.position.set(170,67,16.5);add(t2);}
+makeDrawer(scene,147.6,199.4,63.8,BT-0.3,49.6,34,M.wood,{uCut:16,div:[0.18,0.82]});
+makeDrawer(scene,147.6,199.4,43.3,63.4,49.6,34,M.wood,{div:[0.35,0.65],tray:true});
 const vanityA=scene.children.slice(_vA0);
 // ---------- vanity option B: sintered-stone slab basin (GAODUO style) sized to our 60x50, top 90, total 47
 // 18cm stone slab with a 40cm sloped trough + 29cm walnut fluted drawers below
@@ -311,7 +337,8 @@ const walnutM=new THREE.MeshPhysicalMaterial({map:walnutT,roughness:.45,clearcoa
  const cb=slab(141,0,200,49.6,43,SY-43-0.6,walnutM,{rFL:R});vanityB.add(cb);
  box(58.8,0.6,47,M.black,170.5,SY-0.3,24,vanityB);
  box(0.5,SY-43-1.6,0.6,M.black,160.5,43+(SY-43)/2,49.9,vanityB);
- box(39,0.5,0.6,M.black,180.2,SY-1.6,49.9,vanityB);
+ {const tm=new THREE.MeshStandardMaterial({color:0xbfc2c4,metalness:.8,roughness:.3});const t1=new THREE.Mesh(new THREE.CylinderGeometry(1.6,1.6,8,16),tm);t1.position.set(170.5,68,15);vanityB.add(t1);}
+ makeDrawer(vanityB,161,199.4,43.4,SY-1.2,50.2,36,walnutM,{uCut:14,div:[0.2,0.8],handle:false});
 }
 const under=new THREE.PointLight(0xffd9a0,0.5,90,0);under.position.set(170,40,40);add(under);
 box(6,10,1.2,M.chrome,170,99,0.8);
@@ -503,7 +530,7 @@ label('全身鏡 60×228＋電視',[108,190,D-4],null,5);label('門 77×230，�
 label('置物板 59×30 圓角（離地約20）',[170,26,34],null,5);label('淡水入水（示意）',[90,26,6],null,5);label('INAX 遙控 234×78',[136,82,24],null,5);
 
 // ---------- state + UI
-const st={basin:'ocean',door:false,wc:'inax',ledge:true,mh:MY0,mlight:true,mirror:false,lid:false,dims:false,info:false,trap:'400'};
+const st={cab:false,basin:'ocean',door:false,wc:'inax',ledge:true,mh:MY0,mlight:true,mirror:false,lid:false,dims:false,info:false,trap:'400'};
 function setWC(v){st.wc=v;const t=v==='toto';toilet.visible=!t;toiletT.visible=t;
   dims.remove(tLab);tLab=t?label('TOTO CES8E810GCN',[107.5,70,50],'692×386×512'):label('INAX SARAS 100572BW10',[107.5,64,50],'710×385×472');
   lidI.forEach(o=>o.visible=!t);lidTl.forEach(o=>o.visible=t);
@@ -511,6 +538,7 @@ function setWC(v){st.wc=v;const t=v==='toto';toilet.visible=!t;toiletT.visible=t
 function setBasin(v){st.basin=v;const b=v!=='ocean';vanityA.forEach(o=>o.visible=!b);vanityB.visible=b;lblA.forEach(o=>o.visible=!b);lblB.forEach(o=>o.visible=b);
   document.querySelectorAll('[data-stone]').forEach(x=>x.style.display=b?'':'none');}
 function setStone(k){stoneM.map=stoneTex[k];stoneM.needsUpdate=true;vanityB.userData.trough.material.map=stoneTex[k];vanityB.userData.trough.material.needsUpdate=true;}
+function setCabWood(v){M.wood.map=v==='door'?doorWoodT:woodTexOwn;walnutM.map=v==='door'?doorWoodT:walnutT;M.wood.needsUpdate=walnutM.needsUpdate=true;}
 function setLedge(on){st.ledge=on;ledge.visible=on;ledgeDims.forEach(o=>o.visible=on);}
 const mcBase={halo:halos.map(x=>x.position.y),pl:mLights.map(x=>x.position.y),ra:raLights.map(x=>x.position.y)};
 function setMirrorH(h){st.mh=h;const dy=h-MY0;mc.position.y=dy;halos.forEach((x,i)=>x.position.y=mcBase.halo[i]+dy);
@@ -524,7 +552,7 @@ document.querySelectorAll('[data-tog]').forEach(b=>b.onclick=()=>{const k=b.data
 const group=(sel,fn)=>document.querySelectorAll(sel).forEach(b=>b.onclick=()=>{document.querySelectorAll(sel).forEach(x=>x.classList.remove('on'));b.classList.add('on');fn(b);});
 group('[data-top]',b=>setTop(b.dataset.top));
 const trapTexts={'400':'坑距 305（貼牆）','305':'坑距 355：後面補 5cm 平台'};
-group('[data-basin]',b=>setBasin(b.dataset.basin));group('[data-stone]',b=>setStone(b.dataset.stone));setBasin('ocean');group('[data-md]',b=>setMirrorDoors(+b.dataset.md));group('[data-wc]',b=>setWC(b.dataset.wc));group('[data-ledge]',b=>setLedge(b.dataset.ledge==='on'));group('[data-mh]',b=>setMirrorH(+b.dataset.mh));
+group('[data-wood]',b=>setCabWood(b.dataset.wood));group('[data-basin]',b=>setBasin(b.dataset.basin));group('[data-stone]',b=>setStone(b.dataset.stone));setBasin('ocean');group('[data-md]',b=>setMirrorDoors(+b.dataset.md));group('[data-wc]',b=>setWC(b.dataset.wc));group('[data-ledge]',b=>setLedge(b.dataset.ledge==='on'));group('[data-mh]',b=>setMirrorH(+b.dataset.mh));
 group('[data-trap]',b=>{setTrap(b.dataset.trap);dims.remove(st._tl||trapLab);st._tl=label(trapTexts[b.dataset.trap],[107.5,20,82+toilet.position.z]);});
 
 const views={hero:[[175,150,140],[95,95,30]],front:[[118,165,330],[125,95,35]],door:[[165,170,175],[100,80,10]],top:[[115,440,150],[115,0,80]],
@@ -550,6 +578,7 @@ renderer.setAnimationLoop(()=>{
   if(anim){let k=Math.min(1,(performance.now()-anim.s)/700);k=k*k*(3-2*k);
     camera.position.lerpVectors(anim.p0,anim.p,k);controls.target.lerpVectors(anim.t0,anim.t,k);if(k>=1)anim=null;}
   lid.rotation.x=lerp(lid.rotation.x,st.lid?LID_OPEN:LID_CLOSED,0.12);lidT.rotation.x=lerp(lidT.rotation.x,st.lid?LIDT_OPEN:LIDT_CLOSED,0.12);
+  drawers.forEach((d,i)=>{d.g.position.z=lerp(d.g.position.z,st.cab?d.travel*(i%2?0.75:1):0,0.1);});
   bathDoor.rotation.y=lerp(bathDoor.rotation.y,st.door?1.45:0,0.1);doors.forEach(d=>d.p.rotation.y=lerp(d.p.rotation.y,st.mirror?-d.dir*1.35:0,0.12));
   controls.update();if(composer)composer.render();else renderer.render(scene,camera);});
 </script>
