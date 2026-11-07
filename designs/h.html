@@ -101,9 +101,10 @@ button.on{background:#c9a46a;border-color:#c9a46a;color:#1d1f22;font-weight:600}
   <div class="row"><span>洗手盆</span>
     <button data-basin="ocean" class="on">陶瓷海洋盆</button>
     <button data-basin="slab">岩板一體盆</button>
-    <button data-stone="grey" class="on">維克淺灰</button>
-    <button data-stone="cream">奶油白</button>
-    <button data-stone="jade">帝王玉</button>
+    <button data-stone="grey" class="on">原色灰</button>
+    <button data-stone="muse">繆斯白</button>
+    <button data-stone="fish">魚肚白</button>
+    <button data-stone="green">普拉達綠</button>
   </div>
   <div class="row"><span>鏡櫃門</span>
     <button data-md="3" class="on">三門</button>
@@ -295,25 +296,22 @@ function stoneTexture(base,speck,vein){return tex(1024,1024,(g,w,h)=>{g.fillStyl
   if(vein){g.filter='blur(1px)';g.strokeStyle=vein;for(let i=0;i<14;i++){let x=rnd()*w,y=rnd()*h,a=rnd()*6;g.globalAlpha=.35;g.lineWidth=0.8+rnd()*1.5;g.beginPath();g.moveTo(x,y);
     for(let k=0;k<80;k++){a+=(rnd()-.5)*.5;x+=Math.cos(a)*6;y+=Math.sin(a)*6;g.lineTo(x,y);}g.stroke();}g.filter='none';}
   g.globalAlpha=1;},0.02,0.02);}
-stoneTex.grey=stoneTexture('#8f8a84','#4d4844');stoneTex.cream=stoneTexture('#ece5d8','#b8ad9c');stoneTex.jade=stoneTexture('#cbbda6','#8d7f6b','#f6efe2');
+stoneTex.grey=stoneTexture('#9a948c','#5a544e');stoneTex.muse=stoneTexture('#e3e1dd','#a9a6a1','#9c9893');stoneTex.fish=stoneTexture('#f3f2ef','#d3d0cb','#8d8a86');stoneTex.green=stoneTexture('#22302a','#0f1713','#d9e2dc');
 const stoneM=new THREE.MeshPhysicalMaterial({map:stoneTex.grey,roughness:.55,clearcoat:.15,clearcoatRoughness:.5});
-const walnutT=tex(512,512,(g,w,h)=>{wood(g,w,h,'#4a3426','#22160f');for(let x=0;x<w;x+=12){g.fillStyle='rgba(0,0,0,.35)';g.fillRect(x,0,3,h);g.fillStyle='rgba(255,220,180,.06)';g.fillRect(x+3,0,2,h);}},0.03,0.03);
+const walnutT=tex(512,512,(g,w,h)=>wood(g,w,h,'#8a5a3a','#4e2f1c'),0.025,0.025);
 const walnutM=new THREE.MeshPhysicalMaterial({map:walnutT,roughness:.45,clearcoat:.3,clearcoatRoughness:.35});
-{const SY=72,ST=18;
- // slab with trough opening x 150.5-190.5, z 9-41
- const sh=new THREE.Shape();sh.moveTo(141,0);sh.lineTo(200,0);sh.lineTo(200,-50);sh.lineTo(141,-50);sh.lineTo(141,0);
- sh.holes.push(rr(THREE.Path,150.5,9,190.5,41,0.8));
- const m=new THREE.Mesh(new THREE.ExtrudeGeometry(sh,{depth:ST,bevelEnabled:true,bevelSize:0.25,bevelThickness:0.25,bevelSegments:2}),stoneM);
- m.rotation.x=-Math.PI/2;m.position.y=SY;vanityB.add(m);
- // trough: walls + floor sloping down to a hidden slot at the back
- const tw=new THREE.Mesh(new THREE.BoxGeometry(40,12,32),new THREE.MeshPhysicalMaterial({map:stoneTex.grey,roughness:.6,side:THREE.BackSide}));
- tw.position.set(170.5,CT-6,25);vanityB.add(tw);vanityB.userData.trough=tw;
- const fl=new THREE.Mesh(new THREE.PlaneGeometry(40,31.5),stoneM);fl.rotation.x=-Math.PI/2+0.2;fl.position.set(170.5,CT-8.5,25.5);vanityB.add(fl);
- box(38,0.4,1.4,M.black,170.5,CT-11.5,10.2,vanityB);
- // drawer box (recessed 2cm under the slab) + two fluted drawer fronts with a top finger groove
- box(59,29,46,walnutM,170.5,43+14.5,23,vanityB);
- box(29.2,26.5,1.6,walnutM,155.9,43+13.25,46.8,vanityB);box(29.2,26.5,1.6,walnutM,185.1,43+13.25,46.8,vanityB);
- box(58.6,2,0.5,M.black,170.5,43+27.6,47.2,vanityB);box(0.4,26.5,0.6,M.black,170.5,43+13.25,47.4,vanityB);
+{const SY=72,ST=18,R=12;
+ // GAODUO designer basin: 18cm stone slab + walnut cabinet, big rounded corner on the toilet side (front-left)
+ const m=slab(141,0,200,50,SY,ST,stoneM,{rFL:R,holes:[rr(THREE.Path,147,13,194,44,1)]});vanityB.add(m);
+ const tw=new THREE.Mesh(new THREE.BoxGeometry(47,12,31),new THREE.MeshPhysicalMaterial({map:stoneTex.grey,roughness:.6,side:THREE.BackSide}));
+ tw.position.set(170.5,CT-6,28.5);vanityB.add(tw);vanityB.userData.trough=tw;
+ const fl=new THREE.Mesh(new THREE.PlaneGeometry(47,30.5),stoneM);fl.rotation.x=-Math.PI/2+0.2;fl.position.set(170.5,CT-8.5,29);vanityB.add(fl);
+ box(44,0.4,1.4,M.black,170.5,CT-11.5,13.8,vanityB);
+ // cabinet: same rounded corner, flush with the slab; fixed curved panel on the left, one large drawer on the right
+ const cb=slab(141,0,200,49.6,43,SY-43-0.6,walnutM,{rFL:R});vanityB.add(cb);
+ box(58.8,0.6,47,M.black,170.5,SY-0.3,24,vanityB);
+ box(0.5,SY-43-1.6,0.6,M.black,160.5,43+(SY-43)/2,49.9,vanityB);
+ box(39,0.5,0.6,M.black,180.2,SY-1.6,49.9,vanityB);
 }
 const under=new THREE.PointLight(0xffd9a0,0.5,90,0);under.position.set(170,40,40);add(under);
 box(6,10,1.2,M.chrome,170,99,0.8);
@@ -496,7 +494,7 @@ let mirDims=[];function mirrorLabels(h){mirDims.forEach(o=>dims.remove(o));const
    dim([76,CT,14],[76,y0,14]),label(String(h-CT),[71,(CT+y0)/2,14]),label('鏡櫃底離地 '+h+'、頂 '+(h+97),[60,y0+3,14],null,5)];}
 mirrorLabels(MY0);
 const _lA0=dims.children.length;label('一體海洋盆 8260',[170,104,32],'600×500 · 盆內570×370 深130 · 無孔');dim([139,BT,51],[139,CT,51]);label('6.3',[135,BT+3,53],null,5);const lblA=dims.children.slice(_lA0);
-const _lB0=dims.children.length;label('岩板一體盆',[170,104,32],'600×500 · 盆 400 闊 · 岩板厚 180 · 櫃 290');dim([139,72,51],[139,CT,51]);label('18',[135,80,53],null,5);const lblB=dims.children.slice(_lB0);lblB.forEach(o=>o.visible=false);
+const _lB0=dims.children.length;label('岩板一體盆（設計師款）',[170,104,32],'600×500 · 岩板厚 180 · 木櫃 290 · 左前大圓角');dim([139,72,51],[139,CT,51]);label('18',[135,80,53],null,5);const lblB=dims.children.slice(_lB0);lblB.forEach(o=>o.visible=false);
 let tLab=label('INAX SARAS 100572BW10',[107.5,64,50],'710×385×472');
 const tDim=dim([86,1,0],[86,1,71]);const tLen=label('71 離牆',[78,5,35]);
 const lidI=[label('開蓋頂約 92（估）',[107.5,96,22],null,5),dim([129,0,20],[129,92,20])];const lidTl=[label('開蓋頂約 114（按 CAD 估）',[107.5,118,8],null,5),dim([129,0,6],[129,114,6])];lidTl.forEach(o=>o.visible=false);
