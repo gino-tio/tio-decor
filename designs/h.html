@@ -88,11 +88,17 @@ button.on{background:#c9a46a;border-color:#c9a46a;color:#1d1f22;font-weight:600}
   <div class="row"><span>開關</span>
     <button data-tog="mirror">開鏡櫃</button>
     <button data-tog="door">開廁所門</button>
-    <button data-tog="cab">開盆櫃</button>
+    <button data-tog="cab">全開盆櫃</button>
     <button data-tog="lid">座廁蓋</button>
     <button data-tog="mlight" class="on">鏡櫃燈</button>
     <button data-tog="dims">尺寸</button>
     <button data-tog="info">施工要點</button>
+  </div>
+  <div class="row"><span>櫃桶</span>
+    <button data-dr="top">開上格</button>
+    <button data-dr="mid">開中格</button>
+    <button data-dr="bot">開下格</button>
+    <button data-dr="out">拆晒櫃桶（睇去水）</button>
   </div>
   <div class="row"><span>座廁</span>
     <button data-wc="inax" class="on">INAX SARAS</button>
@@ -316,6 +322,38 @@ const ledge=slab(75,0,140,10,CT-3,3,M.ceramic,{rFL:4});
 // ---------- openable drawers with interior organisers
 const drawers=[];
 const carcassM=new THREE.MeshStandardMaterial({color:0xece8e1,roughness:.7});
+// ---------- everyday items inside drawers
+const IM={w:new THREE.MeshStandardMaterial({color:0xf4f4f2,roughness:.4}),bl:new THREE.MeshStandardMaterial({color:0x3f7fd0,roughness:.35}),
+ pk:new THREE.MeshStandardMaterial({color:0xe58fa8,roughness:.35}),gr:new THREE.MeshStandardMaterial({color:0x59b36b,roughness:.4}),
+ bk:new THREE.MeshStandardMaterial({color:0x2a2a2d,roughness:.35,metalness:.2}),te:new THREE.MeshStandardMaterial({color:0x2fa3a0,roughness:.3}),
+ yl:new THREE.MeshStandardMaterial({color:0xf2c94c,roughness:.4}),rd:new THREE.MeshStandardMaterial({color:0xd64545,roughness:.35}),
+ cr:new THREE.MeshStandardMaterial({color:0xe9dcc8,roughness:.6}),pa:new THREE.MeshStandardMaterial({color:0xfafafa,roughness:.9}),
+ ch:new THREE.MeshStandardMaterial({color:0xcfd2d4,metalness:.8,roughness:.25})};
+function cyl(r,h,mat,x,y,z,g,axis){const m=new THREE.Mesh(new THREE.CylinderGeometry(r,r,h,20),mat);m.position.set(x,y,z);if(axis==='z')m.rotation.x=Math.PI/2;if(axis==='x')m.rotation.z=Math.PI/2;g.add(m);return m;}
+function fillItems(g,lv,xl,iw,fy,zb,zF,o){const X=f=>xl+iw*f,Z=f=>zb+(zF-zb)*f;
+ if(lv==='top'){ // toothbrushes, toothpaste, floss, razor (side compartments beside the U-cut)
+  [[0.06,IM.bl],[0.13,IM.pk],[0.2,IM.gr]].forEach(([f,m])=>{cyl(0.55,15,m,X(f),fy+0.6,Z(0.45),g,'z');box(1,1.2,2.4,IM.w,X(f),fy+1,Z(0.45)-8,g);});
+  box(4,2.2,15,IM.rd,X(0.3)-1,fy+1.1,Z(0.5),g);cyl(1.2,2,IM.w,X(0.3)-1,fy+1.1,Z(0.5)+8.3,g,'z');
+  box(4,1.8,4,IM.te,X(0.82),fy+0.9,Z(0.25),g);box(1.6,1.4,13,IM.bk,X(0.92),fy+0.7,Z(0.55),g);box(4.5,2,1.2,IM.ch,X(0.92),fy+1,Z(0.55)-7,g);
+  cyl(1,6,IM.yl,X(0.8),fy+1,Z(0.75),g,'z');
+  if(o.uTo)cyl(1.6,3,IM.cr,X(0.5),fy+1.5,o.uTo+5,g);}
+ else if(lv==='mid'){ // skincare bottles, jar, cotton pads, hair brush
+  [[0.12,0.25,IM.w,10],[0.2,0.25,IM.te,9],[0.12,0.7,IM.pk,8]].forEach(([fx,fz,m,h])=>{cyl(2.4,h,m,X(fx),fy+h/2,Z(fz),g);cyl(1.2,1.5,IM.bk,X(fx),fy+h+0.75,Z(fz),g);});
+  cyl(3.6,6,IM.cr,X(0.5),fy+3,Z(0.25),g);cyl(3.7,1.4,IM.ch,X(0.5),fy+6.7,Z(0.25),g);
+  box(7,4,7,IM.pa,X(0.5),fy+2,Z(0.75),g);
+  box(2.4,2,14,IM.bk,X(0.83),fy+1,Z(0.6),g);box(6,3,8,IM.bk,X(0.83),fy+1.5,Z(0.22),g);
+  cyl(1.4,9,IM.gr,X(0.88),fy+4.5,Z(0.85),g);}
+ else if(lv==='bot'){ // hair dryer, spray bottles, toilet rolls, cleaner
+  const hx=X(0.27),hy=fy+4.2;cyl(4,15,IM.bk,hx,hy,Z(0.3),g,'x');cyl(2.6,6,IM.bk,hx+10,hy,Z(0.3),g,'x');box(3.2,3.4,12,IM.bk,hx-2,fy+1.8,Z(0.3)+8,g);
+  const cord=new THREE.Mesh(new THREE.TorusGeometry(4.5,0.35,8,24),IM.bk);cord.rotation.x=Math.PI/2;cord.position.set(X(0.25),fy+0.5,Z(0.78));g.add(cord);
+  [[0.62,0.25,IM.te],[0.85,0.25,IM.yl]].forEach(([fx,fz,m])=>{cyl(3.2,14,m,X(fx),fy+7,Z(fz),g);box(2.6,4,5,IM.w,X(fx),fy+16,Z(fz)+1,g);});
+  [0.62,0.85].forEach(fx=>{cyl(5.3,10,IM.pa,X(fx),fy+5,Z(0.72),g);cyl(1.8,10.05,IM.cr,X(fx),fy+5,Z(0.72),g);});}}
+// hollow carcass: fixed curved side panel + right side + back + bottom, open front for the drawers
+function carcass(g,R,xs,y0,y1,zf,mat){const h=y1-y0;
+ g.add(slab(141,0,xs,zf,y0,h,mat,{rFL:R}));
+ box(1.6,h,zf,mat,199.2,y0+h/2,zf/2,g);
+ box(198.4-xs,h,1.6,carcassM,(xs+198.4)/2,y0+h/2,0.8,g);
+ box(198.4-xs,1.4,zf-1.6,carcassM,(xs+198.4)/2,y0+0.7,(zf+1.6)/2,g);}
 // real drawer: front panel + 1.2cm-wall box (by0..by0+bh), optional U-cut from the back up to z=uTo to clear the trap
 function makeDrawer(parent,x0,x1,y0,y1,zf,depth,frontMat,opt={}){
   const g=new THREE.Group();parent.add(g);const w=x1-x0,h=y1-y0,cx=(x0+x1)/2;
@@ -333,7 +371,8 @@ function makeDrawer(parent,x0,x1,y0,y1,zf,depth,frontMat,opt={}){
   const z0=opt.uCut?opt.uTo+T:zb+T,dl=zF-z0;
   (opt.div||[]).forEach(fx=>box(0.8,bh*0.75,dl,carcassM,xl+iw*fx,by0+T+bh*0.375,(zF+z0)/2,g));
   if(opt.cross)box(iw,bh*0.75,0.8,carcassM,cx,by0+T+bh*0.375,z0+dl*opt.cross,g);
-  drawers.push({g,travel:opt.travel||Math.min(30,depth*0.75)});return g;}
+  if(opt.level)fillItems(g,opt.level,xl+T,iw-2*T,by0+T,zb+T,zF,opt);
+  drawers.push({g,level:opt.level,travel:opt.travel||Math.min(30,depth*0.75)});return g;}
 const woodTexOwn=M.wood.map,doorWoodT=tex(512,512,(g,w,h)=>wood(g,w,h,'#a98762','#6d4e30'),0.02,0.02);
 MK('cabinet');
 const _vA0=scene.children.length;
@@ -346,10 +385,10 @@ PART='basin';{const s=new THREE.Shape(),r=6;s.moveTo(140,0);s.lineTo(200,0);s.li
  m.rotation.x=-Math.PI/2;m.position.y=BT;add(m);}PART=null;
 const aBig=new THREE.Group(),aSmall=new THREE.Group();add(aBig);add(aSmall);
 function buildACab(g,R){const xs=141+R+0.2;const h=new THREE.Path();h.moveTo(141.8,-12);h.lineTo(199.2,-12);h.lineTo(199.2,-48.2);h.lineTo(141+R+1,-48.2);h.absarc(141+R+1,-(48.2-R+0.8),R-0.8,-Math.PI/2,-Math.PI,true);h.lineTo(141.8,-12);
- g.add(slab(141,0,200,49,43,BT-43,M.wood,{rFL:R,holes:[h]}));
+ carcass(g,R,xs,43,BT,49,M.wood);
  box(0.5,40,0.6,M.black,xs,63.3,49.1,g);
- makeDrawer(g,xs+0.4,199.4,63.8,BT-0.3,49.6,40,M.wood,{by0:65,bh:8,uCut:14,uTo:36,div:[0.25,0.75]});
- makeDrawer(g,xs+0.4,199.4,43.3,63.4,49.6,40,M.wood,{by0:44.5,bh:14,div:[0.33,0.66],cross:0.5});}
+ makeDrawer(g,xs+0.4,199.4,63.8,BT-0.3,49.6,40,M.wood,{by0:65,bh:8,uCut:14,uTo:36,div:[0.25,0.75],level:'top'});
+ makeDrawer(g,xs+0.4,199.4,43.3,63.4,49.6,40,M.wood,{by0:44.5,bh:14,div:[0.33,0.66],cross:0.5,level:'mid'});}
 buildACab(aBig,6);buildACab(aSmall,2.5);
 PART='basin';const bowl=new THREE.Mesh(new THREE.BoxGeometry(56,13,35.7),new THREE.MeshStandardMaterial({color:0xfafaf8,roughness:.08,side:THREE.BackSide}));
 bowl.position.set(170,CT-6.5+0.01,30.15);add(bowl);
@@ -357,7 +396,11 @@ const drain=new THREE.Mesh(new THREE.CircleGeometry(2.2,24),M.chrome);drain.rota
 box(4,0.8,0.3,M.black,170,CT-3,12.3);PART=null;
 
 box(56,0.5,1,M.led,170,42.7,45);
-{const tm=new THREE.MeshStandardMaterial({color:0xbfc2c4,metalness:.8,roughness:.3});const t1=new THREE.Mesh(new THREE.CylinderGeometry(1.6,1.6,15,16),tm);t1.position.set(170,69.5,32);add(t1);const t2=new THREE.Mesh(new THREE.CylinderGeometry(1.6,1.6,31,16),tm);t2.rotation.x=Math.PI/2;t2.position.set(170,62,16.5);add(t2);}
+{const tm=new THREE.MeshStandardMaterial({color:0xbfc2c4,metalness:.85,roughness:.25});
+ cyl(1.6,10,tm,170,72,32,scene);cyl(2.1,1.2,tm,170,77,32,scene);cyl(2.1,1.2,tm,170,67.5,32,scene);
+ const ug=new THREE.Group();ug.position.set(170,67,29);ug.rotation.y=Math.PI/2;add(ug);const tor=new THREE.Mesh(new THREE.TorusGeometry(3,1.6,14,28,Math.PI),tm);tor.rotation.z=Math.PI;ug.add(tor);
+ cyl(1.6,2.5,tm,170,68.25,26,scene);const el=new THREE.Mesh(new THREE.TorusGeometry(1.6,1.6,12,16,Math.PI/2),tm);el.position.set(170,69.5,24.4);el.rotation.y=Math.PI/2;add(el);
+ cyl(1.6,23,tm,170,71.1,11.6,scene,'z');cyl(3.2,0.6,tm,170,71.1,0.4,scene,'z');}
 const vanityA=scene.children.slice(_vA0);
 // ---------- vanity option B: sintered-stone slab basin (GAODUO style) sized to our 60x50, top 90, total 47
 // 18cm stone slab with a 40cm sloped trough + 29cm walnut fluted drawers below
@@ -376,9 +419,9 @@ const walnutM=new THREE.MeshPhysicalMaterial({map:walnutT,roughness:.45,clearcoa
 const bBig=new THREE.Group(),bSmall=new THREE.Group();vanityB.add(bBig,bSmall);
 function buildBCorner(g,R,xs){const SY=72,ST=18;
  PART='basin';g.add(slab(141,0,200,50,SY,ST,stoneM,{rFL:R,holes:[rr(THREE.Path,147,13,194,44,1)]}));PART=null;
- g.add(slab(141,0,200,49.6,43,SY-43-0.6,walnutM,{rFL:R}));
+ carcass(g,R,xs,43,SY-0.6,49.6,walnutM);
  box(0.5,SY-43-1.6,0.6,M.black,xs,43+(SY-43)/2,49.9,g);
- makeDrawer(g,xs+0.5,199.4,43.4,SY-1.2,50.2,40,walnutM,{by0:44.5,bh:19,uCut:12,uTo:16,div:[0.25,0.75],handle:false});}
+ makeDrawer(g,xs+0.5,199.4,43.4,SY-1.2,50.2,40,walnutM,{by0:44.5,bh:19,uCut:12,uTo:16,div:[0.25,0.75],handle:false,level:'top'});}
 buildBCorner(bBig,12,160.5);buildBCorner(bSmall,4,145.5);
 {const SY=72,ST=18,R=12;
  // GAODUO designer basin: 18cm stone slab + walnut cabinet, big rounded corner on the toilet side (front-left)
@@ -422,12 +465,12 @@ const lowerA=new THREE.Group(),lowerB=new THREE.Group();floorKit.add(lowerA,lowe
 {const pt=wallTex.clone();pt.needsUpdate=true;pt.repeat.set(0.02,0.02);
  const pm=new THREE.MeshPhysicalMaterial({map:pt,roughness:.35,clearcoat:.6,clearcoatRoughness:.12});
  const pl=slab(143,0,198,44,0,10,pm,{rFL:4,holes:[rr(THREE.Path,147,4,194,40,1)]});floorKit.add(pl);
- box(22,0.5,22,new THREE.MeshStandardMaterial({color:0x9da3a8,metalness:.7,roughness:.35}),156,10.6,31,floorKit);box(6,0.6,1,M.black,156,10.9,40.5,floorKit);
+ box(22,0.5,22,new THREE.MeshStandardMaterial({color:0x9da3a8,metalness:.7,roughness:.35}),156,11.9,31,floorKit);box(6,0.6,1,M.black,156,12.2,40.5,floorKit);
  box(55,0.3,0.4,new THREE.MeshStandardMaterial({color:0x2a2a2a,roughness:.9}),170.5,10.1,44.1,floorKit); // silicone line
  [[lowerA,6,'a'],[lowerB,12,'b']].forEach(([L,R,k])=>{['big','small'].forEach(sz=>{const r=sz==='big'?R:(k==='a'?2.5:4);const g=new THREE.Group();g.userData.sz=sz;L.add(g);
    const mat=k==='a'?M.wood:walnutM,xs=k==='a'?141+r+0.2:(sz==='big'?160.5:145.5);
-   g.add(slab(141,0,200,k==='a'?49:49.6,10.3,32.4,mat,{rFL:r}));box(0.5,31,0.6,M.black,xs,26.5,k==='a'?49.1:49.9,g);
-   makeDrawer(g,xs+0.4,199.4,10.8,42.4,k==='a'?49.6:50.2,40,mat,{by0:12,bh:24,div:[0.5],handle:k==='a'});});});}
+   carcass(g,r,xs,10.3,42.7,k==='a'?49:49.6,mat);box(0.5,31,0.6,M.black,xs,26.5,k==='a'?49.1:49.9,g);
+   makeDrawer(g,xs+0.4,199.4,10.8,42.4,k==='a'?49.6:50.2,40,mat,{by0:12.2,bh:24,div:[0.5],handle:k==='a',level:'bot'});});});}
 
 
 MK('door');
@@ -613,7 +656,7 @@ label('全身鏡 60（離門牆 59）＋電視 27×18',[111,190,D-4],null,5);lab
 label('置物板 59×30 圓角（離地約20）',[170,26,34],null,5);label('淡水入水（示意）',[90,26,6],null,5);label('INAX 遙控 234×78',[136,82,24],null,5);
 
 // ---------- state + UI
-const st={corner:'big',floor:false,cab:false,basin:'ocean',door:false,wc:'inax',ledge:true,mh:MY0,mlight:true,mirror:false,lid:false,dims:false,info:false,trap:'400'};
+const st={dt:{top:false,mid:false,bot:false,out:false},corner:'big',floor:false,cab:false,basin:'ocean',door:false,wc:'inax',ledge:true,mh:MY0,mlight:true,mirror:false,lid:false,dims:false,info:false,trap:'400'};
 function setWC(v){st.wc=v;const t=v==='toto';toilet.visible=!t;toiletT.visible=t;
   dims.remove(tLab);tLab=t?label('TOTO CES8E810GCN',[107.5,70,50],'692×386×512'):label('INAX SARAS 100572BW10',[107.5,64,50],'710×385×472');
   lidI.forEach(o=>o.visible=!t);lidTl.forEach(o=>o.visible=t);
@@ -642,6 +685,7 @@ const trapTexts={'400':'坑距 305（貼牆）','305':'坑距 355：後面補 5c
 document.querySelectorAll('[data-item]').forEach(b=>b.onclick=()=>setItem(b.dataset.item,!b.classList.contains('on')));
 document.querySelectorAll('[data-items]').forEach(b=>b.onclick=()=>{const keep=b.dataset.items==='all'?Object.keys(LAY):['basin','cabinet','remote','mcab','toilet'];Object.keys(LAY).forEach(k=>setItem(k,keep.includes(k)));});
 document.getElementById('moreBtn').onclick=e=>{const b=document.getElementById('bar');b.classList.toggle('min');e.target.textContent=b.classList.contains('min')?'更多選項 ▴':'收埋選項 ▾';};
+document.querySelectorAll('[data-dr]').forEach(b=>b.onclick=()=>{const k=b.dataset.dr;st.dt[k]=!st.dt[k];b.classList.toggle('on',st.dt[k]);});
 group('[data-corner]',b=>setCorner(b.dataset.corner));group('[data-floor]',b=>setFloor(b.dataset.floor==='on'));group('[data-wood]',b=>setCabWood(b.dataset.wood));group('[data-basin]',b=>setBasin(b.dataset.basin));group('[data-stone]',b=>setStone(b.dataset.stone));setBasin('ocean');group('[data-md]',b=>setMirrorDoors(+b.dataset.md));group('[data-wc]',b=>setWC(b.dataset.wc));group('[data-ledge]',b=>setLedge(b.dataset.ledge==='on'));group('[data-mh]',b=>setMirrorH(+b.dataset.mh));
 group('[data-trap]',b=>{setTrap(b.dataset.trap);dims.remove(st._tl||trapLab);st._tl=label(trapTexts[b.dataset.trap],[107.5,20,82+toilet.position.z]);});
 
@@ -670,7 +714,7 @@ renderer.setAnimationLoop(()=>{
   if(anim){let k=Math.min(1,(performance.now()-anim.s)/700);k=k*k*(3-2*k);
     camera.position.lerpVectors(anim.p0,anim.p,k);controls.target.lerpVectors(anim.t0,anim.t,k);if(k>=1)anim=null;}
   lid.rotation.x=lerp(lid.rotation.x,st.lid?LID_OPEN:LID_CLOSED,0.12);lidT.rotation.x=lerp(lidT.rotation.x,st.lid?LIDT_OPEN:LIDT_CLOSED,0.12);
-  drawers.forEach((d,i)=>{d.g.position.z=lerp(d.g.position.z,st.cab?d.travel:0,0.1);});
+  drawers.forEach(d=>{const op=st.cab||st.dt[d.level];d.g.position.z=lerp(d.g.position.z,op?d.travel:0,0.12);d.g.visible=!st.dt.out;});
   bathDoor.rotation.y=lerp(bathDoor.rotation.y,st.door?1.45:0,0.1);doors.forEach(d=>d.p.rotation.y=lerp(d.p.rotation.y,st.mirror?-d.dir*1.35:0,0.12));
   controls.update();if(composer)composer.render();else renderer.render(scene,camera);});
 </script>
