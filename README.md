@@ -13,4 +13,7 @@
 - `designs/h.html`：方案 H，擬真效果圖（同 G 設計，渲染升級）
 - `files/mirror_height_options.xlsx`：鏡櫃高度比較表
 
+- `designs/h-shop.html`：施工圖（由 `tools/gen_shop.py` 生成）
+- `HANDOVER.md`／`docs/`：交接、最終方案、討論紀錄
+
 3D 用 three.js（jsDelivr CDN），純靜態，用 GitHub Pages 發佈。
