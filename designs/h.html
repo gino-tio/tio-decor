@@ -465,15 +465,15 @@ const travM=new THREE.MeshPhysicalMaterial({map:travT,roughness:.62,clearcoat:.1
  makeDrawer(vanityC,141.3,199.7,10.4,40,50,40,travM,{by0:11.6,bh:24,div:[0.5],handle:false,level:'bot'});
  box(56,10,44,travM,170.5,5,22,vanityC);}
 // ---------- vanity option D: long cream counter running over the toilet (based on a product photo)
-// one-piece 11cm counter (basin end 50 deep, toilet end 24 deep, x75..200) with an integrated shallow basin; wall-hung oak cabinet below:
+// one-piece 11cm counter (basin end 50 deep, narrow 7cm toilet end, x75..200) with an integrated shallow basin; wall-hung oak cabinet below:
 // open cubby with 2 shelves on the toilet side (rounded corner) + 2 drawers on the basin side
 const vanityD=new THREE.Group();add(vanityD);vanityD.visible=false;
 const creamM=new THREE.MeshPhysicalMaterial({color:0xe8dfcf,roughness:.42,clearcoat:.18,clearcoatRoughness:.45});
-{const CY=79,CH=CT-CY,R=12,XL=75,XC=166,CB=43,T=1.8,ZF=49.6,BX0=154,BX1=198,BZ0=6,BZ1=44,BD=9.5,g=vanityD;
+{const CY=79,CH=CT-CY,R=12,XL=75,ZT=7,XC=166,CB=43,T=1.8,ZF=49.6,BX0=154,BX1=198,BZ0=6,BZ1=44,BD=9.5,g=vanityD;
  PART='basin';
  const s=new THREE.Shape();
- s.moveTo(XL,0);s.lineTo(200,0);s.lineTo(200,-44);s.absarc(194,-44,6,0,-Math.PI/2,true);s.lineTo(141+R,-50);s.absarc(141+R,-38,R,-Math.PI/2,-Math.PI,true);s.lineTo(141,-32);
- s.absarc(133,-32,8,0,Math.PI/2,false);s.lineTo(XL+8,-24);s.absarc(XL+8,-16,8,-Math.PI/2,-Math.PI,true);s.lineTo(XL,0);
+ s.moveTo(XL,0);s.lineTo(200,0);s.lineTo(200,-44);s.absarc(194,-44,6,0,-Math.PI/2,true);s.lineTo(141+R,-50);s.absarc(141+R,-38,R,-Math.PI/2,-Math.PI,true);s.lineTo(141,-(ZT+8));
+ s.absarc(133,-(ZT+8),8,0,Math.PI/2,false);s.lineTo(XL+3,-ZT);s.absarc(XL+3,-(ZT-3),3,-Math.PI/2,-Math.PI,true);s.lineTo(XL,0);
  s.holes.push(rr(THREE.Path,BX0,BZ0,BX1,BZ1,4));
  const cm=new THREE.Mesh(new THREE.ExtrudeGeometry(s,{depth:CH,bevelEnabled:false,curveSegments:20}),creamM);cm.rotation.x=-Math.PI/2;cm.position.y=CY;add(cm,g);
  const bw=new THREE.Mesh(new THREE.BoxGeometry(BX1-BX0-0.1,BD,BZ1-BZ0-0.1),new THREE.MeshPhysicalMaterial({color:0xefe8da,roughness:.35,side:THREE.BackSide}));
@@ -710,7 +710,7 @@ mirrorLabels(MY0);
 const _lA0=dims.children.length;label('一體海洋盆 8260',[170,104,32],'600×500 · 盆內570×370 深130 · 無孔');dim([139,BT,51],[139,CT,51]);label('6.3',[135,BT+3,53],null,5);const lblA=dims.children.slice(_lA0);
 const _lB0=dims.children.length;label('岩板一體盆（設計師款）',[170,104,32],'600×500 · 岩板厚 180 · 木櫃 290 · 左前大圓角');dim([139,72,51],[139,CT,51]);label('18',[135,80,53],null,5);const lblB=dims.children.slice(_lB0);lblB.forEach(o=>o.visible=false);
 const _lC0=dims.children.length;label('洞石米黃落地櫃',[170,104,32],'按 70cm 款縮做 590×500 · 盆 380×440 深140 · 右平台 150 · 兩格櫃桶');dim([139,70,51],[139,CT,51]);label('20',[135,80,53],null,5);const lblC=dims.children.slice(_lC0);lblC.forEach(o=>o.visible=false);
-const _lD0=dims.children.length;label('長檯面連座廁上面（參考圖）',[150,104,32],'檯面 125 長 · 盆端深50／座廁端深24 · 厚11 · 盆 440×380 深95 · 吊櫃：左開放格＋右2格櫃桶');dim([139,79,51],[139,CT,51]);label('11',[135,84,53],null,5);dim([75,92,26],[141,92,26]);label('延伸 66',[108,97,26],null,5);const lblD=dims.children.slice(_lD0);lblD.forEach(o=>o.visible=false);
+const _lD0=dims.children.length;label('長檯面連座廁上面（參考圖）',[150,104,32],'檯面 125 長 · 盆端深50／座廁端窄身7 · 厚11 · 盆 440×380 深95 · 吊櫃：左開放格＋右2格櫃桶');dim([139,79,51],[139,CT,51]);label('11',[135,84,53],null,5);dim([75,92,9],[141,92,9]);label('延伸 66 · 深 7',[108,97,9],null,5);const lblD=dims.children.slice(_lD0);lblD.forEach(o=>o.visible=false);
 let tLab=label('INAX SARAS 100572BW10',[107.5,64,50],'710×385×472');
 const tDim=dim([86,1,0],[86,1,71]);const tLen=label('71 離牆',[78,5,35]);
 const lidI=[label('開蓋頂約 92（估）',[107.5,96,22],null,5),dim([129,0,20],[129,92,20])];const lidTl=[label('開蓋頂約 114（按 CAD 估）',[107.5,118,8],null,5),dim([129,0,6],[129,114,6])];lidTl.forEach(o=>o.visible=false);
