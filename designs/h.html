@@ -350,9 +350,9 @@ function fillItems(g,lv,xl,iw,fy,zb,zF,o){const X=f=>xl+iw*f,Z=f=>zb+(zF-zb)*f;
   [0.62,0.85].forEach(fx=>{cyl(5.3,10,IM.pa,X(fx),fy+5,Z(0.72),g);cyl(1.8,10.05,IM.cr,X(fx),fy+5,Z(0.72),g);});}}
 // hollow carcass: fixed curved side panel + right side + back + bottom, open front for the drawers
 function carcass(g,R,xs,y0,y1,zf,mat,cutY){const h=y1-y0;
- // cutY: stop the curved side panel at the basin bowl floor and keep only thin wood strips above it (outside the bowl footprint x>142, 12.3<z<48), so nothing pokes into the bowl
+ // cutY: the curved side panel stops at the basin bowl floor; above it a thin wood rim (1 cm, follows the rounded outline) wraps the bowl up to the basin, so nothing pokes into the bowl and the corner stays closed
  g.add(slab(141,0,xs,zf,y0,(cutY||y1)-y0,mat,{rFL:R}));
- if(cutY){const sh=y1-cutY,sy=(cutY+y1)/2;box(1,sh,zf-R,mat,141.5,sy,(zf-R)/2,g);box(xs-142,sh,12.3,mat,(142+xs)/2,sy,6.15,g);}
+ if(cutY)g.add(slab(141,0,199.2,zf,cutY,y1-cutY,mat,{rFL:R,holes:[rr(THREE.Path,141.9,1.6,198.4,zf-0.9,Math.max(R-1,0.5))]}));
  box(1.6,h,zf,mat,199.2,y0+h/2,zf/2,g);
  box(198.4-xs,h,1.6,carcassM,(xs+198.4)/2,y0+h/2,0.8,g);
  box(198.4-xs,1.4,zf-1.6,carcassM,(xs+198.4)/2,y0+0.7,(zf+1.6)/2,g);}
@@ -382,7 +382,7 @@ const _vA0=scene.children.length;
 const BT=CT-6.3; // basin bottom edge / cabinet top
 PART='basin';{const s=new THREE.Shape(),r=6;s.moveTo(140,0);s.lineTo(200,0);s.lineTo(200,-(50-r));s.absarc(200-r,-(50-r),r,0,-Math.PI/2,true);
  s.lineTo(140+r,-50);s.absarc(140+r,-(50-r),r,-Math.PI/2,-Math.PI,true);s.lineTo(140,0);
- s.holes.push(rr(THREE.Path,141.5,12,198.5,49,5));
+ s.holes.push(rr(THREE.Path,141.95,12.25,198.05,48.05,5)); // opening = bowl box below (a hair wider to avoid z-fighting), so no gaps at the rim
  const m=new THREE.Mesh(new THREE.ExtrudeGeometry(s,{depth:6.3,bevelEnabled:true,bevelSize:0.3,bevelThickness:0.3,bevelSegments:2,curveSegments:20}),M.ceramic);
  m.rotation.x=-Math.PI/2;m.position.y=BT;add(m);}PART=null;
 const aBig=new THREE.Group(),aSmall=new THREE.Group();add(aBig);add(aSmall);
