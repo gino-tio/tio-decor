@@ -386,6 +386,8 @@ PART='basin';{const s=new THREE.Shape(),r=6;s.moveTo(140,0);s.lineTo(200,0);s.li
 const aBig=new THREE.Group(),aSmall=new THREE.Group();add(aBig);add(aSmall);
 function buildACab(g,R){const xs=141+R+0.2;const h=new THREE.Path();h.moveTo(141.8,-12);h.lineTo(199.2,-12);h.lineTo(199.2,-48.2);h.lineTo(141+R+1,-48.2);h.absarc(141+R+1,-(48.2-R+0.8),R-0.8,-Math.PI/2,-Math.PI,true);h.lineTo(141.8,-12);
  carcass(g,R,xs,43,BT,49,M.wood);
+ // the wood side panel (x 141..xs) is taller than the bowl floor and would poke up inside the bowl: fill it with ceramic up to the rim
+ {const _p=PART;PART='basin';box(xs-141.4,13.08,37,M.ceramic,(141.4+xs)/2,CT-6.56,30.5,g);PART=_p;}
  box(0.5,40,0.6,M.black,xs,63.3,49.1,g);
  makeDrawer(g,xs+0.4,199.4,63.8,BT-0.3,49.6,40,M.wood,{by0:65,bh:8,uCut:14,uTo:36,div:[0.25,0.75],level:'top'});
  makeDrawer(g,xs+0.4,199.4,43.3,63.4,49.6,40,M.wood,{by0:44.5,bh:14,div:[0.33,0.66],cross:0.5,level:'mid'});}
