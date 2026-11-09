@@ -115,6 +115,7 @@ button.on{background:#c9a46a;border-color:#c9a46a;color:#1d1f22;font-weight:600}
   <div class="row"><span>洗手盆</span>
     <button data-basin="ocean" class="on">陶瓷海洋盆</button>
     <button data-basin="slab">岩板一體盆</button>
+    <button data-basin="trav">洞石米黃落地櫃</button>
     <button data-stone="grey" class="on">原色灰</button>
     <button data-stone="muse">繆斯白</button>
     <button data-stone="fish">魚肚白</button>
@@ -436,6 +437,32 @@ buildBCorner(bBig,12,160.5);buildBCorner(bSmall,4,145.5);
  {const tm=new THREE.MeshStandardMaterial({color:0xbfc2c4,metalness:.8,roughness:.3});const t1=new THREE.Mesh(new THREE.CylinderGeometry(1.6,1.6,12,16),tm);t1.position.set(170.5,72,11);vanityB.add(t1);const t2=new THREE.Mesh(new THREE.CylinderGeometry(1.6,1.6,11,16),tm);t2.rotation.x=Math.PI/2;t2.position.set(170.5,66,5.5);vanityB.add(t2);}
 
 }
+// ---------- vanity option C: travertine-beige floor-standing unit (based on a 70cm product photo, resized to our 60x50, top 90)
+// 20cm block with a 3cm rim, 38cm bowl 14 deep on the left, 15cm deck + ramp on the right; 2 handle-less drawers; 10cm recessed toe-kick
+const vanityC=new THREE.Group();add(vanityC);vanityC.visible=false;
+const travT=tex(1024,1024,(g,w,h)=>{g.fillStyle='#d8c6aa';g.fillRect(0,0,w,h);
+  for(let i=0;i<260;i++){g.globalAlpha=0.05+rnd()*0.16;g.strokeStyle=rnd()<.55?'#b49c7c':'#efe3cf';g.lineWidth=0.6+rnd()*3;
+    let y=rnd()*h;g.beginPath();g.moveTo(0,y);for(let x=0;x<=w;x+=24){y+=(rnd()-.5)*1.2;g.lineTo(x,y);}g.stroke();}
+  for(let i=0;i<500;i++){g.globalAlpha=0.12+rnd()*0.2;g.fillStyle='#8f7a5f';g.beginPath();g.ellipse(rnd()*w,rnd()*h,1+rnd()*5,0.6+rnd()*1.2,0,0,7);g.fill();}
+  g.globalAlpha=1;},0.02,0.02);
+const travM=new THREE.MeshPhysicalMaterial({map:travT,roughness:.62,clearcoat:.1,clearcoatRoughness:.6});
+{const TY=70,TH=CT-TY,BX0=144,BX1=182,DK=197,Z0=3,Z1=47,BD=14;
+ PART='basin';
+ vanityC.add(slab(141,0,200,50,TY,TH,travM,{holes:[rr(THREE.Path,BX0-0.05,Z0-0.05,DK+0.05,Z1+0.05,0.4)]}));
+ const bw=new THREE.Mesh(new THREE.BoxGeometry(DK-BX0,BD,Z1-Z0),new THREE.MeshPhysicalMaterial({map:travT,roughness:.5,side:THREE.BackSide}));
+ bw.position.set((BX0+DK)/2,CT-BD/2+0.01,(Z0+Z1)/2);add(bw,vanityC);
+ // right deck (1cm below the rim) and the ramp down into the bowl
+ box(DK-BX1,BD-1,Z1-Z0,travM,(BX1+DK)/2,CT-BD+(BD-1)/2,(Z0+Z1)/2,vanityC);
+ {const y0=CT-BD+0.02,y1=CT-1,x0=BX1-8,rg=new THREE.BufferGeometry();
+  rg.setAttribute('position',new THREE.Float32BufferAttribute([x0,y0,Z0, BX1,y1,Z0, BX1,y1,Z1, x0,y0,Z1],3));
+  rg.setAttribute('uv',new THREE.Float32BufferAttribute([0,0, 0.3,0, 0.3,0.9, 0,0.9],2));rg.setIndex([0,3,2,0,2,1]);rg.computeVertexNormals();
+  add(new THREE.Mesh(rg,new THREE.MeshPhysicalMaterial({map:travT,roughness:.5,side:THREE.DoubleSide})),vanityC);}
+ const dr=new THREE.Mesh(new THREE.CircleGeometry(2.2,24),M.chrome);dr.rotation.x=-Math.PI/2;dr.position.set(152,CT-BD+0.03,36);add(dr,vanityC);
+ PART=null;
+ carcass(vanityC,0,141.6,10,TY,48.6,travM);
+ makeDrawer(vanityC,141.3,199.7,40.4,TY-0.6,50,40,travM,{by0:41.6,bh:22,uCut:12,uTo:16,div:[0.25,0.75],handle:false,level:'top'});
+ makeDrawer(vanityC,141.3,199.7,10.4,40,50,40,travM,{by0:11.6,bh:24,div:[0.5],handle:false,level:'bot'});
+ box(56,10,44,travM,170.5,5,22,vanityC);}
 const under=new THREE.PointLight(0xffd9a0,0.5,90,0);under.position.set(170,40,40);add(under);
 PART='basin';box(6,10,1.2,M.chrome,170,99,0.8);
 const fs=new THREE.Mesh(new THREE.CylinderGeometry(1.1,1.1,22,20),M.chrome);fs.rotation.x=Math.PI/2;fs.position.set(170,99,12);add(fs);
@@ -650,6 +677,7 @@ let mirDims=[];function mirrorLabels(h){mirDims.forEach(o=>dims.remove(o));const
 mirrorLabels(MY0);
 const _lA0=dims.children.length;label('一體海洋盆 8260',[170,104,32],'600×500 · 盆內570×370 深130 · 無孔');dim([139,BT,51],[139,CT,51]);label('6.3',[135,BT+3,53],null,5);const lblA=dims.children.slice(_lA0);
 const _lB0=dims.children.length;label('岩板一體盆（設計師款）',[170,104,32],'600×500 · 岩板厚 180 · 木櫃 290 · 左前大圓角');dim([139,72,51],[139,CT,51]);label('18',[135,80,53],null,5);const lblB=dims.children.slice(_lB0);lblB.forEach(o=>o.visible=false);
+const _lC0=dims.children.length;label('洞石米黃落地櫃',[170,104,32],'按 70cm 款縮做 590×500 · 盆 380×440 深140 · 右平台 150 · 兩格櫃桶');dim([139,70,51],[139,CT,51]);label('20',[135,80,53],null,5);const lblC=dims.children.slice(_lC0);lblC.forEach(o=>o.visible=false);
 let tLab=label('INAX SARAS 100572BW10',[107.5,64,50],'710×385×472');
 const tDim=dim([86,1,0],[86,1,71]);const tLen=label('71 離牆',[78,5,35]);
 const lidI=[label('開蓋頂約 92（估）',[107.5,96,22],null,5),dim([129,0,20],[129,92,20])];const lidTl=[label('開蓋頂約 114（按 CAD 估）',[107.5,118,8],null,5),dim([129,0,6],[129,114,6])];lidTl.forEach(o=>o.visible=false);
@@ -663,11 +691,13 @@ function setWC(v){st.wc=v;const t=v==='toto';toilet.visible=!t;toiletT.visible=t
   dims.remove(tLab);tLab=t?label('TOTO CES8E810GCN',[107.5,70,50],'692×386×512'):label('INAX SARAS 100572BW10',[107.5,64,50],'710×385×472');
   lidI.forEach(o=>o.visible=!t);lidTl.forEach(o=>o.visible=t);
   document.getElementById('trapRow').style.display=t?'none':'';setTrap(t?'400':st.trap);}
-function setFloor(on){st.floor=on;floorKit.visible=on;shelfMesh.visible=!on;setBasin(st.basin);}
+function setFloor(on){st.floor=on;setBasin(st.basin);}
 function setCorner(c){st.corner=c;const big=c==='big';
   if(st.basin==='ocean'){aBig.visible=big;aSmall.visible=!big;}else{aBig.visible=aSmall.visible=false;}
   bBig.visible=big;bSmall.visible=!big;[lowerA,lowerB].forEach(L=>L.children.forEach(g=>{if(g.userData.sz)g.visible=(g.userData.sz==='big')===big;}));}
-function setBasin(v){st.basin=v;const b=v!=='ocean';lowerA.visible=!b;lowerB.visible=b;vanityA.forEach(o=>o.visible=!b);vanityB.visible=b;lblA.forEach(o=>o.visible=!b);lblB.forEach(o=>o.visible=b);
+function setBasin(v){st.basin=v;const a=v==='ocean',b=v==='slab',c=v==='trav';lowerA.visible=a;lowerB.visible=b;vanityA.forEach(o=>o.visible=a);vanityB.visible=b;vanityC.visible=c;lblA.forEach(o=>o.visible=a);lblB.forEach(o=>o.visible=b);lblC.forEach(o=>o.visible=c);
+  // option C is always floor-standing with its own toe-kick, so it hides the stone plinth kit and the open shelf
+  floorKit.visible=st.floor&&!c;shelfMesh.visible=!st.floor&&!c;
   document.querySelectorAll('[data-stone]').forEach(x=>x.style.display=b?'':'none');if(typeof aBig!=='undefined')setCorner(st.corner);}
 function setStone(k){stoneM.map=stoneTex[k];stoneM.needsUpdate=true;vanityB.userData.trough.material.map=stoneTex[k];vanityB.userData.trough.material.needsUpdate=true;}
 function setCabWood(v){M.wood.map=v==='door'?doorWoodT:woodTexOwn;walnutM.map=v==='door'?doorWoodT:walnutT;M.wood.needsUpdate=walnutM.needsUpdate=true;}
