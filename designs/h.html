@@ -349,8 +349,10 @@ function fillItems(g,lv,xl,iw,fy,zb,zF,o){const X=f=>xl+iw*f,Z=f=>zb+(zF-zb)*f;
   [[0.62,0.25,IM.te],[0.85,0.25,IM.yl]].forEach(([fx,fz,m])=>{cyl(3.2,14,m,X(fx),fy+7,Z(fz),g);box(2.6,4,5,IM.w,X(fx),fy+16,Z(fz)+1,g);});
   [0.62,0.85].forEach(fx=>{cyl(5.3,10,IM.pa,X(fx),fy+5,Z(0.72),g);cyl(1.8,10.05,IM.cr,X(fx),fy+5,Z(0.72),g);});}}
 // hollow carcass: fixed curved side panel + right side + back + bottom, open front for the drawers
-function carcass(g,R,xs,y0,y1,zf,mat){const h=y1-y0;
- g.add(slab(141,0,xs,zf,y0,h,mat,{rFL:R}));
+function carcass(g,R,xs,y0,y1,zf,mat,cutY){const h=y1-y0;
+ // cutY: stop the curved side panel at the basin bowl floor and keep only thin wood strips above it (outside the bowl footprint x>142, 12.3<z<48), so nothing pokes into the bowl
+ g.add(slab(141,0,xs,zf,y0,(cutY||y1)-y0,mat,{rFL:R}));
+ if(cutY){const sh=y1-cutY,sy=(cutY+y1)/2;box(1,sh,zf-R,mat,141.5,sy,(zf-R)/2,g);box(xs-142,sh,12.3,mat,(142+xs)/2,sy,6.15,g);}
  box(1.6,h,zf,mat,199.2,y0+h/2,zf/2,g);
  box(198.4-xs,h,1.6,carcassM,(xs+198.4)/2,y0+h/2,0.8,g);
  box(198.4-xs,1.4,zf-1.6,carcassM,(xs+198.4)/2,y0+0.7,(zf+1.6)/2,g);}
@@ -385,9 +387,7 @@ PART='basin';{const s=new THREE.Shape(),r=6;s.moveTo(140,0);s.lineTo(200,0);s.li
  m.rotation.x=-Math.PI/2;m.position.y=BT;add(m);}PART=null;
 const aBig=new THREE.Group(),aSmall=new THREE.Group();add(aBig);add(aSmall);
 function buildACab(g,R){const xs=141+R+0.2;const h=new THREE.Path();h.moveTo(141.8,-12);h.lineTo(199.2,-12);h.lineTo(199.2,-48.2);h.lineTo(141+R+1,-48.2);h.absarc(141+R+1,-(48.2-R+0.8),R-0.8,-Math.PI/2,-Math.PI,true);h.lineTo(141.8,-12);
- carcass(g,R,xs,43,BT,49,M.wood);
- // the wood side panel (x 141..xs) is taller than the bowl floor and would poke up inside the bowl: fill it with ceramic up to the rim
- {const _p=PART;PART='basin';box(xs-141.4,13.08,37,M.ceramic,(141.4+xs)/2,CT-6.56,30.5,g);PART=_p;}
+ carcass(g,R,xs,43,BT,49,M.wood,CT-13);
  box(0.5,40,0.6,M.black,xs,63.3,49.1,g);
  makeDrawer(g,xs+0.4,199.4,63.8,BT-0.3,49.6,40,M.wood,{by0:65,bh:8,uCut:14,uTo:36,div:[0.25,0.75],level:'top'});
  makeDrawer(g,xs+0.4,199.4,43.3,63.4,49.6,40,M.wood,{by0:44.5,bh:14,div:[0.33,0.66],cross:0.5,level:'mid'});}
