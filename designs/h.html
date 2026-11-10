@@ -102,6 +102,8 @@ button.on{background:#c9a46a;border-color:#c9a46a;color:#1d1f22;font-weight:600}
     <button data-ctop="ceramic" class="on">陶瓷海洋盆</button>
     <button data-ctop="white">白雲石檯面＋底盆</button>
     <button data-ctop="brown">啡雲石圓邊檯面＋底盆</button>
+    <button data-ctop="viola">白底啡金紋岩板＋底盆</button>
+    <button id="demaBtn" style="border-color:#c9a46a;color:#c9a46a">一鍵：德馬款（岩板＋啡木金框）</button>
   </div>
   <div class="row"><span>尺寸</span>
     <button data-size="now" class="on">而家（檯 90／上櫃 47／下櫃 42）</button>
@@ -111,6 +113,7 @@ button.on{background:#c9a46a;border-color:#c9a46a;color:#1d1f22;font-weight:600}
     <button data-front="two" class="on">兩格櫃桶（坑紋＋茶玻）</button>
     <button data-front="one">一個大櫃桶（玻璃內托盤）</button>
     <button data-front="door">單門向右開</button>
+    <button data-front="gold">啡木大櫃桶＋金色燈框</button>
   </div>
   <div class="row"><span>龍頭</span>
     <button data-fau="design" class="on">盆中（設計）</button>
@@ -475,6 +478,8 @@ function midInner(g,o){const Z=f=>o.zb+(o.zF-o.zb)*f;
  const tm=new THREE.MeshStandardMaterial({color:0x77787b,roughness:.9});box(14,2.4,11,tm,o.xl+o.iw*0.2,o.fy+1.2,Z(0.65),g);box(14,2.4,11,tm,o.xl+o.iw*0.2,o.fy+3.6,Z(0.65),g);box(12,2.4,10,tm,o.xl+o.iw*0.2,o.fy+1.2,Z(0.28),g);
  cyl(2.2,15,IM.bk,o.xl+o.iw*0.82,o.fy+2.3,Z(0.55),g,'z');cyl(1,7,lightWoodM,o.xl+o.iw*0.82,o.fy+2.3,Z(0.55)-10,g,'z');
  cyl(3.4,5,IM.cr,o.xl+o.iw*0.55,o.fy+2.5,Z(0.75),g);}
+const darkWalnutM=new THREE.MeshPhysicalMaterial({map:tex(512,512,(g,w,h)=>wood(g,w,h,'#5a3d2b','#2a1a10'),0.025,0.025),roughness:.5,clearcoat:.2});
+const goldLedM=new THREE.MeshStandardMaterial({color:0xffd9a0,emissive:0xffb347,emissiveIntensity:1.6,roughness:.4});
 function buildACab(g,R){const xs=141+R+0.2;const h=new THREE.Path();h.moveTo(141.8,-12);h.lineTo(199.2,-12);h.lineTo(199.2,-48.2);h.lineTo(141+R+1,-48.2);h.absarc(141+R+1,-(48.2-R+0.8),R-0.8,-Math.PI/2,-Math.PI,true);h.lineTo(141.8,-12);
  carcass(g,R,xs,43,BT,49,M.wood,CT-13);
  box(0.5,40,0.6,M.black,xs,63.3,49.1,g);
@@ -487,21 +492,30 @@ function buildACab(g,R){const xs=141+R+0.2;const h=new THREE.Path();h.moveTo(141
  const dw=199.4-(xs+0.4),dh=BT-0.3-43.3,dr=new THREE.Group();dr.position.set(199.4,0,49.6);gd.add(dr);
  box(dw-0.3,dh-0.3,1.4,M.wood,-dw/2,43.3+dh/2,-0.7,dr);box(0.6,14,0.6,M.black,-dw+3,43.3+dh/2,0.3,dr);
  box(dw-2,1.6,34,carcassM,(xs+199.4)/2,51.5,30,gd);
- cabDoors.push(dr);}
+ cabDoors.push(dr);
+ // 啡木大櫃桶＋金色燈框 (ref photo): one handle-less dark-walnut slab drawer sitting inside a glowing gold rounded frame on the cabinet face
+ const gg=new THREE.Group();g.add(gg);g.userData.fr.gold=gg;gg.visible=false;
+ {const x0=xs+0.4,x1=199.4,y0=43.3,y1=BT-0.3,ring=rxy(x0,y0,x1,y1,[3,3,3,3]);ring.holes.push(rxy(x0+1.3,y0+1.3,x1-1.3,y1-1.3,[2,2,2,2]));
+  const fm=new THREE.Mesh(new THREE.ExtrudeGeometry(ring,{depth:0.8,bevelEnabled:false,curveSegments:10}),goldLedM);fm.position.z=48.6;gg.add(fm);
+  makeDrawer(gg,x0+1.3,x1-1.3,y0+1.3,y1-1.3,49.6,36,darkWalnutM,{by0:44.5,bh:26,uCut:15,uTo:36,level:'top',noFill:true,handle:false,sideM:metalSideM,floorM:lightWoodM,extra:singleInner});}}
 buildACab(aBig,6);buildACab(aSmall,2.5);
 PART='basin';const bowl=new THREE.Mesh(new THREE.BoxGeometry(56,13,35.7),new THREE.MeshStandardMaterial({color:0xfafaf8,roughness:.08,side:THREE.BackSide}));
 bowl.position.set(170,CT-6.5+0.01,30.15);add(bowl);bowl.userData.ocean=1;
 const drain=new THREE.Mesh(new THREE.CircleGeometry(2.2,24),M.chrome);drain.rotation.x=-Math.PI/2;drain.position.set(170,CT-12.9,32);add(drain);
 box(4,0.8,0.3,M.black,170,CT-3,12.3).userData.ocean=1;
 // stone counter options (ref photos): white marble square edge / brown marble bullnose; both 600x500x63 on the same cabinet, undermount bowl opening 460x300, 130 deep from the top
-const ctopG={white:new THREE.Group(),brown:new THREE.Group()};add(ctopG.white);add(ctopG.brown);ctopG.white.visible=ctopG.brown.visible=false;
+const ctopG={white:new THREE.Group(),brown:new THREE.Group(),viola:new THREE.Group()};add(ctopG.white);add(ctopG.brown);add(ctopG.viola);ctopG.white.visible=ctopG.brown.visible=ctopG.viola.visible=false;
 {const wT=tex(512,512,(g,w,h)=>marble(g,w,h,'#eeece8','#9a9894',22),0.02,0.02),bT=tex(512,512,(g,w,h)=>marble(g,w,h,'#4a3b35','#e6dccf',40),0.02,0.02);
  const wM=new THREE.MeshPhysicalMaterial({map:wT,roughness:.2,clearcoat:.6,clearcoatRoughness:.1}),bM=new THREE.MeshPhysicalMaterial({map:bT,roughness:.18,clearcoat:.7,clearcoatRoughness:.08});
  ctopG.white.add(slab(140,0,200,50,BT,CT-BT,wM,{rFL:1.5,holes:[rr(THREE.Path,147,14,193,44,4)]}));
+ const vT=tex(1024,1024,(g,w,h)=>{marbleHQ(g,w,h,['#f4f0e9','#e9e2d6','#ffffff'],'#2a170c',55);
+   g.strokeStyle='#b88a45';for(let i=0;i<14;i++){let x=rnd()*w,y=rnd()*h,a=rnd()*6.28;g.globalAlpha=.35+rnd()*.4;g.lineWidth=1+rnd()*2.5;g.beginPath();g.moveTo(x,y);
+     for(let k=0;k<70;k++){a+=(rnd()-.5)*.5;x+=Math.cos(a)*6;y+=Math.sin(a)*6;g.lineTo(x,y);}g.stroke();}g.globalAlpha=1;},0.018,0.018);
+ ctopG.viola.add(slab(140,0,200,50,BT,CT-BT,new THREE.MeshPhysicalMaterial({map:vT,roughness:.15,clearcoat:.8,clearcoatRoughness:.06}),{rFL:1.5,holes:[rr(THREE.Path,147,14,193,44,4)]}));
  {const sh=new THREE.Shape(),B=2.4;sh.moveTo(140+B,-B);sh.lineTo(200-B,-B);sh.lineTo(200-B,-(50-B));sh.lineTo(140+B,-(50-B));sh.lineTo(140+B,-B);sh.holes.push(rr(THREE.Path,147-B,14-B,193+B,44+B,4+B));
   const m=new THREE.Mesh(new THREE.ExtrudeGeometry(sh,{depth:CT-BT-2*B,bevelEnabled:true,bevelSize:B,bevelThickness:B,bevelSegments:6,curveSegments:20}),bM);m.rotation.x=-Math.PI/2;m.position.y=BT+B;ctopG.brown.add(m);}
  // undermount bowl lines the counter opening right up to the top (white) / to the start of the bullnose round (brown), so the stone edge is sealed and there is no gap into the cabinet
- ['white','brown'].forEach(k=>{const top=k==='brown'?CT-2.4:CT-0.02,b=new THREE.Mesh(new THREE.BoxGeometry(45.9,top-(CT-13),29.9),new THREE.MeshStandardMaterial({color:0xfafaf8,roughness:.08,side:THREE.BackSide}));b.position.set(170,(CT-13+top)/2+0.01,29);ctopG[k].add(b);
+ ['white','brown','viola'].forEach(k=>{const top=k==='brown'?CT-2.4:CT-0.02,b=new THREE.Mesh(new THREE.BoxGeometry(45.9,top-(CT-13),29.9),new THREE.MeshStandardMaterial({color:0xfafaf8,roughness:.08,side:THREE.BackSide}));b.position.set(170,(CT-13+top)/2+0.01,29);ctopG[k].add(b);
   // white deck closing the cabinet top round the bowl
   ctopG[k].add(slab(141.9,1.6,198.4,48.1,BT-0.6,0.5,new THREE.MeshStandardMaterial({color:0xfafaf8,roughness:.3}),{holes:[rr(THREE.Path,147,14,193,44,0.5)]}));});}
 PART=null;
@@ -976,7 +990,7 @@ function go(v,instant){let [p,t]=views[v];p=new THREE.Vector3(...p);t=new THREE.
   anim={p0:camera.position.clone(),t0:controls.target.clone(),p,t,s:performance.now()};}
 group('[data-view]',b=>go(b.dataset.view));
 group('[data-fau]',b=>setFau(b.dataset.fau));setFau('design');
-function applyCtop(){const a=st.basin==='ocean',k=st.ctop||'ceramic';vanityA.forEach(o=>{if(o.userData.ocean)o.visible=a&&k==='ceramic';});ctopG.white.visible=a&&k==='white';ctopG.brown.visible=a&&k==='brown';}
+function applyCtop(){const a=st.basin==='ocean',k=st.ctop||'ceramic';vanityA.forEach(o=>{if(o.userData.ocean)o.visible=a&&k==='ceramic';});ctopG.white.visible=a&&k==='white';ctopG.brown.visible=a&&k==='brown';ctopG.viola.visible=a&&k==='viola';}
 group('[data-lid]',b=>{st.lid=+b.dataset.lid;});group('[data-ctop]',b=>{st.ctop=b.dataset.ctop;applyCtop();});
 // 尺寸: 'now' = design (counter 90, upper cabinet 47 incl. basin, lower 42) / 'old' = existing (counter 91, upper 46 incl. counter, lower 45); ocean-basin cabinet only
 const ledgeY0=ledge.position.y;
@@ -984,7 +998,10 @@ function setSize(k){const old=st.old=k==='old',s=old?39.7/40.7:1,s2=old?34.4/32.
  vanityA.forEach(o=>{if(o===aBig||o===aSmall){o.scale.y=s;o.position.y=old?45-43*s:0;}else o.position.y=o.userData.y0+(old?(o.userData.led?2:1):0);});
  lowerA.scale.y=s2;lowerA.position.y=old?10.3-10.3*s2:0;backBox.scale.y=old?45/42.4:1;ledge.position.y=ledgeY0+(old?1:0);setFau(st.fau);}
 group('[data-size]',b=>setSize(b.dataset.size));
-group('[data-front]',b=>{const k=b.dataset.front;[aBig,aSmall].forEach(g=>{const fr=g.userData.fr;Object.keys(fr).forEach(n=>fr[n].visible=n===k);});});
+document.getElementById('demaBtn').onclick=()=>['[data-basin=ocean]','[data-floor=off]','[data-ctop=viola]','[data-front=gold]'].forEach(q=>document.querySelector(q).click());
+group('[data-front]',b=>{const k=b.dataset.front;[aBig,aSmall].forEach(g=>{const fr=g.userData.fr;Object.keys(fr).forEach(n=>fr[n].visible=n===k);});
+  // gold-frame style: whole cabinet (sides, lower part) in the same dark walnut as the drawer
+  [aBig,aSmall,lowerA,shelfMesh].forEach(g=>g.traverse(o=>{if(!o.isMesh)return;if(o.userData.wm===undefined)o.userData.wm=o.material===M.wood;if(o.userData.wm)o.material=k==='gold'?darkWalnutM:M.wood;}));});
 // chosen spec (11/7): TOTO, ocean basin, floor-standing, stepped mirror cabinet (高低款) at 125, ledge kept
 ['[data-wc=toto]','[data-basin=ocean]','[data-floor=on]','[data-md=step]','[data-mh="125"]','[data-ledge=on]'].forEach(q=>{const b=document.querySelector(q);if(b)b.click();});
 // ---------- people (人物) + 日常動畫: mannequin rigs with persistent meshes, re-posed every frame from a small state
