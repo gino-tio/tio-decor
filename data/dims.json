@@ -1,0 +1,19 @@
+{
+  "_note": "Single source of truth for the main dimensions (mm). Read by designs/h.html (3D, converted to cm) and tools/gen_shop.py (shop drawings + DXF). Edit here, then run: python3 tools/gen_shop.py",
+  "room": { "w": 2000, "d": 1485, "h": 2300 },
+  "counter_h": 900,
+  "tub": { "x1": 730, "h": 450 },
+  "vanity": { "x0": 1400, "x1": 2000, "d": 500, "plinth_h": 100 },
+  "mirror_cabinet": { "x0": 780, "x1": 1980, "h": 970, "d": 130, "bottom": 1250, "doors": 2 },
+  "toilet": { "cx": 1075 },
+  "door": { "z0": 707, "z1": 1462, "w": 770 },
+  "default_view": {
+    "_note": "Options h.html selects on load (the chosen spec).",
+    "wc": "toto",
+    "basin": "ocean",
+    "floor": "on",
+    "mirror_doors": "step",
+    "mirror_bottom": 1250,
+    "ledge": "on"
+  }
+}
