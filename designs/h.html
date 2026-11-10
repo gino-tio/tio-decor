@@ -721,6 +721,8 @@ const halos=[];const _noHalo=true;
   const g=new THREE.Mesh(new THREE.PlaneGeometry(r%Math.PI?h:w,r%Math.PI?w:h),glowMat);g.rotation.z=r;g.position.set(x,y,0.3+halos.length*0.02);add(g);halos.push(g);g.material=g.material.clone();g.material.opacity=0.35;});
 const mLights=[[138,MY1+6,6,0.45,70],[138,MY0-4,12,0.6,60],[MX0-4,MYC,10,0.3,60],[MX1+4,MYC,10,0.3,60]].map(([x,y,z,i,d])=>{const l=new THREE.PointLight(0xffe7c4,i,d,0);l.position.set(x,y,z);l.userData.i=i;add(l);return l;});
 function setMirrorLight(on){lightMat.emissiveIntensity=on?1.5:0;halos.forEach(h=>h.visible=on&&!mStep&&!mR60&&!mTall);mLights.forEach(l=>l.intensity=on?l.userData.i:0);}
+// real reflections on the mirror-cabinet doors (like the full-length mirror); hidden doors are skipped by three.js
+const mirrorMesh=geo=>new Reflector(geo,{textureWidth:640,textureHeight:640,color:0xc4c8ca,clipBias:0.003});
 const doors=[],doorSets={};
 function buildDoors(n){const set=[];const DW=(MX1-MX0-2.8)/n,DX0=MX0+1.4;
  const spec=n===3?[[DX0,1,[MR-1.4,0,0,MR-1.4]],[DX0+DW,1,[0,0,0,0]],[MX1-1.4,-1,[0,MR-1.4,MR-1.4,0]]]:[[DX0,1,[MR-1.4,0,0,MR-1.4]],[MX1-1.4,-1,[0,MR-1.4,MR-1.4,0]]];
@@ -729,7 +731,7 @@ function buildDoors(n){const set=[];const DW=(MX1-MX0-2.8)/n,DX0=MX0+1.4;
   const x0=dir>0?0.1:-(DW-0.1),x1=dir>0?DW-0.1:-0.1;
   const fr=new THREE.Mesh(new THREE.ExtrudeGeometry(rxy(x0,MY0+1.4,x1,MY1-1.4,rad),{depth:1.4,bevelEnabled:false,curveSegments:12}),M.black);p.add(fr);
   const r2=rad.map(r=>r?Math.max(r-0.6,0.5):0);
-  const mr=new THREE.Mesh(new THREE.ShapeGeometry(rxy(x0+0.6,MY0+2,x1-0.6,MY1-2,r2),12),M.mirror);mr.position.z=1.41;p.add(mr);
+  const mr=mirrorMesh(new THREE.ShapeGeometry(rxy(x0+0.6,MY0+2,x1-0.6,MY1-2,r2),12));mr.position.z=1.41;p.add(mr);
   const d={p,dir};doors.push(d);set.push(d);});
  doorSets[n]=set;}
 buildDoors(3);buildDoors(2);doorSets[2].forEach(d=>d.p.visible=false);
@@ -752,7 +754,7 @@ function stepShape(i,r){const x0=MX0+i,x1=MX1-i,y0=MY0+i,y1=MT2-i,xs=SX+i,ys=MY0
   const x0=dir>0?0.1:-DW,x1=dir>0?DW:-0.1;
   p.add(new THREE.Mesh(new THREE.ExtrudeGeometry(rxy(x0,yb+1.4,x1,MT2-1.4,rad),{depth:1.4,bevelEnabled:false,curveSegments:12}),M.black));
   const r2=rad.map(r=>r?Math.max(r-0.6,0.5):0);
-  const mr=new THREE.Mesh(new THREE.ShapeGeometry(rxy(x0+0.6,yb+2,x1-0.6,MT2-2,r2),12),M.mirror);mr.position.z=1.41;p.add(mr);
+  const mr=mirrorMesh(new THREE.ShapeGeometry(rxy(x0+0.6,yb+2,x1-0.6,MT2-2,r2),12));mr.position.z=1.41;p.add(mr);
   doors.push({p,dir});});}
 // ---------- option: single cabinet 60 wide x 90 tall against the right wall (over the basin), 15 deep, one mirror door hinged on the right
 const mc3=new THREE.Group();add(mc3);mc3.visible=false;const R0=138,RT=MY0+90;
@@ -763,7 +765,7 @@ const mc3=new THREE.Group();add(mc3);mc3.visible=false;const R0=138,RT=MY0+90;
  [MY0+30,MY0+60].forEach(y=>box(MX1-R0-3.2,0.6,12.5,M.glass,(R0+MX1)/2,y,7,mc3));
  const p=new THREE.Group();p.position.set(MX1-1.4,0,MD2);mc3.add(p);const DW=MX1-1.4-(R0+1.4),rad=[MR-1.4,MR-1.4,MR-1.4,MR-1.4];
  p.add(new THREE.Mesh(new THREE.ExtrudeGeometry(rxy(-DW,MY0+1.4,-0.1,RT-1.4,rad),{depth:1.4,bevelEnabled:false,curveSegments:12}),M.black));
- const mr=new THREE.Mesh(new THREE.ShapeGeometry(rxy(-DW+0.6,MY0+2,-0.7,RT-2,rad.map(r=>Math.max(r-0.6,0.5))),12),M.mirror);mr.position.z=1.41;p.add(mr);
+ const mr=mirrorMesh(new THREE.ShapeGeometry(rxy(-DW+0.6,MY0+2,-0.7,RT-2,rad.map(r=>Math.max(r-0.6,0.5))),12));mr.position.z=1.41;p.add(mr);
  doors.push({p,dir:-1});}
 function setMirrorDoors(n){const step=n==='step';mStep=step;mR60=n==='r60';mc.visible=!step&&!mR60;mc2.visible=step;mc3.visible=mR60;
   if(!step&&!mR60){doorSets[3].forEach(d=>d.p.visible=n===3);doorSets[2].forEach(d=>d.p.visible=n===2);}
@@ -1019,14 +1021,22 @@ function poseRig(r,S,time=0){const d=r.d,H=d.H,g=r.g;g.visible=true;g.position.s
  const hips=[],knees=[],ankles=[];
  [-1,1].forEach((s,i)=>{const hp=V3(s*d.hw,Py,0),ph=(S.phase||0)+i*Math.PI,sw=S.stride||0;
   const aS=V3(s*d.hw*1.1,d.ankY+(sw*0.035*H+(S.lift||0))*Math.max(0,Math.cos(ph)),sw*Math.sin(ph)*0.13*H),aT=V3(s*d.hw*1.5,d.ankY,0.8*d.thigh);
-  const [K,A]=ik(hp,aS.lerp(aT,sit),d.thigh,d.shin,V3(0,0.2+sit,1));hips.push(hp);knees.push(K);ankles.push(A);});
+  const nat=aS.lerp(aT,sit),fr=sp=>sp?g.worldToLocal(sp.w()).add(V3(0,d.ankY,0)):nat.clone();
+  const AF=fr(S.fA&&S.fA[i]).lerp(fr(S.fB&&S.fB[i]),(S.farc&&S.farc[0]===i)?S.farc[2]:(S.fk??1));if(S.farc&&S.farc[0]===i)AF.y+=S.farc[1];
+  const [K,A]=ik(hp,AF,d.thigh,d.shin,V3(0,0.2+sit,1));hips.push(hp);knees.push(K);ankles.push(A);});
  const N=at(0.27),Sh=[-1,1].map(s=>N.clone().add(V3(s*d.sh,0,0)).add(dir.clone().multiplyScalar(-0.03*H)));
  const hl=lean+(S.tilt||0),hd=V3(0,Math.cos(hl),Math.sin(hl)),hb=V3(0,Math.sin(hl),-Math.cos(hl)),fwd=hb.clone().negate();
  const Hc=N.clone().add(hd.clone().multiplyScalar(0.045*H+d.hr*0.95));
  const J={P,N,Hc,hd,hb,fwd,hips,knees,H,hr:d.hr,d,at};
  const res=(sp,i)=>{const s=i?1:-1;if(!sp)return Sh[i].clone().add(V3(s*0.02*H,-(d.ua+d.fa+0.6*d.hand)*0.97,0.03*H));return sp.w?g.worldToLocal(sp.w()):sp.l(J,s);};
  const tg=[0,1].map(i=>{const v=res(S.hA&&S.hA[i],i).lerp(res(S.hB&&S.hB[i],i),S.hk??1);
-  if(S.wig){const [am,f]=S.wig;v.add(V3(Math.sin(time*f+i*2)*am,Math.cos(time*f*1.3+i)*am*0.5,0));}return v;});
+  // wig = [amplitude, speed, style]; only hands that hold a target move: rub = mirrored circles (washing / scrubbing), saw = side to side
+  // (brushing, towel behind the back), dry = dryer hand sweeps up/down round the head while the other runs through the hair
+  const sp=S.hB&&S.hB[i];if(S.wig&&sp){const [am,f,ty]=S.wig,s=i?1:-1,tt=time*f;
+   if(ty==='rub')v.add(V3(Math.cos(tt)*am*s,Math.sin(tt*2)*am*.25,Math.sin(tt)*am));
+   else if(ty==='saw')v.add(V3(Math.sin(tt)*am,0,0));
+   else if(ty==='dry')v.add(i===(S.ph??1)?V3(0,Math.sin(tt)*am,Math.cos(tt)*am*.5):V3(0,Math.abs(Math.sin(tt*1.3))*am*.3,Math.sin(tt*1.3)*am*.8));
+   else v.add(V3(Math.sin(tt+i*2)*am,Math.cos(tt*1.3+i)*am*0.5,0));}return v;});
  const arm=[0,1].map(i=>{const s=i?1:-1,[E,Tr]=ik(Sh[i],tg[i],d.ua,d.fa+d.hand*0.6,V3(s*(0.5-0.38*sit),-0.2,-1));
   const W=E.clone().add(Tr.clone().sub(E).normalize().multiplyScalar(d.fa));return {E,W,T:W.clone().add(Tr.clone().sub(W).normalize().multiplyScalar(d.hand))};});
  // meshes
@@ -1049,7 +1059,7 @@ function poseRig(r,S,time=0){const d=r.d,H=d.H,g=r.g;g.visible=true;g.position.s
  return {eye:g.localToWorld(Hc.clone().add(hd.clone().multiplyScalar(.05*d.hr))),top:g.localToWorld(Hc.clone().add(hd.clone().multiplyScalar(d.hr)))};}
 const rigs={man:makeRig('man'),woman:makeRig('woman')};
 const seatTop=()=>st.wc==='toto'?40.9:43;
-const SPOUT=s=>({w:()=>V3(fau.position.x-s*5,CT+(st.old?1:0)-1,30)});                     // hands under the spout, just above the basin rim
+const SPOUT=s=>({w:()=>V3(fau.position.x-s*3.5,CT+(st.old?1:0)+1,30)});                     // hands under the spout, just above the basin rim
 const THIGH={l:(J,s)=>{const i=s>0?1:0;return J.hips[i].clone().lerp(J.knees[i],.7).add(V3(s*.01*J.H,(J.d.R.th+.012)*J.H,0));}};
 function staticPose(k,pose){const m=PPL[k].m;
  return pose==='wash'?{x:170,z:72,ry:Math.PI,lean:m?.36:.28,tilt:.35,hB:[SPOUT(-1),SPOUT(1)]}
@@ -1063,7 +1073,7 @@ function rebuildPeople(){pplLabels.forEach(o=>dims.remove(o));pplLabels=[];Objec
   pplLabels.push(label(PPL[k].name+(PPL[k].m?' 健碩':' 苗條')+' · 眼高 '+Math.round(o.eye.y)+' · 頭頂 '+Math.round(o.top.y),[o.top.x,o.top.y+8,o.top.z],null,5));});}
 // ---------- 日常動畫: timelines of steps; each step tweens the state, walking steps move the feet; fx() fires at the step start (water, doors, drawers, lid)
 const AN={on:false,steps:[],i:0,t:0,dur:1,time:0,ph0:0,k:'man',cur:null,from:null,to:null,hA:null,hBn:null,shower:false,save:null};
-const NUM=['x','y','z','ry','sit','crouch','lean','tilt'],BASE={x:182,y:0,z:128,ry:-Math.PI/2,sit:0,crouch:0,lean:.03,tilt:0,hB:[null,null],prop:null,wig:null,ph:1};
+const NUM=['x','y','z','ry','sit','crouch','lean','tilt'],BASE={x:232,y:0,z:108,ry:-Math.PI/2,sit:0,crouch:0,lean:.03,tilt:0,hB:[null,null],fB:[null,null],prop:null,wig:null,ph:1};
 const T=(d,o={})=>({d,...o}),WK=(x,z,o={})=>({x,z,walk:true,...o});
 const at3=(x,y,z)=>({w:()=>V3(x,y,z)});
 const LEVER={w:()=>V3(fau.position.x+11.5,fau.position.y,6)};
@@ -1072,14 +1082,18 @@ const HEAD=(dx,dy,dz)=>({l:(J,s)=>J.Hc.clone().add(V3(s*dx*J.hr,dy*J.hr,0)).add(
 const MOUTH={l:(J,s)=>J.Hc.clone().add(J.hd.clone().multiplyScalar(-.35*J.hr)).add(J.fwd.clone().multiplyScalar(.85*J.hr)).add(V3(s*7,-4,9))};
 const DRY={l:(J,s)=>J.Hc.clone().add(V3(s*15,3,8))},CHEST={l:(J,s)=>J.at(.2).add(V3(s*6,0,J.H*.07))},GROIN={l:(J,s)=>J.P.clone().add(V3(s*5,2,.12*J.H))};
 const TUP={l:(J,s)=>J.Hc.clone().add(V3(s*16,J.hr*1.1,-4))},TBACK={l:(J,s)=>J.at(.17).add(V3(s*24,0,-14))};
-const ENTER=()=>[T(0,{...BASE,fx:()=>{st.door=true;}}),T(.9)],LEAVE=()=>[WK(182,128),T(.6,{ry:-Math.PI/2}),T(.8,{fx:()=>{st.door=false;}})];
+const FT=(x,y,z)=>({w:()=>V3(x,y,z)});
+const ENTER=()=>[T(0,{...BASE,fx:()=>{st.door=true;}}),T(1.4),WK(178,108)],LEAVE=()=>[WK(178,108),WK(232,108),T(.6,{ry:-Math.PI/2}),T(.9,{fx:()=>{st.door=false;}})];
+// step over the tub rim (x 65–73, tub floor 13) one foot at a time; feet pinned with fB, the moving foot lifted with farc
+const INTUB=()=>[WK(86,95),T(.5,{ry:-Math.PI/2}),T(1.3,{x:76,crouch:4,fB:[FT(52,13,89),FT(86,0,101)],farc:[0,50]}),T(1.3,{x:52,y:13,crouch:0,fB:[FT(52,13,89),FT(52,13,101)],farc:[1,50]}),T(.4,{fB:[null,null]})];
+const OUTTUB=()=>[T(.8,{ry:0}),WK(40,95),T(.5,{x:48}),T(.6,{ry:Math.PI/2}),T(1.3,{x:68,y:6,crouch:6,fB:[FT(48,13,101),FT(86,0,89)],farc:[1,50]}),T(1.3,{x:86,y:0,crouch:0,fB:[FT(86,0,101),FT(86,0,89)],farc:[0,50]}),T(.4,{fB:[null,null]})];
 const FACE=T(.6,{ry:Math.PI});
 const SCN={
  mirror:()=>[...ENTER(),WK(170,80),FACE,T(2,{lean:.02,tilt:-.08}),T(1,{hB:[null,HEAD(1,.4,-.2)]}),T(1.4,{wig:[2,5]}),T(.8,{hB:[null,null],wig:null}),T(.6,{tilt:0}),...LEAVE()],
- tap:()=>[...ENTER(),WK(170,74),FACE,T(.9,{lean:.3,tilt:.3,hB:[LEVER,null]}),T(.2,{fx:()=>{st.water=true;}}),T(.9,{hB:[SPOUT(-1),SPOUT(1)]}),T(3,{wig:[2.5,9]}),
+ tap:()=>[...ENTER(),WK(170,74),FACE,T(.9,{lean:.3,tilt:.3,hB:[LEVER,null]}),T(.2,{fx:()=>{st.water=true;}}),T(.9,{hB:[SPOUT(-1),SPOUT(1)]}),T(3,{wig:[3,7,'rub']}),
   T(.8,{wig:null,hB:[LEVER,null]}),T(.2,{fx:()=>{st.water=false;}}),T(.8,{lean:.03,tilt:0,hB:[null,null]}),...LEAVE()],
- brush:()=>[...ENTER(),WK(170,76),FACE,T(.9,{lean:.2,hB:[LEVER,null]}),T(.2,{fx:()=>{st.water=true;}}),T(.9,{prop:'brush',hB:[null,MOUTH],lean:.1,tilt:.1}),T(3,{wig:[1.2,16]}),
-  T(.9,{wig:null,lean:.42,tilt:.4,hB:[SPOUT(-1),null],prop:null}),T(1.2,{wig:[1.5,8]}),T(.8,{wig:null,hB:[LEVER,null]}),T(.2,{fx:()=>{st.water=false;}}),T(.8,{lean:.03,tilt:0,hB:[null,null]}),...LEAVE()],
+ brush:()=>[...ENTER(),WK(170,76),FACE,T(.9,{lean:.2,hB:[LEVER,null]}),T(.2,{fx:()=>{st.water=true;}}),T(.9,{prop:'brush',hB:[null,MOUTH],lean:.1,tilt:.1}),T(3,{wig:[1.4,14,'saw']}),
+  T(.9,{wig:null,lean:.42,tilt:.4,hB:[SPOUT(-1),null],prop:null}),T(1.2,{wig:[1.5,6,'rub']}),T(.8,{wig:null,hB:[LEVER,null]}),T(.2,{fx:()=>{st.water=false;}}),T(.8,{lean:.03,tilt:0,hB:[null,null]}),...LEAVE()],
  mcab:()=>[...ENTER(),WK(150,80),FACE,T(1,{lean:.15,tilt:-.1,hB:[null,MEDGE]}),T(.1,{fx:()=>{st.mirror=true;}}),T(.7,{hB:[null,null]}),T(.8,{z:80,walk:true,ry:Math.PI}),
   T(1,{lean:.3,hB:[null,MSHELF]}),T(1,{wig:[1.5,5]}),T(.8,{wig:null,hB:[null,null],lean:.05}),T(.8,{z:84,walk:true,ry:Math.PI}),T(1,{lean:.15,hB:[null,MOPEN]}),
   T(.1,{fx:()=>{st.mirror=false;}}),T(1,{hB:[null,MEDGE]}),T(.6,{hB:[null,null],lean:.03,tilt:0}),...LEAVE()],
@@ -1088,16 +1102,16 @@ const SCN={
   T(.8,{crouch:0,lean:.03,hB:[null,null]}),...LEAVE()],
  dryer:()=>{const down=[T(1,{crouch:28,lean:.45,hB:[at3(168,57,52),null]}),T(.1,{fx:()=>{st.dt.mid=true;}}),T(1.1,{hB:[at3(168,57,78),null]}),T(1,{hB:[at3(184,52,64),null]})];
   const up=[T(.9,{hB:[at3(168,57,78),null]}),T(.1,{fx:()=>{st.dt.mid=false;}}),T(1,{hB:[at3(168,57,52),null]}),T(.9,{crouch:0,lean:.05})];
-  return [...ENTER(),WK(170,96),FACE,...down,T(.6,{prop:'dryer',ph:0}),...up,T(.8,{z:82,walk:true,ry:Math.PI}),T(.8,{hB:[DRY,HEAD(1,.4,-.2)],tilt:-.05}),T(4,{wig:[3,5]}),
+  return [...ENTER(),WK(170,96),FACE,...down,T(.6,{prop:'dryer',ph:0}),...up,T(.8,{z:82,walk:true,ry:Math.PI}),T(.8,{hB:[DRY,HEAD(1,.4,-.2)],tilt:-.05}),T(4,{wig:[6,3,'dry']}),
    T(.8,{wig:null,hB:[at3(168,62,80),null],tilt:0}),T(.8,{z:96,walk:true,ry:Math.PI}),...down,T(.5,{prop:null}),...up,T(.6,{hB:[null,null]}),...LEAVE()];},
  wc:()=>[...ENTER(),WK(107.5,96),T(.3,{fx:()=>{if(!st.lid)st.lid=1;}}),T(.9,{ry:0}),T(.9,{z:80,walk:true,ry:0}),T(1.6,{z:42,sit:1,lean:.05,tilt:.1,hB:[THIGH,THIGH]}),T(2.5),
   T(1,{hB:[THIGH,at3(135,52,44)]}),T(1,{prop:'paper',hB:[THIGH,at3(124,58,62)]}),T(.5,{prop:null,hB:[THIGH,THIGH]}),T(1.5,{z:80,sit:0,lean:.03,tilt:0,hB:[null,null]}),T(.4,{fx:()=>{st.lid=0;}}),...LEAVE()],
  stand:()=>[...ENTER(),WK(107.5,100),T(.6,{ry:-Math.PI}),T(.3,{fx:()=>{st.lid=2;}}),T(1,{tilt:.3,hB:[GROIN,GROIN]}),T(3),T(.6,{hB:[null,null],tilt:0}),T(.4,{fx:()=>{st.lid=0;}}),...LEAVE()],
- towel:()=>[...ENTER(),WK(100,108),T(.6,{ry:0}),...TOWEL(),...LEAVE()],
- shower:()=>[...ENTER(),WK(92,108),T(.6,{ry:-Math.PI/2}),T(1.6,{x:40,y:13,walk:true,ry:-Math.PI/2,arc:38}),WK(38,40),T(.6,{ry:Math.PI}),T(.2,{fx:()=>{AN.shower=true;}}),
-  T(1,{tilt:-.25,hB:[HEAD(.9,.9,0),HEAD(.9,.9,0)]}),T(4,{wig:[3,6]}),T(.8,{wig:null,hB:[CHEST,CHEST]}),T(2,{wig:[4,7]}),T(.2,{fx:()=>{AN.shower=false;}}),T(.8,{wig:null,tilt:0,hB:[null,null]}),
-  WK(38,108),T(.6,{ry:Math.PI/2}),T(1.6,{x:92,y:0,walk:true,ry:Math.PI/2,arc:38}),T(.6,{ry:0}),...TOWEL(),...LEAVE()]};
-function TOWEL(){return [T(.8,{prop:'towel',hB:[TUP,TUP]}),T(2.5,{wig:[5,4]}),T(1,{hB:[TBACK,TBACK],wig:null}),T(2.5,{wig:[6,4]}),T(.8,{prop:null,hB:[null,null],wig:null})];}
+ towel:()=>[...ENTER(),WK(112,100),T(.6,{ry:0}),...TOWEL(),...LEAVE()],
+ shower:()=>[...ENTER(),...INTUB(),WK(38,40),T(.6,{ry:Math.PI}),T(.2,{fx:()=>{AN.shower=true;}}),
+  T(1,{tilt:-.25,hB:[HEAD(.6,.9,0),HEAD(.6,.9,0)]}),T(4,{wig:[3,6,'rub']}),T(.8,{wig:null,hB:[CHEST,CHEST]}),T(2,{wig:[5,5,'rub']}),T(.2,{fx:()=>{AN.shower=false;}}),T(.8,{wig:null,tilt:0,hB:[null,null]}),
+  ...OUTTUB(),WK(112,100),T(.6,{ry:0}),...TOWEL(),...LEAVE()]};
+function TOWEL(){return [T(.8,{prop:'towel',hB:[TUP,TUP]}),T(2.5,{wig:[4,4,'rub']}),T(1,{hB:[TBACK,TBACK],wig:null}),T(2.5,{wig:[10,4,'saw']}),T(.8,{prop:null,hB:[null,null],wig:null})];}
 const ORDER=['mirror','tap','brush','mcab','drawer','dryer','wc','stand','shower'];
 // shower water: soft translucent cone from the head on the slide rail down into the tub
 const showerW=new THREE.Mesh(new THREE.CylinderGeometry(3,13,1,24,1,true),new THREE.MeshBasicMaterial({color:0xbfe6ff,transparent:true,opacity:.22,depthWrite:false,side:THREE.DoubleSide}));
@@ -1105,21 +1119,21 @@ const showerW=new THREE.Mesh(new THREE.CylinderGeometry(3,13,1,24,1,true),new TH
 function nextStep(){AN.i++;if(AN.i>=AN.steps.length){AN.i=0;}
  const s=AN.steps[AN.i],c=AN.cur;if(s.fx)s.fx();AN.from={...c};AN.to={...c};NUM.forEach(n=>{if(s[n]!==undefined)AN.to[n]=s[n];});
  if(s.walk){const dx=AN.to.x-c.x,dz=AN.to.z-c.z;if(s.ry===undefined&&(dx||dz))AN.to.ry=Math.atan2(dx,dz);AN.dur=s.d??Math.max(.6,Math.hypot(dx,dz)/70);}else AN.dur=s.d;
- AN.hA=c.hB;AN.hBn=('hB' in s)?s.hB:c.hB;['prop','wig','ph'].forEach(n=>{if(n in s)c[n]=s[n];});AN.t=0;AN.step=s;}
+ AN.hA=c.hB;AN.hBn=('hB' in s)?s.hB:c.hB;AN.fA=c.fB;AN.fBn=('fB' in s)?s.fB:c.fB;['prop','wig','ph'].forEach(n=>{if(n in s)c[n]=s[n];});AN.t=0;AN.step=s;}
 function stepAnim(dt){if(!AN.on)return;AN.t+=dt;AN.time+=dt;
- for(let guard=0;guard<50&&AN.dur<=0;guard++){AN.cur.hB=AN.hBn;NUM.forEach(n=>AN.cur[n]=AN.to[n]);nextStep();}
+ for(let guard=0;guard<50&&AN.dur<=0;guard++){AN.cur.hB=AN.hBn;AN.cur.fB=AN.fBn;NUM.forEach(n=>AN.cur[n]=AN.to[n]);nextStep();}
  const s=AN.step,c=AN.cur,k=Math.min(1,AN.t/AN.dur),e=k*k*(3-2*k);
  NUM.forEach(n=>{c[n]=n==='ry'?lerpAng(AN.from.ry,AN.to.ry,s.walk?Math.min(1,k*3):e):THREE.MathUtils.lerp(AN.from[n],AN.to[n],s.walk&&(n==='x'||n==='z')?k:e);});
  let stride=0,phase=AN.ph0;if(s.walk){const dist=Math.hypot(AN.to.x-AN.from.x,AN.to.z-AN.from.z);stride=Math.min(1,k*4,(1-k)*4);phase=AN.ph0+dist*k/(0.26*rigs[AN.k].d.H)*Math.PI;}
- poseRig(rigs[AN.k],{...c,seatY:seatTop(),hA:AN.hA,hB:AN.hBn,hk:e,stride,phase,lift:s.arc?s.arc*Math.sin(Math.PI*k):0},AN.time);
+ poseRig(rigs[AN.k],{...c,seatY:seatTop(),hA:AN.hA,hB:AN.hBn,hk:e,fA:AN.fA,fB:AN.fBn,fk:e,farc:s.farc?[s.farc[0],s.farc[1]*Math.min(1,Math.sin(Math.PI*k)*1.8),(t=>t*t*(3-2*t))(Math.min(1,Math.max(0,(k-.2)/.6)))]:null,stride,phase},AN.time);
  showerW.visible=AN.shower;
- if(k>=1){c.hB=AN.hBn;if(s.walk)AN.ph0=phase;nextStep();}}
+ if(k>=1){c.hB=AN.hBn;c.fB=AN.fBn;if(s.walk)AN.ph0=phase;nextStep();}}
 function startAnim(name){stopAnim();const solo=st.who==='man'||st.who==='woman';AN.k=(name==='stand'||!solo)?'man':st.who;
  AN.save={water:st.water,mirror:st.mirror,top:st.dt.top,mid:st.dt.mid,lid:st.lid,door:st.door};
  AN.steps=name==='all'?ORDER.filter(n=>n!=='stand'||AN.k==='man').flatMap(n=>SCN[n]()):SCN[name]();
  AN.cur={...BASE};AN.i=-1;AN.ph0=0;AN.time=0;AN.on=true;rebuildPeople();nextStep();
- // with 兩個, the other person waits by the tub end, clear of the walking paths
- if(st.who==='both'){const o=AN.k==='man'?'woman':'man';poseRig(rigs[o],{x:98,z:132,ry:Math.PI*0.85,lean:.02});}}
+ // with 兩個, the other person sits on the front end of the tub rim (top 45), feet on the floor, out of every path
+ if(st.who==='both'){const o=AN.k==='man'?'woman':'man';poseRig(rigs[o],{x:70,z:130,ry:Math.PI/2,sit:1,seatY:45,lean:.03,hB:[THIGH,THIGH]});}}
 function stopAnim(){if(!AN.on)return;AN.on=false;AN.shower=false;showerW.visible=false;const v=AN.save;
  st.water=v.water;st.mirror=v.mirror;st.dt.top=v.top;st.dt.mid=v.mid;st.lid=v.lid;st.door=v.door;rebuildPeople();}
 group('[data-who]',b=>{st.who=b.dataset.who;if(AN.on)startAnim(st.anim);else rebuildPeople();});
