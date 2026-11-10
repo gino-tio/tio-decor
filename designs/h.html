@@ -79,6 +79,7 @@ button.on{background:#c9a46a;border-color:#c9a46a;color:#1d1f22;font-weight:600}
 <div id="bar" class="min">
   <div class="row"><span>視角</span>
     <button id="moreBtn" class="on" style="background:#3a3d44;border-color:#555;color:#ddd">更多選項 ▴</button>
+    <button id="shareBtn" style="background:#3a3d44;border-color:#c9a46a;color:#c9a46a">分享</button>
     <button data-view="hero" class="on">效果圖</button>
     <button data-view="front">正面</button>
     <button data-view="door">門口</button>
@@ -918,6 +919,20 @@ try{composer=new EffectComposer(renderer);composer.addPass(new RenderPass(scene,
 }catch(e){console.warn('post off',e);composer=null;}
 function resize(){const w=innerWidth,h=innerHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();if(composer)composer.setSize(w,h);}
 addEventListener('resize',resize);resize();dims.visible=false;go('hero',true);
+
+// ---------- share: the link keeps every option that differs from the default (o=key.value,...) plus the camera (c=position_target)
+const SKEYS=['tog','ctop','size','front','fau','dr','wc','ledge','mh','basin','stone','wood','floor','bshelf','item','corner','md','trap'],TOGK=['tog','dr','item'];
+const optBtns=[];SKEYS.forEach(k=>document.querySelectorAll('#bar [data-'+k+']').forEach(b=>optBtns.push({b,k,v:b.dataset[k],on0:b.classList.contains('on')})));
+function shareHash(){const o=optBtns.filter(x=>{const on=x.b.classList.contains('on');return TOGK.includes(x.k)?on!==x.on0:on&&!x.on0;}).map(x=>x.k+'.'+x.v);
+  const r=v=>[v.x,v.y,v.z].map(n=>Math.round(n)).join('_');return 'o='+o.join(',')+'&c='+r(camera.position)+'_'+r(controls.target);}
+{const p=new URLSearchParams(location.hash.slice(1));
+ (p.get('o')||'').split(',').filter(Boolean).forEach(t=>{const i=t.indexOf('.');const x=optBtns.find(o=>o.k===t.slice(0,i)&&o.v===t.slice(i+1));if(x)x.b.click();});
+ const c=(p.get('c')||'').split('_').map(Number);
+ if(c.length===6&&c.every(isFinite)){camera.position.set(c[0],c[1],c[2]);controls.target.set(c[3],c[4],c[5]);document.querySelectorAll('[data-view]').forEach(x=>x.classList.remove('on'));}}
+document.getElementById('shareBtn').onclick=async e=>{const b=e.target,u=location.href.split('#')[0]+'#'+shareHash();history.replaceState(null,'',u);
+  const done=t=>{b.textContent=t;setTimeout(()=>b.textContent='分享',1800);};
+  if(navigator.share){try{await navigator.share({title:'浴室 3D 設計 H',url:u});}catch(err){}return;}
+  try{await navigator.clipboard.writeText(u);done('已複製連結');}catch(err){prompt('複製呢條連結：',u);}};
 
 const lerp=(a,b,k)=>a+(b-a)*k;
 renderer.setAnimationLoop(()=>{
