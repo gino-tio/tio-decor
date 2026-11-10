@@ -130,6 +130,15 @@ button.on{background:#c9a46a;border-color:#c9a46a;color:#1d1f22;font-weight:600}
     <button data-lid="1">開面蓋</button>
     <button data-lid="2">面蓋＋座圈都開</button>
   </div>
+  <div class="row"><span>人物</span>
+    <button data-who="none" class="on">冇</button>
+    <button data-who="man">男 180 健碩</button>
+    <button data-who="woman">女 165 苗條長髮</button>
+    <button data-who="both">兩個</button>
+    <span style="margin-left:6px">做緊</span>
+    <button data-act="wash" class="on">洗手</button>
+    <button data-act="wc">去廁所</button>
+  </div>
   <div class="row"><span>窄枱</span>
     <button data-ledge="on" class="on">有</button>
     <button data-ledge="off">冇</button>
@@ -961,6 +970,66 @@ group('[data-size]',b=>setSize(b.dataset.size));
 group('[data-front]',b=>{const k=b.dataset.front;[aBig,aSmall].forEach(g=>{const fr=g.userData.fr;Object.keys(fr).forEach(n=>fr[n].visible=n===k);});});
 // chosen spec (11/7): TOTO, ocean basin, floor-standing, stepped mirror cabinet (高低款) at 125, ledge kept
 ['[data-wc=toto]','[data-basin=ocean]','[data-floor=on]','[data-md=step]','[data-mh="125"]','[data-ledge=on]'].forEach(q=>{const b=document.querySelector(q);if(b)b.click();});
+// ---------- people (人物): simple mannequins to check heights at the basin and on the toilet.
+// Each figure is built from joint positions in its own frame (+z = facing, y up, origin on the floor under the pelvis); arms / legs use 2-bone IK.
+const PPL={man:{H:180,m:true,shirt:0x2b3a55,pants:0x4a4f57,hair:0x1c1714,name:'男 180'},woman:{H:165,m:false,shirt:0xc98f8a,pants:0x2a2a2e,hair:0x2a1d17,name:'女 165'}};
+const skinM=new THREE.MeshStandardMaterial({color:0xe2b89c,roughness:.6}),shoeM=new THREE.MeshStandardMaterial({color:0xf0f0ee,roughness:.5});
+const V3=(x,y,z)=>new THREE.Vector3(x,y,z),YUP=V3(0,1,0);
+function bone(g,a,b,r,mat,sx=1,sz=1){const d=b.clone().sub(a),L=Math.max(d.length(),0.01),geo=new THREE.CapsuleGeometry(r,L,6,16);geo.scale(sx,1,sz);
+  const m=new THREE.Mesh(geo,mat);m.position.copy(a).add(b).multiplyScalar(0.5);m.quaternion.setFromUnitVectors(YUP,d.normalize());m.castShadow=true;g.add(m);return m;}
+function blob(g,c,rx,ry,rz,mat,tilt=0,geo){const m=new THREE.Mesh(geo||new THREE.SphereGeometry(1,28,18),mat);m.scale.set(rx,ry,rz);m.position.copy(c);m.rotation.x=tilt;m.castShadow=true;g.add(m);return m;}
+function ik(S,T,a,b,pole){const u=T.clone().sub(S);const L=Math.min(u.length(),a+b-0.01);u.normalize();
+  const al=Math.acos(Math.max(-1,Math.min(1,(a*a+L*L-b*b)/(2*a*L))));const v=pole.clone().sub(u.clone().multiplyScalar(pole.dot(u))).normalize();
+  return [S.clone().add(u.clone().multiplyScalar(a*Math.cos(al))).add(v.multiplyScalar(a*Math.sin(al))),S.clone().add(u.multiplyScalar(L))];}
+// pose 'wash': standing, leaning over the basin, hands to handT (local); 'wc': seated on a seat whose top is seatY
+function buildPerson(k,pose,seatY,handT){const p=PPL[k],H=p.H,m=p.m,g=new THREE.Group();
+ const shirt=new THREE.MeshStandardMaterial({color:p.shirt,roughness:.8}),pants=new THREE.MeshStandardMaterial({color:p.pants,roughness:.85}),hairM=new THREE.MeshStandardMaterial({color:p.hair,roughness:.6});
+ const thigh=0.245*H,shin=0.246*H,ankY=0.039*H,torso=0.29*H,hw=(m?0.055:0.05)*H,sh=(m?0.112:0.095)*H,ua=0.186*H,fa=0.146*H,hand=0.07*H,hr=0.064*H;
+ const R=m?{th:0.05,sn:0.033,ua:0.031,fa:0.024}:{th:0.043,sn:0.026,ua:0.02,fa:0.017};
+ let P,lean,tilt;const knees=[],ankles=[],hips=[];
+ if(pose==='wash'){lean=m?0.36:0.28;tilt=0.35;P=V3(0,thigh+shin+ankY,0);
+  [-1,1].forEach(s=>{hips.push(V3(s*hw,P.y,0));ankles.push(V3(s*hw*1.1,ankY,0));knees.push(V3(s*hw*1.05,ankY+shin,0.012*H));});}
+ else{lean=0.05;tilt=0.12;P=V3(0,seatY+0.06*H,0);
+  [-1,1].forEach(s=>{const hp=V3(s*hw,P.y,0),A=V3(s*hw*1.5,ankY,0.8*thigh);hips.push(hp);knees.push(ik(hp,A,thigh,shin,V3(0,1,1))[0]);ankles.push(A);});}
+ const dir=V3(0,Math.cos(lean),Math.sin(lean)),at=t=>P.clone().add(dir.clone().multiplyScalar(t*H));
+ // legs + shoes
+ [0,1].forEach(i=>{bone(g,hips[i],knees[i],R.th*H,pants);bone(g,knees[i],ankles[i],R.sn*H,pants);
+  const f=ankles[i];bone(g,V3(f.x,0.026*H,f.z-0.025*H),V3(f.x,0.026*H,f.z+0.1*H),0.026*H,shoeM,1.3,1);});
+ // pelvis, waist, chest (athletic = broad V chest; slim = narrow)
+ blob(g,at(0.025),(m?0.09:0.093)*H,0.062*H,0.068*H,pants,lean);
+ bone(g,at(0.07),at(0.15),(m?0.068:0.056)*H,shirt,m?1.2:1.15,0.78);
+ blob(g,at(0.205),(m?0.122:0.09)*H,0.088*H,(m?0.072:0.062)*H,shirt,lean);
+ const N=at(0.27),S=[-1,1].map(s=>N.clone().add(V3(s*sh,0,0)).add(dir.clone().multiplyScalar(-0.03*H)));
+ S.forEach(q=>blob(g,q,(m?0.042:0.03)*H,(m?0.04:0.03)*H,(m?0.042:0.032)*H,shirt));
+ // neck + head + hair
+ const hl=lean+tilt,hd=V3(0,Math.cos(hl),Math.sin(hl)),hb=V3(0,Math.sin(hl),-Math.cos(hl));
+ bone(g,N,N.clone().add(hd.clone().multiplyScalar(0.045*H)),(m?0.034:0.026)*H,skinM);
+ const Hc=N.clone().add(hd.clone().multiplyScalar(0.045*H+hr*0.95));blob(g,Hc,hr*0.8,hr,hr*0.9,skinM,hl);
+ const cap=new THREE.SphereGeometry(1,28,14,0,Math.PI*2,0,Math.PI*0.56);
+ blob(g,Hc.clone().add(hb.clone().multiplyScalar(0.06*hr)),hr*0.86,hr*1.06,hr*0.98,hairM,hl-0.55,cap);
+ if(!m){const top=Hc.clone().add(hb.clone().multiplyScalar(0.55*hr)).add(hd.clone().multiplyScalar(0.25*hr));
+  const low=at(0.13).add(V3(0,0,0)).add(hb.clone().multiplyScalar(0.075*H));bone(g,top,low,0.05*H,hairM,1.45,0.42);}
+ // arms: upper arm (sleeve on the man's T-shirt), forearm, flat hand
+ [0,1].forEach(i=>{const s=i?1:-1;let T;
+  if(pose==='wash')T=handT[i].clone();else T=hips[i].clone().lerp(knees[i],0.7).add(V3(s*0.01*H,(R.th+0.012)*H,0));
+  const [E,Tr]=ik(S[i],T,ua,fa+hand*0.6,V3(s*(pose==='wash'?0.5:0.12),-0.2,-1));const W=E.clone().add(Tr.clone().sub(E).normalize().multiplyScalar(fa));
+  bone(g,S[i],E,R.ua*H,m?skinM:shirt);if(m)bone(g,S[i],S[i].clone().lerp(E,0.45),R.ua*H*1.18,shirt);
+  bone(g,E,W,R.fa*H,skinM);bone(g,W,W.clone().add(Tr.clone().sub(W).normalize().multiplyScalar(hand)),0.014*H,skinM,1.7,0.8);});
+ return {g,eye:Hc.clone().add(hd.clone().multiplyScalar(0.05*hr)),top:Hc.clone().add(hd.clone().multiplyScalar(hr))};}
+const people=new THREE.Group();add(people);let pplLabels=[];
+function rebuildPeople(){people.clear();pplLabels.forEach(o=>dims.remove(o));pplLabels=[];
+ const who=st.who||'none';if(who==='none')return;
+ const act=st.act||'wash',list=who==='both'?[['man',act],['woman',act==='wash'?'wc':'wash']]:[[who,act]];
+ list.forEach(([k,pose])=>{let r,o;
+  if(pose==='wash'){const px=170,pz=72;o={x:px,z:pz,ry:Math.PI};
+   r=buildPerson(k,'wash',0,[-1,1].map(s=>V3(s*5,CT+(st.old?1:0)-1,pz-30)));}            // hands under the spout, just above the basin rim
+  else{const seatY=st.wc==='toto'?40.9:43;o={x:107.5,z:42+(st.wc==='toto'?0:toilet.position.z),ry:0};r=buildPerson(k,'wc',seatY);
+   if(!st.lid){const b=document.querySelector('[data-lid="1"]');if(b)b.click();}}
+  r.g.position.set(o.x,0,o.z);r.g.rotation.y=o.ry;people.add(r.g);
+  const w=v=>v.clone().applyAxisAngle(YUP,o.ry).add(V3(o.x,0,o.z)),e=w(r.eye),t=w(r.top);
+  pplLabels.push(label(PPL[k].name+(PPL[k].m?' 健碩':' 苗條')+' · 眼高 '+Math.round(e.y)+' · 頭頂 '+Math.round(t.y),[t.x,t.y+8,t.z],null,5));});}
+group('[data-who]',b=>{st.who=b.dataset.who;rebuildPeople();});group('[data-act]',b=>{st.act=b.dataset.act;rebuildPeople();});
+document.querySelectorAll('[data-wc],[data-size]').forEach(b=>b.addEventListener('click',()=>rebuildPeople()));
 
 let composer=null;
 try{composer=new EffectComposer(renderer);composer.addPass(new RenderPass(scene,camera));
@@ -972,7 +1041,7 @@ function resize(){const w=innerWidth,h=innerHeight;renderer.setSize(w,h,false);c
 addEventListener('resize',resize);resize();dims.visible=false;go('hero',true);
 
 // ---------- share: the link keeps every option that differs from the default (o=key.value,...) plus the camera (c=position_target)
-const SKEYS=['lid','tog','ctop','size','front','fau','dr','wc','ledge','mh','basin','stone','wood','floor','bshelf','item','corner','md','mht','trap'],TOGK=['tog','dr','item'];
+const SKEYS=['who','act','lid','tog','ctop','size','front','fau','dr','wc','ledge','mh','basin','stone','wood','floor','bshelf','item','corner','md','mht','trap'],TOGK=['tog','dr','item'];
 const optBtns=[];SKEYS.forEach(k=>document.querySelectorAll('#bar [data-'+k+']').forEach(b=>optBtns.push({b,k,v:b.dataset[k],on0:b.classList.contains('on')})));
 function shareHash(){const o=optBtns.filter(x=>{const on=x.b.classList.contains('on');return TOGK.includes(x.k)?on!==x.on0:on&&!x.on0;}).map(x=>x.k+'.'+x.v);
   const r=v=>[v.x,v.y,v.z].map(n=>Math.round(n)).join('_');return 'o='+o.join(',')+'&c='+r(camera.position)+'_'+r(controls.target);}
