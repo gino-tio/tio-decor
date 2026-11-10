@@ -55,6 +55,7 @@ button.on{background:#c9a46a;border-color:#c9a46a;color:#1d1f22;font-weight:600}
     <li>INAX 遙控 234×78mm，嵌喺盆櫃側面向住座廁，離地約 75。安裝圖建議喺側牆、離後牆 550–930，盆櫃只深 50，所以位置偏後，要試吓坐低撳唔撳到</li>
     <li>INAX 安裝圖：座廁兩邊離牆／障礙 ≥70、兩牆之間 ≥700。浴缸邊到盆櫃之間得約 65（盆櫃係吊櫃，地下夠位，但膝頭位要試）</li>
     <li>鏡櫃 120×97 圓角，四邊透光燈帶，三道鏡門</li>
+    <li>鏡櫃選項「高低款」：闊 120、深 15；左（座廁上）60×75、右（盆上）60×95，頂齊、外角圓角，兩道門</li>
   </ul>
   <h3>選項提示</h3>
   <ul>
@@ -180,6 +181,7 @@ button.on{background:#c9a46a;border-color:#c9a46a;color:#1d1f22;font-weight:600}
   <div class="row"><span>鏡櫃門</span>
     <button data-md="3" class="on">三門</button>
     <button data-md="2">兩門</button>
+    <button data-md="step">高低款 120×95（左60×75／右60×95）</button>
   </div>
   <div class="row" id="trapRow"><span>坑距</span>
     <button data-trap="400" class="on">坑距 305（貼牆）</button>
@@ -678,7 +680,7 @@ const halos=[];const _noHalo=true;
 [[124,24,138,MY1+12,0],[124,14,138,MY0-7,Math.PI],[22,97,MX0-11,MYC,Math.PI/2],[22,97,MX1+11,MYC,-Math.PI/2]].forEach(([w,h,x,y,r])=>{
   const g=new THREE.Mesh(new THREE.PlaneGeometry(r%Math.PI?h:w,r%Math.PI?w:h),glowMat);g.rotation.z=r;g.position.set(x,y,0.3+halos.length*0.02);add(g);halos.push(g);g.material=g.material.clone();g.material.opacity=0.35;});
 const mLights=[[138,MY1+6,6,0.45,70],[138,MY0-4,12,0.6,60],[MX0-4,MYC,10,0.3,60],[MX1+4,MYC,10,0.3,60]].map(([x,y,z,i,d])=>{const l=new THREE.PointLight(0xffe7c4,i,d,0);l.position.set(x,y,z);l.userData.i=i;add(l);return l;});
-function setMirrorLight(on){lightMat.emissiveIntensity=on?1.5:0;halos.forEach(h=>h.visible=on);mLights.forEach(l=>l.intensity=on?l.userData.i:0);}
+function setMirrorLight(on){lightMat.emissiveIntensity=on?1.5:0;halos.forEach(h=>h.visible=on&&!mStep);mLights.forEach(l=>l.intensity=on?l.userData.i:0);}
 const doors=[],doorSets={};
 function buildDoors(n){const set=[];const DW=(MX1-MX0-2.8)/n,DX0=MX0+1.4;
  const spec=n===3?[[DX0,1,[MR-1.4,0,0,MR-1.4]],[DX0+DW,1,[0,0,0,0]],[MX1-1.4,-1,[0,MR-1.4,MR-1.4,0]]]:[[DX0,1,[MR-1.4,0,0,MR-1.4]],[MX1-1.4,-1,[0,MR-1.4,MR-1.4,0]]];
@@ -691,7 +693,30 @@ function buildDoors(n){const set=[];const DW=(MX1-MX0-2.8)/n,DX0=MX0+1.4;
   const d={p,dir};doors.push(d);set.push(d);});
  doorSets[n]=set;}
 buildDoors(3);buildDoors(2);doorSets[2].forEach(d=>d.p.visible=false);
-function setMirrorDoors(n){doorSets[3].forEach(d=>d.p.visible=n===3);doorSets[2].forEach(d=>d.p.visible=n===2);}
+// ---------- option: stepped mirror cabinet 120 wide x 15 deep, tops level: left 60x75 over the toilet, right 60x95 over the basin; rounded outer corners
+const mc2=new THREE.Group();add(mc2);mc2.visible=false;let mStep=false;
+const MD2=15,SX=138,SH=20,MT2=MY0+95; // left half's bottom sits 20 above the right half's
+function stepShape(i,r){const x0=MX0+i,x1=MX1-i,y0=MY0+i,y1=MT2-i,xs=SX+i,ys=MY0+SH+i;const s=new THREE.Shape();
+  s.moveTo(x0+r,ys);s.lineTo(xs,ys);s.lineTo(xs,y0+r);s.quadraticCurveTo(xs,y0,xs+r,y0);s.lineTo(x1-r,y0);s.quadraticCurveTo(x1,y0,x1,y0+r);
+  s.lineTo(x1,y1-r);s.quadraticCurveTo(x1,y1,x1-r,y1);s.lineTo(x0+r,y1);s.quadraticCurveTo(x0,y1,x0,y1-r);s.lineTo(x0,ys+r);s.quadraticCurveTo(x0,ys,x0+r,ys);return s;}
+{const ring=stepShape(0,MR);ring.holes.push(stepShape(1.4,MR-1.4));
+ const back=new THREE.Mesh(new THREE.ExtrudeGeometry(ring,{depth:3,bevelEnabled:false,curveSegments:16}),M.black);mc2.add(back);
+ const band=new THREE.Mesh(new THREE.ExtrudeGeometry(ring,{depth:MD2-3,bevelEnabled:false,curveSegments:16}),lightMat);band.position.z=3;mc2.add(band);
+ box(SX-MX0-2.8,75-2.8,0.8,M.inner,(MX0+SX)/2,MY0+SH+37.5,0.5,mc2);box(MX1-SX-2.8,95-2.8,0.8,M.inner,(SX+MX1)/2,MY0+47.5,0.5,mc2);
+ box(1.2,75-2.8,MD2-1.4,M.inner,SX,MY0+SH+37.5,(MD2-1.4)/2,mc2);                       // divider between the two halves
+ [MY0+SH+25,MY0+SH+50].forEach(y=>box(SX-MX0-3.2,0.6,12.5,M.glass,(MX0+SX)/2,y,7,mc2));
+ [MY0+32,MY0+64].forEach(y=>box(MX1-SX-3.2,0.6,12.5,M.glass,(SX+MX1)/2,y,7,mc2));
+ // two mirror doors: left hinged on the left, right hinged on the right
+ [[MX0+1.4,1,SX-0.1-(MX0+1.4),MY0+SH,[MR-1.4,0,0,MR-1.4]],[MX1-1.4,-1,MX1-1.4-(SX+0.1),MY0,[0,MR-1.4,MR-1.4,MR-1.4]]].forEach(([hx,dir,DW,yb,rad])=>{
+  const p=new THREE.Group();p.position.set(hx,0,MD2);mc2.add(p);
+  const x0=dir>0?0.1:-DW,x1=dir>0?DW:-0.1;
+  p.add(new THREE.Mesh(new THREE.ExtrudeGeometry(rxy(x0,yb+1.4,x1,MT2-1.4,rad),{depth:1.4,bevelEnabled:false,curveSegments:12}),M.black));
+  const r2=rad.map(r=>r?Math.max(r-0.6,0.5):0);
+  const mr=new THREE.Mesh(new THREE.ShapeGeometry(rxy(x0+0.6,yb+2,x1-0.6,MT2-2,r2),12),M.mirror);mr.position.z=1.41;p.add(mr);
+  doors.push({p,dir});});}
+function setMirrorDoors(n){const step=n==='step';mStep=step;mc.visible=!step;mc2.visible=step;
+  if(!step){doorSets[3].forEach(d=>d.p.visible=n===3);doorSets[2].forEach(d=>d.p.visible=n===2);}
+  setMirrorLight(st.mlight);mirrorLabels(st.mh);}
 
 MK('toilet');
 // ---------- INAX SARAS 100572BW10 (D710 x W385 x H472) — per product photos:
@@ -807,6 +832,8 @@ dim([203,0,51],[203,90,51]);label('離地 90',[208,45,51]);
 dim([144,43,52],[144,90,52]);label('總高 47',[152,55,58]);
 const ledgeDims=[dim([75,92,11],[140,92,11]),label('窄枱 65×10',[107.5,97,12])];
 let mirDims=[];function mirrorLabels(h){mirDims.forEach(o=>dims.remove(o));const y0=h,y1=h+97;
+  if(mStep){const t=h+95;mirDims=[dim([198.5,t,16],[198.5,H,16]),label('離假天花 '+(H-t),[192,(t+H)/2,17],null,5),dim([78,t+3,16],[198,t+3,16]),label('鏡櫃高低款 120×15 深',[138,t+9,16]),
+   label('左 60×75（底 '+(h+20)+'）',[108,h+28,17],null,5),label('右 60×95（底 '+h+'）',[168,h+8,17],null,5),dim([76,CT,15],[76,y0,15]),label(String(h-CT),[71,(CT+y0)/2,15]),label('頂 '+t,[60,t-3,15],null,5)];return;}
   mirDims=[dim([198.5,y1,15],[198.5,H,15]),label('離假天花 '+(H-y1),[192,(y1+H)/2,16],null,5),dim([78,y1+3,15],[198,y1+3,15]),label('鏡櫃 120×97×13 圓角',[138,y1+9,15]),label('四邊透光燈帶',[MX1+6,y0+40,16],null,5),
    dim([76,CT,14],[76,y0,14]),label(String(h-CT),[71,(CT+y0)/2,14]),label('鏡櫃底離地 '+h+'、頂 '+(h+97),[60,y0+3,14],null,5)];}
 mirrorLabels(MY0);
@@ -844,7 +871,7 @@ function setStone(k){stoneM.map=stoneTex[k];stoneM.needsUpdate=true;vanityB.user
 function setCabWood(v){M.wood.map=v==='door'?doorWoodT:woodTexOwn;walnutM.map=v==='door'?doorWoodT:walnutT;M.wood.needsUpdate=walnutM.needsUpdate=true;}
 function setLedge(on){st.ledge=on;const k=on&&st.basin!=='long';ledge.visible=k;ledgeDims.forEach(o=>o.visible=k);}
 const mcBase={halo:halos.map(x=>x.position.y),pl:mLights.map(x=>x.position.y),ra:raLights.map(x=>x.position.y)};
-function setMirrorH(h){st.mh=h;const dy=h-MY0;mc.position.y=dy;halos.forEach((x,i)=>x.position.y=mcBase.halo[i]+dy);
+function setMirrorH(h){st.mh=h;const dy=h-MY0;mc.position.y=dy;mc2.position.y=dy;halos.forEach((x,i)=>x.position.y=mcBase.halo[i]+dy);
   mLights.forEach((x,i)=>x.position.y=mcBase.pl[i]+dy);raLights.forEach((x,i)=>x.position.y=mcBase.ra[i]+dy);mirrorLabels(h);}
 function setTrap(v){st.trap=v;const z=(v==='305'&&st.wc!=='toto')?5:0;toilet.position.z=z;filler.visible=z>0;
   tLab.position.z=50+z;tDim.geometry.setFromPoints([new THREE.Vector3(86,1,z),new THREE.Vector3(86,1,71+z)]);tLen.position.z=35+z;}
@@ -859,7 +886,7 @@ document.querySelectorAll('[data-item]').forEach(b=>b.onclick=()=>setItem(b.data
 document.querySelectorAll('[data-items]').forEach(b=>b.onclick=()=>{const keep=b.dataset.items==='all'?Object.keys(LAY):['basin','cabinet','remote','mcab','toilet'];Object.keys(LAY).forEach(k=>setItem(k,keep.includes(k)));});
 document.getElementById('moreBtn').onclick=e=>{const b=document.getElementById('bar');b.classList.toggle('min');e.target.textContent=b.classList.contains('min')?'更多選項 ▴':'收埋選項 ▾';};
 document.querySelectorAll('[data-dr]').forEach(b=>b.onclick=()=>{const k=b.dataset.dr;st.dt[k]=!st.dt[k];b.classList.toggle('on',st.dt[k]);});
-group('[data-corner]',b=>setCorner(b.dataset.corner));group('[data-floor]',b=>setFloor(b.dataset.floor));group('[data-bshelf]',b=>{backBox.userData.shelf.visible=b.dataset.bshelf==='on';});group('[data-wood]',b=>setCabWood(b.dataset.wood));group('[data-basin]',b=>setBasin(b.dataset.basin));group('[data-stone]',b=>setStone(b.dataset.stone));setBasin('ocean');group('[data-md]',b=>setMirrorDoors(+b.dataset.md));group('[data-wc]',b=>setWC(b.dataset.wc));group('[data-ledge]',b=>setLedge(b.dataset.ledge==='on'));group('[data-mh]',b=>setMirrorH(+b.dataset.mh));
+group('[data-corner]',b=>setCorner(b.dataset.corner));group('[data-floor]',b=>setFloor(b.dataset.floor));group('[data-bshelf]',b=>{backBox.userData.shelf.visible=b.dataset.bshelf==='on';});group('[data-wood]',b=>setCabWood(b.dataset.wood));group('[data-basin]',b=>setBasin(b.dataset.basin));group('[data-stone]',b=>setStone(b.dataset.stone));setBasin('ocean');group('[data-md]',b=>setMirrorDoors(b.dataset.md==='step'?'step':+b.dataset.md));group('[data-wc]',b=>setWC(b.dataset.wc));group('[data-ledge]',b=>setLedge(b.dataset.ledge==='on'));group('[data-mh]',b=>setMirrorH(+b.dataset.mh));
 group('[data-trap]',b=>{setTrap(b.dataset.trap);dims.remove(st._tl||trapLab);st._tl=label(trapTexts[b.dataset.trap],[107.5,20,82+toilet.position.z]);});
 
 const views={hero:[[175,150,140],[95,95,30]],front:[[118,165,330],[125,95,35]],door:[[165,170,175],[100,80,10]],top:[[115,440,150],[115,0,80]],
