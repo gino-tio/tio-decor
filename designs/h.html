@@ -139,6 +139,20 @@ button.on{background:#c9a46a;border-color:#c9a46a;color:#1d1f22;font-weight:600}
     <button data-act="wash" class="on">洗手</button>
     <button data-act="wc">去廁所</button>
   </div>
+  <div class="row"><span>日常</span>
+    <button data-anim="stop" class="on">停</button>
+    <button data-anim="all">▶ 全部輪住播</button>
+    <button data-anim="mirror">照鏡</button>
+    <button data-anim="tap">開水喉洗手</button>
+    <button data-anim="brush">刷牙</button>
+    <button data-anim="mcab">開鏡櫃</button>
+    <button data-anim="drawer">開櫃桶</button>
+    <button data-anim="dryer">攞風筒吹頭</button>
+    <button data-anim="wc">坐廁＋攞廁紙</button>
+    <button data-anim="stand">企住去廁所（男）</button>
+    <button data-anim="shower">沖涼＋抹身</button>
+    <button data-anim="towel">抹身</button>
+  </div>
   <div class="row"><span>窄枱</span>
     <button data-ledge="on" class="on">有</button>
     <button data-ledge="off">冇</button>
@@ -846,6 +860,7 @@ cyl(0.8,1.6,M.chrome,88.4,7,14.5,scene,'x');                                    
 {const c=new THREE.CatmullRomCurve3([[82,14.8,4.2],[82,10.5,4.6],[82.8,7.4,6],[85,6.6,8.6],[87,6.8,11.6],[87.6,7,14.5]].map(p=>new THREE.Vector3(...p)));
  add(new THREE.Mesh(new THREE.TubeGeometry(c,20,0.55,8),new THREE.MeshStandardMaterial({color:0xb8bcc0,metalness:.8,roughness:.35})));}   // braided hose to the toilet inlet
 box(7,7,2.4,M.white,152,30,1.2);box(1.6,0.4,0.3,M.black,150.5,31,2.5);box(1.6,0.4,0.3,M.black,153.5,31,2.5);box(0.4,1.2,0.3,M.black,152,28.5,2.5);box(5,5.4,2.6,M.white,152,28.6,3.7); // TOTO socket + plug inside the vanity's lower part
+box(1.4,2.4,10,M.chrome,140.3,58,40);cyl(5.5,11,M.white,135,52,40,scene,'x');cyl(1.4,12,M.chrome,135,52,40,scene,'x');box(1,1.4,1.4,M.chrome,140,52,40); // toilet-paper holder (示意) on the vanity's left side
 {const c=new THREE.CatmullRomCurve3([[126,14,8],[134,13,8],[141,16,6],[148,21,4.5],[152,25.6,4.2]].map(p=>new THREE.Vector3(...p)));
  add(new THREE.Mesh(new THREE.TubeGeometry(c,24,0.35,8),M.black));}                // TOTO power cord -> hole in the cabinet side -> socket
 
@@ -906,7 +921,7 @@ const tDim=dim([86,1,0],[86,1,71]);const tLen=label('71 離牆',[78,5,35]);
 const lidI=[label('開蓋頂約 92（估）',[107.5,96,22],null,5),dim([129,0,20],[129,92,20])];const lidTl=[label('開蓋頂約 114（按 CAD 估）',[107.5,118,8],null,5),dim([129,0,6],[129,114,6])];lidTl.forEach(o=>o.visible=false);
 const trapLab=label('坑距 305（貼牆）',[107.5,20,82]);
 label('全身鏡 60（離門牆 59）＋電視 27×18',[111,190,D-4],null,5);label('門 77×230，離後牆 70',[W-3,170,108.5]);dim([W-1,240-1,0],[W-1,239,70]);label('70',[W-3,232,35],null,5);
-label('置物板 59×30 圓角（離地約20）',[170,26,34],null,5);label('淡水掣（座廁左邊）',[80,27,6],null,5);label('TOTO 插蘇（盆櫃下格入面）',[160,36,4],null,5);label('電線經櫃側開孔',[133,19,10],null,5);label('INAX 遙控 234×78',[136,82,24],null,5);
+label('置物板 59×30 圓角（離地約20）',[170,26,34],null,5);label('淡水掣（座廁左邊）',[80,27,6],null,5);label('TOTO 插蘇（盆櫃下格入面）',[160,36,4],null,5);label('電線經櫃側開孔',[133,19,10],null,5);label('廁紙架（示意）',[130,64,40],null,5);label('INAX 遙控 234×78',[136,82,24],null,5);
 
 // ---------- state + UI
 const st={dt:{top:false,mid:false,bot:false,out:false},corner:'big',floor:false,cab:false,basin:'ocean',door:false,wc:'inax',ledge:true,mh:MY0,mlight:true,mirror:false,lid:0,dims:false,info:false,trap:'400',fau:'design'};
@@ -970,65 +985,145 @@ group('[data-size]',b=>setSize(b.dataset.size));
 group('[data-front]',b=>{const k=b.dataset.front;[aBig,aSmall].forEach(g=>{const fr=g.userData.fr;Object.keys(fr).forEach(n=>fr[n].visible=n===k);});});
 // chosen spec (11/7): TOTO, ocean basin, floor-standing, stepped mirror cabinet (高低款) at 125, ledge kept
 ['[data-wc=toto]','[data-basin=ocean]','[data-floor=on]','[data-md=step]','[data-mh="125"]','[data-ledge=on]'].forEach(q=>{const b=document.querySelector(q);if(b)b.click();});
-// ---------- people (人物): simple mannequins to check heights at the basin and on the toilet.
-// Each figure is built from joint positions in its own frame (+z = facing, y up, origin on the floor under the pelvis); arms / legs use 2-bone IK.
+// ---------- people (人物) + 日常動畫: mannequin rigs with persistent meshes, re-posed every frame from a small state
+// (root x/y/z/ry, sit, crouch, lean, tilt, hand targets). Figure frame: +z = facing, y up, origin on the floor under the pelvis; arms / legs use 2-bone IK.
 const PPL={man:{H:180,m:true,shirt:0x2b3a55,pants:0x4a4f57,hair:0x1c1714,name:'男 180'},woman:{H:165,m:false,shirt:0xc98f8a,pants:0x2a2a2e,hair:0x2a1d17,name:'女 165'}};
 const skinM=new THREE.MeshStandardMaterial({color:0xe2b89c,roughness:.6}),shoeM=new THREE.MeshStandardMaterial({color:0xf0f0ee,roughness:.5});
 const V3=(x,y,z)=>new THREE.Vector3(x,y,z),YUP=V3(0,1,0);
-function bone(g,a,b,r,mat,sx=1,sz=1){const d=b.clone().sub(a),L=Math.max(d.length(),0.01),geo=new THREE.CapsuleGeometry(r,L,6,16);geo.scale(sx,1,sz);
-  const m=new THREE.Mesh(geo,mat);m.position.copy(a).add(b).multiplyScalar(0.5);m.quaternion.setFromUnitVectors(YUP,d.normalize());m.castShadow=true;g.add(m);return m;}
-function blob(g,c,rx,ry,rz,mat,tilt=0,geo){const m=new THREE.Mesh(geo||new THREE.SphereGeometry(1,28,18),mat);m.scale.set(rx,ry,rz);m.position.copy(c);m.rotation.x=tilt;m.castShadow=true;g.add(m);return m;}
+const cylG=new THREE.CylinderGeometry(1,1,1,16),sphG=new THREE.SphereGeometry(1,24,16),capG=new THREE.SphereGeometry(1,28,14,0,Math.PI*2,0,Math.PI*0.56);
 function ik(S,T,a,b,pole){const u=T.clone().sub(S);const L=Math.min(u.length(),a+b-0.01);u.normalize();
   const al=Math.acos(Math.max(-1,Math.min(1,(a*a+L*L-b*b)/(2*a*L))));const v=pole.clone().sub(u.clone().multiplyScalar(pole.dot(u))).normalize();
   return [S.clone().add(u.clone().multiplyScalar(a*Math.cos(al))).add(v.multiplyScalar(a*Math.sin(al))),S.clone().add(u.multiplyScalar(L))];}
-// pose 'wash': standing, leaning over the basin, hands to handT (local); 'wc': seated on a seat whose top is seatY
-function buildPerson(k,pose,seatY,handT){const p=PPL[k],H=p.H,m=p.m,g=new THREE.Group();
- const shirt=new THREE.MeshStandardMaterial({color:p.shirt,roughness:.8}),pants=new THREE.MeshStandardMaterial({color:p.pants,roughness:.85}),hairM=new THREE.MeshStandardMaterial({color:p.hair,roughness:.6});
- const thigh=0.245*H,shin=0.246*H,ankY=0.039*H,torso=0.29*H,hw=(m?0.055:0.05)*H,sh=(m?0.112:0.095)*H,ua=0.186*H,fa=0.146*H,hand=0.07*H,hr=0.064*H;
- const R=m?{th:0.05,sn:0.033,ua:0.031,fa:0.024}:{th:0.043,sn:0.026,ua:0.02,fa:0.017};
- let P,lean,tilt;const knees=[],ankles=[],hips=[];
- if(pose==='wash'){lean=m?0.36:0.28;tilt=0.35;P=V3(0,thigh+shin+ankY,0);
-  [-1,1].forEach(s=>{hips.push(V3(s*hw,P.y,0));ankles.push(V3(s*hw*1.1,ankY,0));knees.push(V3(s*hw*1.05,ankY+shin,0.012*H));});}
- else{lean=0.05;tilt=0.12;P=V3(0,seatY+0.06*H,0);
-  [-1,1].forEach(s=>{const hp=V3(s*hw,P.y,0),A=V3(s*hw*1.5,ankY,0.8*thigh);hips.push(hp);knees.push(ik(hp,A,thigh,shin,V3(0,1,1))[0]);ankles.push(A);});}
- const dir=V3(0,Math.cos(lean),Math.sin(lean)),at=t=>P.clone().add(dir.clone().multiplyScalar(t*H));
- // legs + shoes
- [0,1].forEach(i=>{bone(g,hips[i],knees[i],R.th*H,pants);bone(g,knees[i],ankles[i],R.sn*H,pants);
-  const f=ankles[i];bone(g,V3(f.x,0.026*H,f.z-0.025*H),V3(f.x,0.026*H,f.z+0.1*H),0.026*H,shoeM,1.3,1);});
- // pelvis, waist, chest (athletic = broad V chest; slim = narrow)
- blob(g,at(0.025),(m?0.09:0.093)*H,0.062*H,0.068*H,pants,lean);
- bone(g,at(0.07),at(0.15),(m?0.068:0.056)*H,shirt,m?1.2:1.15,0.78);
- blob(g,at(0.205),(m?0.122:0.09)*H,0.088*H,(m?0.072:0.062)*H,shirt,lean);
- const N=at(0.27),S=[-1,1].map(s=>N.clone().add(V3(s*sh,0,0)).add(dir.clone().multiplyScalar(-0.03*H)));
- S.forEach(q=>blob(g,q,(m?0.042:0.03)*H,(m?0.04:0.03)*H,(m?0.042:0.032)*H,shirt));
- // neck + head + hair
- const hl=lean+tilt,hd=V3(0,Math.cos(hl),Math.sin(hl)),hb=V3(0,Math.sin(hl),-Math.cos(hl));
- bone(g,N,N.clone().add(hd.clone().multiplyScalar(0.045*H)),(m?0.034:0.026)*H,skinM);
- const Hc=N.clone().add(hd.clone().multiplyScalar(0.045*H+hr*0.95));blob(g,Hc,hr*0.8,hr,hr*0.9,skinM,hl);
- const cap=new THREE.SphereGeometry(1,28,14,0,Math.PI*2,0,Math.PI*0.56);
- blob(g,Hc.clone().add(hb.clone().multiplyScalar(0.06*hr)),hr*0.86,hr*1.06,hr*0.98,hairM,hl-0.55,cap);
- if(!m){const top=Hc.clone().add(hb.clone().multiplyScalar(0.55*hr)).add(hd.clone().multiplyScalar(0.25*hr));
-  const low=at(0.13).add(V3(0,0,0)).add(hb.clone().multiplyScalar(0.075*H));bone(g,top,low,0.05*H,hairM,1.45,0.42);}
- // arms: upper arm (sleeve on the man's T-shirt), forearm, flat hand
- [0,1].forEach(i=>{const s=i?1:-1;let T;
-  if(pose==='wash')T=handT[i].clone();else T=hips[i].clone().lerp(knees[i],0.7).add(V3(s*0.01*H,(R.th+0.012)*H,0));
-  const [E,Tr]=ik(S[i],T,ua,fa+hand*0.6,V3(s*(pose==='wash'?0.5:0.12),-0.2,-1));const W=E.clone().add(Tr.clone().sub(E).normalize().multiplyScalar(fa));
-  bone(g,S[i],E,R.ua*H,m?skinM:shirt);if(m)bone(g,S[i],S[i].clone().lerp(E,0.45),R.ua*H*1.18,shirt);
-  bone(g,E,W,R.fa*H,skinM);bone(g,W,W.clone().add(Tr.clone().sub(W).normalize().multiplyScalar(hand)),0.014*H,skinM,1.7,0.8);});
- return {g,eye:Hc.clone().add(hd.clone().multiplyScalar(0.05*hr)),top:Hc.clone().add(hd.clone().multiplyScalar(hr))};}
-const people=new THREE.Group();add(people);let pplLabels=[];
-function rebuildPeople(){people.clear();pplLabels.forEach(o=>dims.remove(o));pplLabels=[];
- const who=st.who||'none';if(who==='none')return;
+function dimsOf(k){const p=PPL[k],H=p.H,m=p.m;return {H,m,thigh:.245*H,shin:.246*H,ankY:.039*H,hw:(m?.055:.05)*H,sh:(m?.112:.095)*H,ua:.186*H,fa:.146*H,hand:.07*H,hr:.064*H,
+  R:m?{th:.05,sn:.033,ua:.031,fa:.024}:{th:.043,sn:.026,ua:.02,fa:.017}};}
+function makeRig(k){const p=PPL[k],d=dimsOf(k),H=d.H,R=d.R,mm=d.m,g=new THREE.Group();g.visible=false;add(g);
+ const mat=c=>new THREE.MeshStandardMaterial({color:c,roughness:.8}),shirt=mat(p.shirt),pants=mat(p.pants),hairM=new THREE.MeshStandardMaterial({color:p.hair,roughness:.6});
+ const mesh=(geo,m)=>{const o=new THREE.Mesh(geo,m);o.castShadow=true;g.add(o);return o;};
+ const limb=(r,m,sx=1,sz=1)=>({c:mesh(cylG,m),a:mesh(sphG,m),b:mesh(sphG,m),r,sx,sz});
+ const blk=new THREE.MeshStandardMaterial({color:0x1d1d1f,roughness:.4}),wht=new THREE.MeshStandardMaterial({color:0xfbfbf8,roughness:.9});
+ return {k,d,g,legs:[0,1].map(()=>({th:limb(R.th*H,pants),sn:limb(R.sn*H,pants),shoe:limb(.026*H,shoeM,1.3,1)})),
+  pelvis:mesh(sphG,pants),waist:limb((mm?.068:.056)*H,shirt,mm?1.2:1.15,.78),chest:mesh(sphG,shirt),delt:[mesh(sphG,shirt),mesh(sphG,shirt)],
+  neck:limb((mm?.034:.026)*H,skinM),head:mesh(sphG,skinM),hair:mesh(capG,hairM),long:mm?null:limb(.05*H,hairM,1.45,.42),
+  arms:[0,1].map(()=>({ua:limb(R.ua*H,mm?skinM:shirt),sl:mm?limb(R.ua*H*1.18,shirt):null,fa:limb(R.fa*H,skinM),hd:limb(.014*H,skinM,1.7,.8)})),
+  brush:limb(.5,new THREE.MeshStandardMaterial({color:0x3fa7d6,roughness:.4})),dryer:{h:limb(1.5,blk),b:limb(3.6,blk)},
+  towel:mesh(new THREE.BoxGeometry(1,1,1),new THREE.MeshStandardMaterial({color:0xe9e4da,roughness:1})),paper:limb(.3,wht,16,.3)};}
+function setLimb(L,a,b){const dv=b.clone().sub(a),len=Math.max(dv.length(),0.01);dv.divideScalar(len);const q=new THREE.Quaternion().setFromUnitVectors(YUP,dv);
+ L.c.position.copy(a).add(b).multiplyScalar(.5);L.c.quaternion.copy(q);L.c.scale.set(L.r*L.sx,len,L.r*L.sz);
+ [[L.a,a],[L.b,b]].forEach(([s,p])=>{s.position.copy(p);s.quaternion.copy(q);s.scale.set(L.r*L.sx,L.r,L.r*L.sz);});}
+const showLimb=(L,v)=>{L.c.visible=L.a.visible=L.b.visible=v;};
+const lerpAng=(a,b,t)=>{const d=((b-a+Math.PI)%(2*Math.PI)+2*Math.PI)%(2*Math.PI)-Math.PI;return a+d*t;};
+// S: {x,y,z,ry,sit,seatY,crouch,lean,tilt,stride,phase,lift,hA,hB,hk,wig,prop,ph}; hand spec = null (hang) | {w:()=>world} | {l:(J,s)=>local}
+function poseRig(r,S,time=0){const d=r.d,H=d.H,g=r.g;g.visible=true;g.position.set(S.x,S.y||0,S.z);g.rotation.y=S.ry||0;g.updateMatrixWorld(true);
+ const sit=S.sit||0,lean=S.lean||0,Py=THREE.MathUtils.lerp(d.thigh+d.shin+d.ankY-(S.crouch||0),(S.seatY||41)+0.06*H-(S.y||0),sit);
+ const P=V3(0,Py,0),dir=V3(0,Math.cos(lean),Math.sin(lean)),at=t=>P.clone().add(dir.clone().multiplyScalar(t*H));
+ const hips=[],knees=[],ankles=[];
+ [-1,1].forEach((s,i)=>{const hp=V3(s*d.hw,Py,0),ph=(S.phase||0)+i*Math.PI,sw=S.stride||0;
+  const aS=V3(s*d.hw*1.1,d.ankY+(sw*0.035*H+(S.lift||0))*Math.max(0,Math.cos(ph)),sw*Math.sin(ph)*0.13*H),aT=V3(s*d.hw*1.5,d.ankY,0.8*d.thigh);
+  const [K,A]=ik(hp,aS.lerp(aT,sit),d.thigh,d.shin,V3(0,0.2+sit,1));hips.push(hp);knees.push(K);ankles.push(A);});
+ const N=at(0.27),Sh=[-1,1].map(s=>N.clone().add(V3(s*d.sh,0,0)).add(dir.clone().multiplyScalar(-0.03*H)));
+ const hl=lean+(S.tilt||0),hd=V3(0,Math.cos(hl),Math.sin(hl)),hb=V3(0,Math.sin(hl),-Math.cos(hl)),fwd=hb.clone().negate();
+ const Hc=N.clone().add(hd.clone().multiplyScalar(0.045*H+d.hr*0.95));
+ const J={P,N,Hc,hd,hb,fwd,hips,knees,H,hr:d.hr,d,at};
+ const res=(sp,i)=>{const s=i?1:-1;if(!sp)return Sh[i].clone().add(V3(s*0.02*H,-(d.ua+d.fa+0.6*d.hand)*0.97,0.03*H));return sp.w?g.worldToLocal(sp.w()):sp.l(J,s);};
+ const tg=[0,1].map(i=>{const v=res(S.hA&&S.hA[i],i).lerp(res(S.hB&&S.hB[i],i),S.hk??1);
+  if(S.wig){const [am,f]=S.wig;v.add(V3(Math.sin(time*f+i*2)*am,Math.cos(time*f*1.3+i)*am*0.5,0));}return v;});
+ const arm=[0,1].map(i=>{const s=i?1:-1,[E,Tr]=ik(Sh[i],tg[i],d.ua,d.fa+d.hand*0.6,V3(s*(0.5-0.38*sit),-0.2,-1));
+  const W=E.clone().add(Tr.clone().sub(E).normalize().multiplyScalar(d.fa));return {E,W,T:W.clone().add(Tr.clone().sub(W).normalize().multiplyScalar(d.hand))};});
+ // meshes
+ const bl=(o,c,rx,ry,rz,rot)=>{o.position.copy(c);o.scale.set(rx,ry,rz);o.rotation.set(rot,0,0);};
+ r.legs.forEach((L,i)=>{setLimb(L.th,hips[i],knees[i]);setLimb(L.sn,knees[i],ankles[i]);const a=ankles[i],fy=a.y-d.ankY+0.026*H;
+  setLimb(L.shoe,V3(a.x,fy,a.z-0.025*H),V3(a.x,fy,a.z+0.1*H));});
+ bl(r.pelvis,at(0.025),(d.m?.09:.093)*H,.062*H,.068*H,lean);setLimb(r.waist,at(.07),at(.15));
+ bl(r.chest,at(.205),(d.m?.122:.09)*H,.088*H,(d.m?.072:.062)*H,lean);
+ r.delt.forEach((o,i)=>bl(o,Sh[i],(d.m?.042:.03)*H,(d.m?.04:.03)*H,(d.m?.042:.032)*H,0));
+ setLimb(r.neck,N,N.clone().add(hd.clone().multiplyScalar(.045*H)));bl(r.head,Hc,d.hr*.8,d.hr,d.hr*.9,hl);
+ bl(r.hair,Hc.clone().add(hb.clone().multiplyScalar(.06*d.hr)),d.hr*.86,d.hr*1.06,d.hr*.98,hl-.55);
+ if(r.long)setLimb(r.long,Hc.clone().add(hb.clone().multiplyScalar(.55*d.hr)).add(hd.clone().multiplyScalar(.25*d.hr)),at(.13).add(hb.clone().multiplyScalar(.075*H)));
+ r.arms.forEach((A,i)=>{const {E,W,T}=arm[i];setLimb(A.ua,Sh[i],E);if(A.sl)setLimb(A.sl,Sh[i],Sh[i].clone().lerp(E,.45));setLimb(A.fa,E,W);setLimb(A.hd,W,T);});
+ // props held in hand ph (default the +x hand)
+ const pr=S.prop,ph=arm[S.ph??1].T;showLimb(r.brush,pr==='brush');showLimb(r.dryer.h,pr==='dryer');showLimb(r.dryer.b,pr==='dryer');r.towel.visible=pr==='towel';showLimb(r.paper,pr==='paper');
+ if(pr==='brush'){const mouth=Hc.clone().add(hd.clone().multiplyScalar(-.35*d.hr)).add(fwd.clone().multiplyScalar(.85*d.hr));setLimb(r.brush,ph,ph.clone().add(mouth.sub(ph).normalize().multiplyScalar(17)));}
+ if(pr==='dryer'){const top=ph.clone().add(V3(0,9,0)),dv=Hc.clone().sub(top).normalize();setLimb(r.dryer.h,ph,top);setLimb(r.dryer.b,top.clone().sub(dv.clone().multiplyScalar(4)),top.clone().add(dv.multiplyScalar(10)));}
+ if(pr==='towel'){const a=arm[0].T,b=arm[1].T;r.towel.position.copy(a).add(b).multiplyScalar(.5).add(V3(0,-20,0));r.towel.scale.set(Math.max(a.distanceTo(b),20)+10,42,0.8);r.towel.rotation.set(0,-Math.atan2(b.z-a.z,b.x-a.x),0);}
+ if(pr==='paper')setLimb(r.paper,g.worldToLocal(V3(135,52,40)),ph);
+ return {eye:g.localToWorld(Hc.clone().add(hd.clone().multiplyScalar(.05*d.hr))),top:g.localToWorld(Hc.clone().add(hd.clone().multiplyScalar(d.hr)))};}
+const rigs={man:makeRig('man'),woman:makeRig('woman')};
+const seatTop=()=>st.wc==='toto'?40.9:43;
+const SPOUT=s=>({w:()=>V3(fau.position.x-s*5,CT+(st.old?1:0)-1,30)});                     // hands under the spout, just above the basin rim
+const THIGH={l:(J,s)=>{const i=s>0?1:0;return J.hips[i].clone().lerp(J.knees[i],.7).add(V3(s*.01*J.H,(J.d.R.th+.012)*J.H,0));}};
+function staticPose(k,pose){const m=PPL[k].m;
+ return pose==='wash'?{x:170,z:72,ry:Math.PI,lean:m?.36:.28,tilt:.35,hB:[SPOUT(-1),SPOUT(1)]}
+  :{x:107.5,z:42+(st.wc==='toto'?0:toilet.position.z),ry:0,sit:1,seatY:seatTop(),lean:.05,tilt:.12,hB:[THIGH,THIGH]};}
+let pplLabels=[];
+function rebuildPeople(){pplLabels.forEach(o=>dims.remove(o));pplLabels=[];Object.values(rigs).forEach(r=>r.g.visible=false);
+ if(AN.on)return;const who=st.who||'none';if(who==='none')return;
  const act=st.act||'wash',list=who==='both'?[['man',act],['woman',act==='wash'?'wc':'wash']]:[[who,act]];
- list.forEach(([k,pose])=>{let r,o;
-  if(pose==='wash'){const px=170,pz=72;o={x:px,z:pz,ry:Math.PI};
-   r=buildPerson(k,'wash',0,[-1,1].map(s=>V3(s*5,CT+(st.old?1:0)-1,pz-30)));}            // hands under the spout, just above the basin rim
-  else{const seatY=st.wc==='toto'?40.9:43;o={x:107.5,z:42+(st.wc==='toto'?0:toilet.position.z),ry:0};r=buildPerson(k,'wc',seatY);
-   if(!st.lid){const b=document.querySelector('[data-lid="1"]');if(b)b.click();}}
-  r.g.position.set(o.x,0,o.z);r.g.rotation.y=o.ry;people.add(r.g);
-  const w=v=>v.clone().applyAxisAngle(YUP,o.ry).add(V3(o.x,0,o.z)),e=w(r.eye),t=w(r.top);
-  pplLabels.push(label(PPL[k].name+(PPL[k].m?' 健碩':' 苗條')+' · 眼高 '+Math.round(e.y)+' · 頭頂 '+Math.round(t.y),[t.x,t.y+8,t.z],null,5));});}
-group('[data-who]',b=>{st.who=b.dataset.who;rebuildPeople();});group('[data-act]',b=>{st.act=b.dataset.act;rebuildPeople();});
+ list.forEach(([k,pose])=>{if(pose==='wc'&&!st.lid){const b=document.querySelector('[data-lid="1"]');if(b)b.click();}
+  const o=poseRig(rigs[k],staticPose(k,pose));
+  pplLabels.push(label(PPL[k].name+(PPL[k].m?' 健碩':' 苗條')+' · 眼高 '+Math.round(o.eye.y)+' · 頭頂 '+Math.round(o.top.y),[o.top.x,o.top.y+8,o.top.z],null,5));});}
+// ---------- 日常動畫: timelines of steps; each step tweens the state, walking steps move the feet; fx() fires at the step start (water, doors, drawers, lid)
+const AN={on:false,steps:[],i:0,t:0,dur:1,time:0,ph0:0,k:'man',cur:null,from:null,to:null,hA:null,hBn:null,shower:false,save:null};
+const NUM=['x','y','z','ry','sit','crouch','lean','tilt'],BASE={x:182,y:0,z:128,ry:-Math.PI/2,sit:0,crouch:0,lean:.03,tilt:0,hB:[null,null],prop:null,wig:null,ph:1};
+const T=(d,o={})=>({d,...o}),WK=(x,z,o={})=>({x,z,walk:true,...o});
+const at3=(x,y,z)=>({w:()=>V3(x,y,z)});
+const LEVER={w:()=>V3(fau.position.x+11.5,fau.position.y,6)};
+const MEDGE={w:()=>V3(142,st.mh+(mTall?32:36),20)},MOPEN={w:()=>V3(176,st.mh+(mTall?32:36),58)},MSHELF={w:()=>V3(158,st.mh+34,10)};
+const HEAD=(dx,dy,dz)=>({l:(J,s)=>J.Hc.clone().add(V3(s*dx*J.hr,dy*J.hr,0)).add(J.fwd.clone().multiplyScalar(dz*J.hr))});
+const MOUTH={l:(J,s)=>J.Hc.clone().add(J.hd.clone().multiplyScalar(-.35*J.hr)).add(J.fwd.clone().multiplyScalar(.85*J.hr)).add(V3(s*7,-4,9))};
+const DRY={l:(J,s)=>J.Hc.clone().add(V3(s*15,3,8))},CHEST={l:(J,s)=>J.at(.2).add(V3(s*6,0,J.H*.07))},GROIN={l:(J,s)=>J.P.clone().add(V3(s*5,2,.12*J.H))};
+const TUP={l:(J,s)=>J.Hc.clone().add(V3(s*16,J.hr*1.1,-4))},TBACK={l:(J,s)=>J.at(.17).add(V3(s*24,0,-14))};
+const ENTER=()=>[T(0,{...BASE,fx:()=>{st.door=true;}}),T(.9)],LEAVE=()=>[WK(182,128),T(.6,{ry:-Math.PI/2}),T(.8,{fx:()=>{st.door=false;}})];
+const FACE=T(.6,{ry:Math.PI});
+const SCN={
+ mirror:()=>[...ENTER(),WK(170,80),FACE,T(2,{lean:.02,tilt:-.08}),T(1,{hB:[null,HEAD(1,.4,-.2)]}),T(1.4,{wig:[2,5]}),T(.8,{hB:[null,null],wig:null}),T(.6,{tilt:0}),...LEAVE()],
+ tap:()=>[...ENTER(),WK(170,74),FACE,T(.9,{lean:.3,tilt:.3,hB:[LEVER,null]}),T(.2,{fx:()=>{st.water=true;}}),T(.9,{hB:[SPOUT(-1),SPOUT(1)]}),T(3,{wig:[2.5,9]}),
+  T(.8,{wig:null,hB:[LEVER,null]}),T(.2,{fx:()=>{st.water=false;}}),T(.8,{lean:.03,tilt:0,hB:[null,null]}),...LEAVE()],
+ brush:()=>[...ENTER(),WK(170,76),FACE,T(.9,{lean:.2,hB:[LEVER,null]}),T(.2,{fx:()=>{st.water=true;}}),T(.9,{prop:'brush',hB:[null,MOUTH],lean:.1,tilt:.1}),T(3,{wig:[1.2,16]}),
+  T(.9,{wig:null,lean:.42,tilt:.4,hB:[SPOUT(-1),null],prop:null}),T(1.2,{wig:[1.5,8]}),T(.8,{wig:null,hB:[LEVER,null]}),T(.2,{fx:()=>{st.water=false;}}),T(.8,{lean:.03,tilt:0,hB:[null,null]}),...LEAVE()],
+ mcab:()=>[...ENTER(),WK(150,80),FACE,T(1,{lean:.15,tilt:-.1,hB:[null,MEDGE]}),T(.1,{fx:()=>{st.mirror=true;}}),T(.7,{hB:[null,null]}),T(.8,{z:80,walk:true,ry:Math.PI}),
+  T(1,{lean:.3,hB:[null,MSHELF]}),T(1,{wig:[1.5,5]}),T(.8,{wig:null,hB:[null,null],lean:.05}),T(.8,{z:84,walk:true,ry:Math.PI}),T(1,{lean:.15,hB:[null,MOPEN]}),
+  T(.1,{fx:()=>{st.mirror=false;}}),T(1,{hB:[null,MEDGE]}),T(.6,{hB:[null,null],lean:.03,tilt:0}),...LEAVE()],
+ drawer:()=>[...ENTER(),WK(170,96),FACE,T(1,{crouch:8,lean:.4,hB:[null,at3(172,80,52)]}),T(.1,{fx:()=>{st.dt.top=true;}}),T(1.1,{hB:[null,at3(172,80,78)]}),
+  T(1,{hB:[null,at3(168,72,64)]}),T(1.2,{wig:[1.5,6]}),T(.8,{wig:null,hB:[null,at3(172,80,78)]}),T(.1,{fx:()=>{st.dt.top=false;}}),T(1.1,{hB:[null,at3(172,80,52)]}),
+  T(.8,{crouch:0,lean:.03,hB:[null,null]}),...LEAVE()],
+ dryer:()=>{const down=[T(1,{crouch:28,lean:.45,hB:[at3(168,57,52),null]}),T(.1,{fx:()=>{st.dt.mid=true;}}),T(1.1,{hB:[at3(168,57,78),null]}),T(1,{hB:[at3(184,52,64),null]})];
+  const up=[T(.9,{hB:[at3(168,57,78),null]}),T(.1,{fx:()=>{st.dt.mid=false;}}),T(1,{hB:[at3(168,57,52),null]}),T(.9,{crouch:0,lean:.05})];
+  return [...ENTER(),WK(170,96),FACE,...down,T(.6,{prop:'dryer',ph:0}),...up,T(.8,{z:82,walk:true,ry:Math.PI}),T(.8,{hB:[DRY,HEAD(1,.4,-.2)],tilt:-.05}),T(4,{wig:[3,5]}),
+   T(.8,{wig:null,hB:[at3(168,62,80),null],tilt:0}),T(.8,{z:96,walk:true,ry:Math.PI}),...down,T(.5,{prop:null}),...up,T(.6,{hB:[null,null]}),...LEAVE()];},
+ wc:()=>[...ENTER(),WK(107.5,96),T(.3,{fx:()=>{if(!st.lid)st.lid=1;}}),T(.9,{ry:0}),T(.9,{z:80,walk:true,ry:0}),T(1.6,{z:42,sit:1,lean:.05,tilt:.1,hB:[THIGH,THIGH]}),T(2.5),
+  T(1,{hB:[THIGH,at3(135,52,44)]}),T(1,{prop:'paper',hB:[THIGH,at3(124,58,62)]}),T(.5,{prop:null,hB:[THIGH,THIGH]}),T(1.5,{z:80,sit:0,lean:.03,tilt:0,hB:[null,null]}),T(.4,{fx:()=>{st.lid=0;}}),...LEAVE()],
+ stand:()=>[...ENTER(),WK(107.5,100),T(.6,{ry:-Math.PI}),T(.3,{fx:()=>{st.lid=2;}}),T(1,{tilt:.3,hB:[GROIN,GROIN]}),T(3),T(.6,{hB:[null,null],tilt:0}),T(.4,{fx:()=>{st.lid=0;}}),...LEAVE()],
+ towel:()=>[...ENTER(),WK(100,108),T(.6,{ry:0}),...TOWEL(),...LEAVE()],
+ shower:()=>[...ENTER(),WK(92,108),T(.6,{ry:-Math.PI/2}),T(1.6,{x:40,y:13,walk:true,ry:-Math.PI/2,arc:38}),WK(38,40),T(.6,{ry:Math.PI}),T(.2,{fx:()=>{AN.shower=true;}}),
+  T(1,{tilt:-.25,hB:[HEAD(.9,.9,0),HEAD(.9,.9,0)]}),T(4,{wig:[3,6]}),T(.8,{wig:null,hB:[CHEST,CHEST]}),T(2,{wig:[4,7]}),T(.2,{fx:()=>{AN.shower=false;}}),T(.8,{wig:null,tilt:0,hB:[null,null]}),
+  WK(38,108),T(.6,{ry:Math.PI/2}),T(1.6,{x:92,y:0,walk:true,ry:Math.PI/2,arc:38}),T(.6,{ry:0}),...TOWEL(),...LEAVE()]};
+function TOWEL(){return [T(.8,{prop:'towel',hB:[TUP,TUP]}),T(2.5,{wig:[5,4]}),T(1,{hB:[TBACK,TBACK],wig:null}),T(2.5,{wig:[6,4]}),T(.8,{prop:null,hB:[null,null],wig:null})];}
+const ORDER=['mirror','tap','brush','mcab','drawer','dryer','wc','stand','shower'];
+// shower water: soft translucent cone from the head on the slide rail down into the tub
+const showerW=new THREE.Mesh(new THREE.CylinderGeometry(3,13,1,24,1,true),new THREE.MeshBasicMaterial({color:0xbfe6ff,transparent:true,opacity:.22,depthWrite:false,side:THREE.DoubleSide}));
+{const a=V3(40,158,12),b=V3(38,13,40),dv=b.clone().sub(a);showerW.position.copy(a).add(b).multiplyScalar(.5);showerW.scale.y=dv.length();showerW.quaternion.setFromUnitVectors(V3(0,-1,0),dv.normalize());add(showerW);showerW.visible=false;}
+function nextStep(){AN.i++;if(AN.i>=AN.steps.length){AN.i=0;}
+ const s=AN.steps[AN.i],c=AN.cur;if(s.fx)s.fx();AN.from={...c};AN.to={...c};NUM.forEach(n=>{if(s[n]!==undefined)AN.to[n]=s[n];});
+ if(s.walk){const dx=AN.to.x-c.x,dz=AN.to.z-c.z;if(s.ry===undefined&&(dx||dz))AN.to.ry=Math.atan2(dx,dz);AN.dur=s.d??Math.max(.6,Math.hypot(dx,dz)/70);}else AN.dur=s.d;
+ AN.hA=c.hB;AN.hBn=('hB' in s)?s.hB:c.hB;['prop','wig','ph'].forEach(n=>{if(n in s)c[n]=s[n];});AN.t=0;AN.step=s;}
+function stepAnim(dt){if(!AN.on)return;AN.t+=dt;AN.time+=dt;
+ for(let guard=0;guard<50&&AN.dur<=0;guard++){AN.cur.hB=AN.hBn;NUM.forEach(n=>AN.cur[n]=AN.to[n]);nextStep();}
+ const s=AN.step,c=AN.cur,k=Math.min(1,AN.t/AN.dur),e=k*k*(3-2*k);
+ NUM.forEach(n=>{c[n]=n==='ry'?lerpAng(AN.from.ry,AN.to.ry,s.walk?Math.min(1,k*3):e):THREE.MathUtils.lerp(AN.from[n],AN.to[n],s.walk&&(n==='x'||n==='z')?k:e);});
+ let stride=0,phase=AN.ph0;if(s.walk){const dist=Math.hypot(AN.to.x-AN.from.x,AN.to.z-AN.from.z);stride=Math.min(1,k*4,(1-k)*4);phase=AN.ph0+dist*k/(0.26*rigs[AN.k].d.H)*Math.PI;}
+ poseRig(rigs[AN.k],{...c,seatY:seatTop(),hA:AN.hA,hB:AN.hBn,hk:e,stride,phase,lift:s.arc?s.arc*Math.sin(Math.PI*k):0},AN.time);
+ showerW.visible=AN.shower;
+ if(k>=1){c.hB=AN.hBn;if(s.walk)AN.ph0=phase;nextStep();}}
+function startAnim(name){stopAnim();const solo=st.who==='man'||st.who==='woman';AN.k=(name==='stand'||!solo)?'man':st.who;
+ AN.save={water:st.water,mirror:st.mirror,top:st.dt.top,mid:st.dt.mid,lid:st.lid,door:st.door};
+ AN.steps=name==='all'?ORDER.filter(n=>n!=='stand'||AN.k==='man').flatMap(n=>SCN[n]()):SCN[name]();
+ AN.cur={...BASE};AN.i=-1;AN.ph0=0;AN.time=0;AN.on=true;rebuildPeople();nextStep();
+ // with 兩個, the other person waits by the tub end, clear of the walking paths
+ if(st.who==='both'){const o=AN.k==='man'?'woman':'man';poseRig(rigs[o],{x:98,z:132,ry:Math.PI*0.85,lean:.02});}}
+function stopAnim(){if(!AN.on)return;AN.on=false;AN.shower=false;showerW.visible=false;const v=AN.save;
+ st.water=v.water;st.mirror=v.mirror;st.dt.top=v.top;st.dt.mid=v.mid;st.lid=v.lid;st.door=v.door;rebuildPeople();}
+group('[data-who]',b=>{st.who=b.dataset.who;if(AN.on)startAnim(st.anim);else rebuildPeople();});
+group('[data-anim]',b=>{st.anim=b.dataset.anim;if(st.anim==='stop')stopAnim();else{startAnim(st.anim);if(!st.dims)go('hero');}});group('[data-act]',b=>{st.act=b.dataset.act;rebuildPeople();});
 document.querySelectorAll('[data-wc],[data-size]').forEach(b=>b.addEventListener('click',()=>rebuildPeople()));
 
 let composer=null;
@@ -1041,7 +1136,7 @@ function resize(){const w=innerWidth,h=innerHeight;renderer.setSize(w,h,false);c
 addEventListener('resize',resize);resize();dims.visible=false;go('hero',true);
 
 // ---------- share: the link keeps every option that differs from the default (o=key.value,...) plus the camera (c=position_target)
-const SKEYS=['who','act','lid','tog','ctop','size','front','fau','dr','wc','ledge','mh','basin','stone','wood','floor','bshelf','item','corner','md','mht','trap'],TOGK=['tog','dr','item'];
+const SKEYS=['who','act','anim','lid','tog','ctop','size','front','fau','dr','wc','ledge','mh','basin','stone','wood','floor','bshelf','item','corner','md','mht','trap'],TOGK=['tog','dr','item'];
 const optBtns=[];SKEYS.forEach(k=>document.querySelectorAll('#bar [data-'+k+']').forEach(b=>optBtns.push({b,k,v:b.dataset[k],on0:b.classList.contains('on')})));
 function shareHash(){const o=optBtns.filter(x=>{const on=x.b.classList.contains('on');return TOGK.includes(x.k)?on!==x.on0:on&&!x.on0;}).map(x=>x.k+'.'+x.v);
   const r=v=>[v.x,v.y,v.z].map(n=>Math.round(n)).join('_');return 'o='+o.join(',')+'&c='+r(camera.position)+'_'+r(controls.target);}
@@ -1063,6 +1158,7 @@ renderer.setAnimationLoop(()=>{
   cabDoors.forEach(d=>{d.visible=!st.dt.out;d.rotation.y=lerp(d.rotation.y,(st.cab||st.dt.top)?1.4:0,0.12);});
   drawers.forEach(d=>{const op=st.cab||st.dt[d.level];d.g.position.z=lerp(d.g.position.z,op?d.travel:0,0.12);d.g.visible=!st.dt.out;});
   bathDoor.rotation.y=lerp(bathDoor.rotation.y,st.door?1.45:0,0.1);doors.forEach(d=>d.p.rotation.y=lerp(d.p.rotation.y,st.mirror?-d.dir*1.35:0,0.12));
+  {const now=performance.now(),dt=Math.min(.05,(now-(AN.last||now))/1000);AN.last=now;stepAnim(dt);}
   tapWater.visible=!!st.water;if(st.water)updateWater();
   if(drainFlow.fg.visible!==!!st.water){const on=!!st.water,pv=drainFlow.pv;drainFlow.fg.visible=on;pv.transparent=on;pv.opacity=on?0.35:1;pv.depthWrite=!on;pv.needsUpdate=true;}
   controls.update();if(composer)composer.render();else renderer.render(scene,camera);});
