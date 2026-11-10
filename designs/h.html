@@ -522,9 +522,9 @@ const creamM=new THREE.MeshPhysicalMaterial({color:0xe8dfcf,roughness:.42,clearc
   if(y0>1)g.add(slab(143,0,198,ZF-5,0,y0,new THREE.MeshStandardMaterial({color:0x2b2622,roughness:.8}),{rFL:R-2}));}
  buildDCab(dHung,CB,2);buildDCab(dFloor,10,3);}
 const under=new THREE.PointLight(0xffd9a0,0.5,90,0);under.position.set(170,40,40);add(under);
-// wall-mounted 2-hole basin mixer (like the existing hansgrohe): plate ~18 x 7, flat blade spout on the left (5 wide, ~20 long to clear the 12 back deck), round lever on the right.
-// FAU = spout centre: 'design' = over the basin centre, 9 above the counter; 'site' = existing in-wall body, 19.5 from the right wall, 14.5 above the old counter
-const FAU={design:{x:170,y:CT+9},site:{x:200-19.5,y:CT+14.5}},PW=18,PH=7,SL=20;
+// wall-mounted 2-hole basin mixer (like the existing hansgrohe): plate ~18 x 7, flat blade spout on the left (5 wide, 19 long to clear the 12 back deck), round lever on the right.
+// FAU = spout centre: 'design' = over the basin centre, 9 above the counter; 'site' = existing in-wall body, 19.5 from the right wall, 14.5 above the old counter (old counter 91 from floor -> 105.5)
+const FAU={design:{x:170,y:CT+9},site:{x:200-19.5,y:91+14.5}},PW=18,PH=7,SL=19;
 PART='basin';const fau=new THREE.Group();add(fau);
 box(PW,PH,0.8,M.chrome,PW/2-3,0,0.4,fau);
 box(5,1.6,SL,M.chrome,0,-0.5,SL/2+0.8,fau);box(5,0.4,1.2,M.black,0,-1.35,SL-0.4,fau);
@@ -755,7 +755,7 @@ mirrorLabels(MY0);
 const _lA0=dims.children.length;label('一體海洋盆 8260',[170,104,32],'600×500 · 盆內570×370 深130 · 無孔');dim([139,BT,51],[139,CT,51]);label('6.3',[135,BT+3,53],null,5);const lblA=dims.children.slice(_lA0);
 const _lB0=dims.children.length;label('岩板一體盆（設計師款）',[170,104,32],'600×500 · 岩板厚 180 · 木櫃 290 · 左前大圓角');dim([139,72,51],[139,CT,51]);label('18',[135,80,53],null,5);const lblB=dims.children.slice(_lB0);lblB.forEach(o=>o.visible=false);
 const _lF0=dims.children.length;dim([170,CT+9,22],[170,CT,22]);label('出水 9',[166,CT+5,22],null,5);const lblFd=dims.children.slice(_lF0);
-const _lF1=dims.children.length;dim([180.5,CT+14.5,22],[180.5,CT,22]);label('14.5',[176,CT+7,22],null,5);dim([180.5,CT+17,1],[200,CT+17,1]);label('離右牆 19.5',[190,CT+20,1],null,5);const lblFs=dims.children.slice(_lF1);const lblF=[...lblFd,...lblFs];
+const _lF1=dims.children.length;dim([180.5,105.5,22],[180.5,CT,22]);label('離地 105.5（舊檯 91＋14.5）',[176,CT+8,22],null,5);dim([180.5,CT+18,1],[200,CT+18,1]);label('離右牆 19.5',[190,CT+21,1],null,5);label('出水嘴 19×5',[172,CT+3,20],null,5);const lblFs=dims.children.slice(_lF1);const lblF=[...lblFd,...lblFs];
 const _lC0=dims.children.length;label('洞石米黃落地櫃',[170,104,32],'按 70cm 款縮做 590×500 · 盆 380×440 深140 · 右平台 150 · 兩格櫃桶');dim([139,70,51],[139,CT,51]);label('20',[135,80,53],null,5);const lblC=dims.children.slice(_lC0);lblC.forEach(o=>o.visible=false);
 const _lD0=dims.children.length;label('長檯面連座廁上面（參考圖）',[150,104,32],'檯面 125 長 · 盆端深50／座廁端窄身7 · 厚11 · 盆 440×380 深95 · 吊櫃（2格）或落地（3格）：每層一個全闊櫃桶');dim([139,79,51],[139,CT,51]);label('11',[135,84,53],null,5);dim([75,92,9],[141,92,9]);label('延伸 66 · 深 7',[108,97,9],null,5);const lblD=dims.children.slice(_lD0);lblD.forEach(o=>o.visible=false);
 const _lE0=dims.children.length;label('後面矮櫃 55×25 · 櫃高 32＋10 防水石邊',[170,48,26],'遮去水喉 · 喉離後牆 9／右牆 14 · 單門向左開');dim([200,2,0],[200,2,25]);label('25',[202,6,12.5],null,5);const lblE=dims.children.slice(_lE0);lblE.forEach(o=>o.visible=false);
