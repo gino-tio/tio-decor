@@ -127,8 +127,12 @@ button.on{background:#c9a46a;border-color:#c9a46a;color:#1d1f22;font-weight:600}
     <button data-wood="door">同門色</button>
     <span style="margin-left:6px">盆櫃</span>
     <button data-floor="off" class="on">吊櫃</button>
-    <button data-floor="back">吊櫃＋後面矮櫃 22</button>
+    <button data-floor="back">吊櫃＋後面矮櫃 25</button>
     <button data-floor="on">落地＋防水石腳</button>
+  </div>
+  <div class="row"><span>矮櫃</span>
+    <button data-bshelf="off" class="on">冇層板</button>
+    <button data-bshelf="on">加 20cm 層板</button>
   </div>
   <div class="row"><span>物品</span>
     <button data-items="all">全部顯示</button>
@@ -528,13 +532,19 @@ const lowerA=new THREE.Group(),lowerB=new THREE.Group();floorKit.add(lowerA,lowe
    const mat=k==='a'?M.wood:walnutM,xs=k==='a'?141+r+0.2:(sz==='big'?160.5:145.5);
    carcass(g,r,xs,10.3,42.7,k==='a'?49:49.6,mat);box(0.5,31,0.6,M.black,xs,26.5,k==='a'?49.1:49.9,g);
    makeDrawer(g,xs+0.4,199.4,10.8,42.4,k==='a'?49.6:50.2,40,mat,{by0:12.2,bh:24,div:[0.5],handle:k==='a',level:'bot'});});});}
-// ---------- hung option: low back cabinet 22 deep under the vanity, hides the drain pipe (pipe centre 9 from back wall, 14 from right wall); floor drain stays in front
+// ---------- hung option: low back cabinet 25 deep under the vanity on a 10cm waterproof stone kerb, hides the drain pipe (pipe centre 9 from back wall, 14 from right wall); floor drain stays in front
+// one door hinged on the left (opens to the left, follows 開下格／全開盆櫃); optional 20cm shelf inside, notched round the pipe
 const backBox=new THREE.Group();add(backBox);backBox.visible=false;
-{const X0=143,X1=198,ZB=22,YT=42.4,T=1.6,pm=new THREE.MeshStandardMaterial({color:0xeeeeea,roughness:.5});
- box(T,YT,ZB-T,M.wood,X0+T/2,YT/2,(ZB-T)/2,backBox);box(T,YT,ZB-T,M.wood,X1-T/2,YT/2,(ZB-T)/2,backBox);
- box(X1-X0,T,ZB-T,M.wood,(X0+X1)/2,YT-T/2,(ZB-T)/2,backBox);
- const door=new THREE.Group();backBox.add(door);backBox.userData.door=door;
- box(X1-X0-0.3,YT-0.3,T,M.wood,(X0+X1)/2,YT/2,ZB-T/2,door);box(0.5,YT-4,0.6,M.black,(X0+X1)/2,YT/2,ZB+0.1,door);
+{const X0=143,X1=198,ZB=25,Y0=10,YT=42.4,T=1.6,h=YT-Y0,pm=new THREE.MeshStandardMaterial({color:0xeeeeea,roughness:.5});
+ const kt=wallTex.clone();kt.needsUpdate=true;kt.repeat.set(0.02,0.02);
+ backBox.add(slab(X0,0,X1,ZB-1,0,Y0,new THREE.MeshPhysicalMaterial({map:kt,roughness:.35,clearcoat:.6,clearcoatRoughness:.12})));
+ box(T,h,ZB-T,M.wood,X0+T/2,Y0+h/2,(ZB-T)/2,backBox);box(T,h,ZB-T,M.wood,X1-T/2,Y0+h/2,(ZB-T)/2,backBox);
+ box(X1-X0,T,ZB-T,M.wood,(X0+X1)/2,YT-T/2,(ZB-T)/2,backBox);box(X1-X0-2*T,T,ZB-T,carcassM,(X0+X1)/2,Y0+T/2,(ZB-T)/2,backBox);
+ const sh=new THREE.Group();backBox.add(sh);backBox.userData.shelf=sh;sh.visible=false;const SY=Y0+h/2,SZ0=ZB-T-20,PX0=181,PX1=191,PZ1=13.5;
+ box(X1-X0-2*T,T,ZB-T-PZ1,carcassM,(X0+X1)/2,SY,(PZ1+ZB-T)/2,sh);
+ box(PX0-X0-T,T,PZ1-SZ0,carcassM,(X0+T+PX0)/2,SY,(SZ0+PZ1)/2,sh);box(X1-T-PX1,T,PZ1-SZ0,carcassM,(PX1+X1-T)/2,SY,(SZ0+PZ1)/2,sh);
+ const door=new THREE.Group();door.position.set(X0,0,ZB);backBox.add(door);backBox.userData.door=door;
+ box(X1-X0-0.3,h-0.3,T,M.wood,(X1-X0)/2,Y0+h/2,-T/2,door);box(0.6,12,0.6,M.black,X1-X0-3,Y0+h/2,0.3,door);
  cyl(2,YT,pm,186,YT/2,9,backBox);}
 
 
@@ -715,7 +725,7 @@ const _lA0=dims.children.length;label('一體海洋盆 8260',[170,104,32],'600×
 const _lB0=dims.children.length;label('岩板一體盆（設計師款）',[170,104,32],'600×500 · 岩板厚 180 · 木櫃 290 · 左前大圓角');dim([139,72,51],[139,CT,51]);label('18',[135,80,53],null,5);const lblB=dims.children.slice(_lB0);lblB.forEach(o=>o.visible=false);
 const _lC0=dims.children.length;label('洞石米黃落地櫃',[170,104,32],'按 70cm 款縮做 590×500 · 盆 380×440 深140 · 右平台 150 · 兩格櫃桶');dim([139,70,51],[139,CT,51]);label('20',[135,80,53],null,5);const lblC=dims.children.slice(_lC0);lblC.forEach(o=>o.visible=false);
 const _lD0=dims.children.length;label('長檯面連座廁上面（參考圖）',[150,104,32],'檯面 125 長 · 盆端深50／座廁端窄身7 · 厚11 · 盆 440×380 深95 · 吊櫃（2格）或落地（3格）：每層一個全闊櫃桶');dim([139,79,51],[139,CT,51]);label('11',[135,84,53],null,5);dim([75,92,9],[141,92,9]);label('延伸 66 · 深 7',[108,97,9],null,5);const lblD=dims.children.slice(_lD0);lblD.forEach(o=>o.visible=false);
-const _lE0=dims.children.length;label('後面矮櫃 55×22×42',[170,30,24],'遮去水喉 · 喉離後牆 9／右牆 14／櫃門 38');dim([200,2,0],[200,2,22]);label('22',[202,6,11],null,5);const lblE=dims.children.slice(_lE0);lblE.forEach(o=>o.visible=false);
+const _lE0=dims.children.length;label('後面矮櫃 55×25 · 櫃高 32＋10 防水石邊',[170,48,26],'遮去水喉 · 喉離後牆 9／右牆 14 · 單門向左開');dim([200,2,0],[200,2,25]);label('25',[202,6,12.5],null,5);const lblE=dims.children.slice(_lE0);lblE.forEach(o=>o.visible=false);
 let tLab=label('INAX SARAS 100572BW10',[107.5,64,50],'710×385×472');
 const tDim=dim([86,1,0],[86,1,71]);const tLen=label('71 離牆',[78,5,35]);
 const lidI=[label('開蓋頂約 92（估）',[107.5,96,22],null,5),dim([129,0,20],[129,92,20])];const lidTl=[label('開蓋頂約 114（按 CAD 估）',[107.5,118,8],null,5),dim([129,0,6],[129,114,6])];lidTl.forEach(o=>o.visible=false);
@@ -758,7 +768,7 @@ document.querySelectorAll('[data-item]').forEach(b=>b.onclick=()=>setItem(b.data
 document.querySelectorAll('[data-items]').forEach(b=>b.onclick=()=>{const keep=b.dataset.items==='all'?Object.keys(LAY):['basin','cabinet','remote','mcab','toilet'];Object.keys(LAY).forEach(k=>setItem(k,keep.includes(k)));});
 document.getElementById('moreBtn').onclick=e=>{const b=document.getElementById('bar');b.classList.toggle('min');e.target.textContent=b.classList.contains('min')?'更多選項 ▴':'收埋選項 ▾';};
 document.querySelectorAll('[data-dr]').forEach(b=>b.onclick=()=>{const k=b.dataset.dr;st.dt[k]=!st.dt[k];b.classList.toggle('on',st.dt[k]);});
-group('[data-corner]',b=>setCorner(b.dataset.corner));group('[data-floor]',b=>setFloor(b.dataset.floor));group('[data-wood]',b=>setCabWood(b.dataset.wood));group('[data-basin]',b=>setBasin(b.dataset.basin));group('[data-stone]',b=>setStone(b.dataset.stone));setBasin('ocean');group('[data-md]',b=>setMirrorDoors(+b.dataset.md));group('[data-wc]',b=>setWC(b.dataset.wc));group('[data-ledge]',b=>setLedge(b.dataset.ledge==='on'));group('[data-mh]',b=>setMirrorH(+b.dataset.mh));
+group('[data-corner]',b=>setCorner(b.dataset.corner));group('[data-floor]',b=>setFloor(b.dataset.floor));group('[data-bshelf]',b=>{backBox.userData.shelf.visible=b.dataset.bshelf==='on';});group('[data-wood]',b=>setCabWood(b.dataset.wood));group('[data-basin]',b=>setBasin(b.dataset.basin));group('[data-stone]',b=>setStone(b.dataset.stone));setBasin('ocean');group('[data-md]',b=>setMirrorDoors(+b.dataset.md));group('[data-wc]',b=>setWC(b.dataset.wc));group('[data-ledge]',b=>setLedge(b.dataset.ledge==='on'));group('[data-mh]',b=>setMirrorH(+b.dataset.mh));
 group('[data-trap]',b=>{setTrap(b.dataset.trap);dims.remove(st._tl||trapLab);st._tl=label(trapTexts[b.dataset.trap],[107.5,20,82+toilet.position.z]);});
 
 const views={hero:[[175,150,140],[95,95,30]],front:[[118,165,330],[125,95,35]],door:[[165,170,175],[100,80,10]],top:[[115,440,150],[115,0,80]],
@@ -786,7 +796,7 @@ renderer.setAnimationLoop(()=>{
   if(anim){let k=Math.min(1,(performance.now()-anim.s)/700);k=k*k*(3-2*k);
     camera.position.lerpVectors(anim.p0,anim.p,k);controls.target.lerpVectors(anim.t0,anim.t,k);if(k>=1)anim=null;}
   lid.rotation.x=lerp(lid.rotation.x,st.lid?LID_OPEN:LID_CLOSED,0.12);lidT.rotation.x=lerp(lidT.rotation.x,st.lid?LIDT_OPEN:LIDT_CLOSED,0.12);
-  backBox.userData.door.visible=!st.dt.out;
+  {const bd=backBox.userData.door;bd.visible=!st.dt.out;bd.rotation.y=lerp(bd.rotation.y,(st.cab||st.dt.bot)?-1.4:0,0.12);}
   drawers.forEach(d=>{const op=st.cab||st.dt[d.level];d.g.position.z=lerp(d.g.position.z,op?d.travel:0,0.12);d.g.visible=!st.dt.out;});
   bathDoor.rotation.y=lerp(bathDoor.rotation.y,st.door?1.45:0,0.1);doors.forEach(d=>d.p.rotation.y=lerp(d.p.rotation.y,st.mirror?-d.dir*1.35:0,0.12));
   controls.update();if(composer)composer.render();else renderer.render(scene,camera);});
