@@ -76,9 +76,9 @@ button.on{background:#c9a46a;border-color:#c9a46a;color:#1d1f22;font-weight:600}
     <li>鏡櫃要打底板，內置防水插蘇</li>
   </ul>
 </div>
-<div id="bar">
+<div id="bar" class="min">
   <div class="row"><span>視角</span>
-    <button id="moreBtn" class="on" style="background:#3a3d44;border-color:#555;color:#ddd">收埋選項 ▾</button>
+    <button id="moreBtn" class="on" style="background:#3a3d44;border-color:#555;color:#ddd">更多選項 ▴</button>
     <button data-view="hero" class="on">效果圖</button>
     <button data-view="front">正面</button>
     <button data-view="door">門口</button>
@@ -907,8 +907,8 @@ function setSize(k){const old=st.old=k==='old',s=old?39.7/40.7:1,s2=old?34.4/32.
  lowerA.scale.y=s2;lowerA.position.y=old?10.3-10.3*s2:0;backBox.scale.y=old?45/42.4:1;ledge.position.y=ledgeY0+(old?1:0);setFau(st.fau);}
 group('[data-size]',b=>setSize(b.dataset.size));
 group('[data-front]',b=>{const k=b.dataset.front;[aBig,aSmall].forEach(g=>{const fr=g.userData.fr;Object.keys(fr).forEach(n=>fr[n].visible=n===k);});});
-// chosen spec (11/7): TOTO, ocean basin, floor-standing, 2-door mirror cabinet at 125, ledge kept
-['[data-wc=toto]','[data-basin=ocean]','[data-floor=on]','[data-md="2"]','[data-mh="125"]','[data-ledge=on]'].forEach(q=>{const b=document.querySelector(q);if(b)b.click();});
+// chosen spec (11/7): TOTO, ocean basin, floor-standing, stepped mirror cabinet (高低款) at 125, ledge kept
+['[data-wc=toto]','[data-basin=ocean]','[data-floor=on]','[data-md=step]','[data-mh="125"]','[data-ledge=on]'].forEach(q=>{const b=document.querySelector(q);if(b)b.click();});
 
 let composer=null;
 try{composer=new EffectComposer(renderer);composer.addPass(new RenderPass(scene,camera));
