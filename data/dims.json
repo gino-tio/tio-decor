@@ -12,7 +12,7 @@
     "wc": "toto",
     "basin": "ocean",
     "floor": "on",
-    "mirror_doors": "step",
+    "mirror_doors": "2",
     "mirror_bottom": 1250,
     "ledge": "on"
   }
