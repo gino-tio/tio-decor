@@ -115,7 +115,7 @@ def elev(mc_bottom, ledge=True, toilet="TOTO", doors=2, floor=True):
     s.text(TOILET_CX, Y(th / 2), f"座廁 {toilet}", "lbl"); s.dimV(TOILET_CX + 260, Y(0), Y(th), f"{th}")
     # inlet + socket
     s.circle(960, Y(175), 18, "red"); s.text(870, Y(175) + 10, "淡水入水 Rc½ 離地 175", "sm", "end")
-    s.rect(820, Y(400), 70, 70, "red"); s.text(800, Y(365), "插蘇 離地 ~380", "sm", "end")
+    s.rect(1485, Y(335), 70, 70, "red"); s.text(1590, Y(300), "TOTO 插蘇（盆櫃下格內）離地 ~300", "sm", "start")
     # vanity
     base = 103 if floor else 430
     s.rect(VX0, Y(CT), 600, 63, "o"); s.rect(VX0, Y(CT - 63), 600, CT - 63 - base, "o")
