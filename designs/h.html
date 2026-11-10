@@ -92,7 +92,6 @@ button.on{background:#c9a46a;border-color:#c9a46a;color:#1d1f22;font-weight:600}
     <button data-tog="mirror">開鏡櫃</button>
     <button data-tog="door">開廁所門</button>
     <button data-tog="cab">全開盆櫃</button>
-    <button data-tog="lid">座廁蓋</button>
     <button data-tog="water">出水</button>
     <button data-tog="mlight" class="on">鏡櫃燈</button>
     <button data-tog="dims">尺寸</button>
@@ -125,6 +124,10 @@ button.on{background:#c9a46a;border-color:#c9a46a;color:#1d1f22;font-weight:600}
   <div class="row"><span>座廁</span>
     <button data-wc="inax" class="on">INAX SARAS</button>
     <button data-wc="toto">TOTO CES8E810GCN</button>
+    <span style="margin-left:6px">蓋</span>
+    <button data-lid="0" class="on">冚埋</button>
+    <button data-lid="1">開面蓋</button>
+    <button data-lid="2">面蓋＋座圈都開</button>
   </div>
   <div class="row"><span>窄枱</span>
     <button data-ledge="on" class="on">有</button>
@@ -768,7 +771,7 @@ const lid=new THREE.Group();lid.position.set(0,43.2,21);toilet.add(lid);
 toilet.position.set(107.5,0,0);
 // ---------- TOTO NEOREST AS · CES8E810GCN (692 x 386 x 512) — skirted body tapering to the floor, D-front,
 // rear function hood under a full-cover lid that slopes 512 (rear) -> ~430 (front); seat line ~385
-const toiletT=new THREE.Group();add(toiletT);toiletT.position.set(107.5,0,0);toiletT.visible=false;
+let seatT;const toiletT=new THREE.Group();add(toiletT);toiletT.position.set(107.5,0,0);toiletT.visible=false;
 {const HWT=19.3,RFT=17.5,TT=38.5;
  const L=[[0,17.6,58,13],[2,18.2,61,15],[8,18.8,64,16.5],[18,19.15,66.6,17.2],[28,19.3,68.4,17.5],[TT,19.3,69.2,17.5]];
  const N=200,pos=[],idx=[];
@@ -782,7 +785,7 @@ const toiletT=new THREE.Group();add(toiletT);toiletT.position.set(107.5,0,0);toi
  const w=new THREE.Mesh(new THREE.CircleGeometry(1,32),new THREE.MeshStandardMaterial({color:0xc9d6da,roughness:.05}));w.scale.set(7.5,10,1);w.rotation.x=-Math.PI/2;w.position.set(0,29,49);toiletT.add(w);
  // seat ring
  const seat=plan(HWT-0.5,21,68.6,1,RFT-0.5);const sh=new THREE.Path();sh.absellipse(0,-47,11.5,15.5,0,Math.PI*2,true);seat.holes.push(sh);
- ext(seat,1.8,M.ceramic,TT+0.2,toiletT,0.4);
+ seatT=new THREE.Group();seatT.position.set(0,TT+0.2,22);toiletT.add(seatT);ext(seat,1.8,M.ceramic,0,seatT,0.4).position.z=-22;
  // rear function hood with sloped front + silver strip + status lights
  const pr=new THREE.Shape();pr.moveTo(0.5,TT);pr.lineTo(0.5,48.6);pr.lineTo(8,48.6);pr.lineTo(21.5,41.4);pr.lineTo(21.5,TT);pr.lineTo(0.5,TT);
  const hd=new THREE.Mesh(new THREE.ExtrudeGeometry(pr,{depth:36.2,bevelEnabled:true,bevelSize:0.8,bevelThickness:0.8,bevelSegments:4}),M.ceramic);
@@ -792,16 +795,19 @@ const toiletT=new THREE.Group();add(toiletT);toiletT.position.set(107.5,0,0);toi
  const gm=new THREE.MeshStandardMaterial({color:0x7be3a8,emissive:0x52d68a,emissiveIntensity:1.6});
  [-2.4,-0.8,0.8,2.4].forEach(x=>{const d=box(0.6,0.2,0.6,gm,x,44.4,16.2,toiletT);d.rotation.x=0.49;});
 }
-const LIDT_CLOSED=0.122,LIDT_OPEN=-1.50;
+const LIDT_CLOSED=0.122,LIDT_OPEN=-1.50,SEATT_OPEN=-1.42;
 const lidT=new THREE.Group();lidT.position.set(0,49.2,4.5);toiletT.add(lidT);
 {const m=new THREE.Mesh(new THREE.ExtrudeGeometry(plan(18.6,0,64.4,4,16.8),{depth:1.4,curveSegments:36,bevelEnabled:true,bevelSize:1.2,bevelThickness:0.9,bevelSegments:5}),M.ceramic);
  m.rotation.x=-Math.PI/2;m.position.set(0,0.9,0);lidT.add(m);}
 lidT.rotation.x=LIDT_CLOSED;
 
 const filler=box(65,15,5,tubTile,107.5,7.5,2.5);filler.visible=false;
-box(2.5,2.5,3,M.chrome,96,17.5,1.5);                 // fresh-water stop valve
-box(7,7,2.4,M.white,152,30,1.2);box(1.6,0.4,0.3,M.black,150.5,31,2.5);box(1.6,0.4,0.3,M.black,153.5,31,2.5);box(0.4,1.2,0.3,M.black,152,28.5,2.5); // TOTO socket inside the vanity's lower part
-{const c=new THREE.CatmullRomCurve3([[126,14,8],[134,13,8],[141,16,6],[147,22,3],[151,28,2.6]].map(p=>new THREE.Vector3(...p)));
+cyl(2.4,0.6,M.chrome,82,17.5,0.3,scene,'z');cyl(1.3,4,M.chrome,82,17.5,2.6,scene,'z');cyl(1.1,2.5,M.chrome,82,16,4.2,scene);
+box(1.2,4.5,1,new THREE.MeshStandardMaterial({color:0x2d6fd6,roughness:.4}),82,21.3,3.2);                // fresh-water angle valve (blue handle = cold)
+{const c=new THREE.CatmullRomCurve3([[82,14.8,4.2],[83,10,7],[86,9,12],[88.6,12,16]].map(p=>new THREE.Vector3(...p)));
+ add(new THREE.Mesh(new THREE.TubeGeometry(c,20,0.55,8),new THREE.MeshStandardMaterial({color:0xb8bcc0,metalness:.8,roughness:.35})));}   // braided hose to the toilet inlet
+box(7,7,2.4,M.white,152,30,1.2);box(1.6,0.4,0.3,M.black,150.5,31,2.5);box(1.6,0.4,0.3,M.black,153.5,31,2.5);box(0.4,1.2,0.3,M.black,152,28.5,2.5);box(5,5.4,2.6,M.white,152,28.6,3.7); // TOTO socket + plug inside the vanity's lower part
+{const c=new THREE.CatmullRomCurve3([[126,14,8],[134,13,8],[141,16,6],[148,21,4.5],[152,25.6,4.2]].map(p=>new THREE.Vector3(...p)));
  add(new THREE.Mesh(new THREE.TubeGeometry(c,24,0.35,8),M.black));}                // TOTO power cord -> hole in the cabinet side -> socket
 
 MK('mcab');
@@ -859,10 +865,10 @@ const tDim=dim([86,1,0],[86,1,71]);const tLen=label('71 離牆',[78,5,35]);
 const lidI=[label('開蓋頂約 92（估）',[107.5,96,22],null,5),dim([129,0,20],[129,92,20])];const lidTl=[label('開蓋頂約 114（按 CAD 估）',[107.5,118,8],null,5),dim([129,0,6],[129,114,6])];lidTl.forEach(o=>o.visible=false);
 const trapLab=label('坑距 305（貼牆）',[107.5,20,82]);
 label('全身鏡 60（離門牆 59）＋電視 27×18',[111,190,D-4],null,5);label('門 77×230，離後牆 70',[W-3,170,108.5]);dim([W-1,240-1,0],[W-1,239,70]);label('70',[W-3,232,35],null,5);
-label('置物板 59×30 圓角（離地約20）',[170,26,34],null,5);label('淡水掣＋入水（座廁左邊）',[90,26,6],null,5);label('TOTO 插蘇（盆櫃下格入面）',[160,36,4],null,5);label('電線經櫃側開孔',[133,19,10],null,5);label('INAX 遙控 234×78',[136,82,24],null,5);
+label('置物板 59×30 圓角（離地約20）',[170,26,34],null,5);label('淡水掣（座廁左邊）',[80,27,6],null,5);label('TOTO 插蘇（盆櫃下格入面）',[160,36,4],null,5);label('電線經櫃側開孔',[133,19,10],null,5);label('INAX 遙控 234×78',[136,82,24],null,5);
 
 // ---------- state + UI
-const st={dt:{top:false,mid:false,bot:false,out:false},corner:'big',floor:false,cab:false,basin:'ocean',door:false,wc:'inax',ledge:true,mh:MY0,mlight:true,mirror:false,lid:false,dims:false,info:false,trap:'400',fau:'design'};
+const st={dt:{top:false,mid:false,bot:false,out:false},corner:'big',floor:false,cab:false,basin:'ocean',door:false,wc:'inax',ledge:true,mh:MY0,mlight:true,mirror:false,lid:0,dims:false,info:false,trap:'400',fau:'design'};
 function setWC(v){st.wc=v;const t=v==='toto';toilet.visible=!t;toiletT.visible=t;
   dims.remove(tLab);tLab=t?label('TOTO CES8E810GCN',[107.5,70,50],'692×386×512'):label('INAX SARAS 100572BW10',[107.5,64,50],'710×385×472');
   lidI.forEach(o=>o.visible=!t);lidTl.forEach(o=>o.visible=t);
@@ -909,7 +915,7 @@ function go(v,instant){let [p,t]=views[v];p=new THREE.Vector3(...p);t=new THREE.
 group('[data-view]',b=>go(b.dataset.view));
 group('[data-fau]',b=>setFau(b.dataset.fau));setFau('design');
 function applyCtop(){const a=st.basin==='ocean',k=st.ctop||'ceramic';vanityA.forEach(o=>{if(o.userData.ocean)o.visible=a&&k==='ceramic';});ctopG.white.visible=a&&k==='white';ctopG.brown.visible=a&&k==='brown';}
-group('[data-ctop]',b=>{st.ctop=b.dataset.ctop;applyCtop();});
+group('[data-lid]',b=>{st.lid=+b.dataset.lid;});group('[data-ctop]',b=>{st.ctop=b.dataset.ctop;applyCtop();});
 // 尺寸: 'now' = design (counter 90, upper cabinet 47 incl. basin, lower 42) / 'old' = existing (counter 91, upper 46 incl. counter, lower 45); ocean-basin cabinet only
 const ledgeY0=ledge.position.y;
 function setSize(k){const old=st.old=k==='old',s=old?39.7/40.7:1,s2=old?34.4/32.4:1;
@@ -930,7 +936,7 @@ function resize(){const w=innerWidth,h=innerHeight;renderer.setSize(w,h,false);c
 addEventListener('resize',resize);resize();dims.visible=false;go('hero',true);
 
 // ---------- share: the link keeps every option that differs from the default (o=key.value,...) plus the camera (c=position_target)
-const SKEYS=['tog','ctop','size','front','fau','dr','wc','ledge','mh','basin','stone','wood','floor','bshelf','item','corner','md','trap'],TOGK=['tog','dr','item'];
+const SKEYS=['lid','tog','ctop','size','front','fau','dr','wc','ledge','mh','basin','stone','wood','floor','bshelf','item','corner','md','trap'],TOGK=['tog','dr','item'];
 const optBtns=[];SKEYS.forEach(k=>document.querySelectorAll('#bar [data-'+k+']').forEach(b=>optBtns.push({b,k,v:b.dataset[k],on0:b.classList.contains('on')})));
 function shareHash(){const o=optBtns.filter(x=>{const on=x.b.classList.contains('on');return TOGK.includes(x.k)?on!==x.on0:on&&!x.on0;}).map(x=>x.k+'.'+x.v);
   const r=v=>[v.x,v.y,v.z].map(n=>Math.round(n)).join('_');return 'o='+o.join(',')+'&c='+r(camera.position)+'_'+r(controls.target);}
@@ -947,7 +953,7 @@ const lerp=(a,b,k)=>a+(b-a)*k;
 renderer.setAnimationLoop(()=>{
   if(anim){let k=Math.min(1,(performance.now()-anim.s)/700);k=k*k*(3-2*k);
     camera.position.lerpVectors(anim.p0,anim.p,k);controls.target.lerpVectors(anim.t0,anim.t,k);if(k>=1)anim=null;}
-  lid.rotation.x=lerp(lid.rotation.x,st.lid?LID_OPEN:LID_CLOSED,0.12);lidT.rotation.x=lerp(lidT.rotation.x,st.lid?LIDT_OPEN:LIDT_CLOSED,0.12);
+  lid.rotation.x=lerp(lid.rotation.x,st.lid?LID_OPEN:LID_CLOSED,0.12);lidT.rotation.x=lerp(lidT.rotation.x,st.lid?LIDT_OPEN:LIDT_CLOSED,0.12);seatT.rotation.x=lerp(seatT.rotation.x,st.lid===2?SEATT_OPEN:0,0.12);
   {const bd=backBox.userData.door;bd.visible=!st.dt.out;bd.rotation.y=lerp(bd.rotation.y,(st.cab||st.dt.bot)?-1.4:0,0.12);}
   cabDoors.forEach(d=>{d.visible=!st.dt.out;d.rotation.y=lerp(d.rotation.y,(st.cab||st.dt.top)?1.4:0,0.12);});
   drawers.forEach(d=>{const op=st.cab||st.dt[d.level];d.g.position.z=lerp(d.g.position.z,op?d.travel:0,0.12);d.g.visible=!st.dt.out;});
