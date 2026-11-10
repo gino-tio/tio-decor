@@ -242,7 +242,9 @@ import {OutputPass} from 'three/addons/postprocessing/OutputPass.js';
 import {RectAreaLightUniformsLib} from 'three/addons/lights/RectAreaLightUniformsLib.js';
 import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
 
-const W=200, D=148.5, H=230, CT=90;
+// main dimensions come from data/dims.json (mm, shared with tools/gen_shop.py); fall back to built-in values if it can't load
+const DIMS=await fetch('../data/dims.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null).catch(()=>null)||{room:{w:2000,d:1485,h:2300},counter_h:900,default_view:{wc:'toto',basin:'ocean',floor:'on',mirror_doors:'step',mirror_bottom:1250,ledge:'on'}};
+const W=DIMS.room.w/10, D=DIMS.room.d/10, H=DIMS.room.h/10, CT=DIMS.counter_h/10;
 const canvas=document.getElementById('c');
 const renderer=new THREE.WebGLRenderer({canvas,antialias:true});
 renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));
@@ -1002,8 +1004,8 @@ document.getElementById('demaBtn').onclick=()=>['[data-basin=ocean]','[data-floo
 group('[data-front]',b=>{const k=b.dataset.front;[aBig,aSmall].forEach(g=>{const fr=g.userData.fr;Object.keys(fr).forEach(n=>fr[n].visible=n===k);});
   // gold-frame style: whole cabinet (sides, lower part) in the same dark walnut as the drawer
   [aBig,aSmall,lowerA,shelfMesh].forEach(g=>g.traverse(o=>{if(!o.isMesh)return;if(o.userData.wm===undefined)o.userData.wm=o.material===M.wood;if(o.userData.wm)o.material=k==='gold'?darkWalnutM:M.wood;}));});
-// chosen spec (11/7): TOTO, ocean basin, floor-standing, stepped mirror cabinet (高低款) at 125, ledge kept
-['[data-wc=toto]','[data-basin=ocean]','[data-floor=on]','[data-md=step]','[data-mh="125"]','[data-ledge=on]'].forEach(q=>{const b=document.querySelector(q);if(b)b.click();});
+// chosen spec: read from data/dims.json → default_view
+{const v=DIMS.default_view;[`[data-wc=${v.wc}]`,`[data-basin=${v.basin}]`,`[data-floor=${v.floor}]`,`[data-md="${v.mirror_doors}"]`,`[data-mh="${v.mirror_bottom/10}"]`,`[data-ledge=${v.ledge}]`].forEach(q=>{const b=document.querySelector(q);if(b)b.click();});}
 // ---------- people (人物) + 日常動畫: mannequin rigs with persistent meshes, re-posed every frame from a small state
 // (root x/y/z/ry, sit, crouch, lean, tilt, hand targets). Figure frame: +z = facing, y up, origin on the floor under the pelvis; arms / legs use 2-bone IK.
 const PPL={man:{H:180,m:true,shirt:0x2b3a55,pants:0x4a4f57,hair:0x1c1714,name:'男 180'},woman:{H:165,m:false,shirt:0xc98f8a,pants:0x2a2a2e,hair:0x2a1d17,name:'女 165'}};
