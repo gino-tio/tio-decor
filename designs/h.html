@@ -90,6 +90,7 @@ button.on{background:#c9a46a;border-color:#c9a46a;color:#1d1f22;font-weight:600}
     <button data-tog="door">開廁所門</button>
     <button data-tog="cab">全開盆櫃</button>
     <button data-tog="lid">座廁蓋</button>
+    <button data-tog="water">出水</button>
     <button data-tog="mlight" class="on">鏡櫃燈</button>
     <button data-tog="dims">尺寸</button>
     <button data-tog="info">施工要點</button>
@@ -463,10 +464,10 @@ const ctopG={white:new THREE.Group(),brown:new THREE.Group()};add(ctopG.white);a
  ctopG.white.add(slab(140,0,200,50,BT,CT-BT,wM,{rFL:1.5,holes:[rr(THREE.Path,147,14,193,44,4)]}));
  {const sh=new THREE.Shape(),B=2.4;sh.moveTo(140+B,-B);sh.lineTo(200-B,-B);sh.lineTo(200-B,-(50-B));sh.lineTo(140+B,-(50-B));sh.lineTo(140+B,-B);sh.holes.push(rr(THREE.Path,147-B,14-B,193+B,44+B,4+B));
   const m=new THREE.Mesh(new THREE.ExtrudeGeometry(sh,{depth:CT-BT-2*B,bevelEnabled:true,bevelSize:B,bevelThickness:B,bevelSegments:6,curveSegments:20}),bM);m.rotation.x=-Math.PI/2;m.position.y=BT+B;ctopG.brown.add(m);}
- // bowl = counter opening at the top face (the bullnose bevel makes the brown opening 2.4 bigger each side at the top), so there is no gap into the cabinet
- ['white','brown'].forEach(k=>{const e=k==='brown'?2*2.4:0,b=new THREE.Mesh(new THREE.BoxGeometry(46+e,13-(CT-BT),30+e),new THREE.MeshStandardMaterial({color:0xfafaf8,roughness:.08,side:THREE.BackSide}));b.position.set(170,(CT-13+BT)/2+0.01,29);ctopG[k].add(b);
-  // white deck closing the cabinet top round the bowl, so nothing shows into the cabinet past the bowl rim
-  ctopG[k].add(slab(141.9,1.6,198.4,48.1,BT-0.6,0.5,new THREE.MeshStandardMaterial({color:0xfafaf8,roughness:.3}),{holes:[rr(THREE.Path,147-e/2,14-e/2,193+e/2,44+e/2,0.5)]}));});}
+ // undermount bowl lines the counter opening right up to the top (white) / to the start of the bullnose round (brown), so the stone edge is sealed and there is no gap into the cabinet
+ ['white','brown'].forEach(k=>{const top=k==='brown'?CT-2.4:CT-0.02,b=new THREE.Mesh(new THREE.BoxGeometry(45.9,top-(CT-13),29.9),new THREE.MeshStandardMaterial({color:0xfafaf8,roughness:.08,side:THREE.BackSide}));b.position.set(170,(CT-13+top)/2+0.01,29);ctopG[k].add(b);
+  // white deck closing the cabinet top round the bowl
+  ctopG[k].add(slab(141.9,1.6,198.4,48.1,BT-0.6,0.5,new THREE.MeshStandardMaterial({color:0xfafaf8,roughness:.3}),{holes:[rr(THREE.Path,147,14,193,44,0.5)]}));});}
 PART=null;
 
 box(56,0.5,1,M.led,170,42.7,45).userData.led=1;
@@ -596,6 +597,14 @@ MK('remote');
  // surface-mounted on the cabinet side: 1.6 thick body, not recessed
  box(1.6,7.2,22.8,new THREE.MeshStandardMaterial({color:0xf4f4f3,roughness:.3}),140.2,75,24);}
 MK(null);
+// 出水: water sheet from the blade spout straight down to the first visible surface below (basin floor, rim or counter), so the landing point follows the tap / basin options
+const tapWater=new THREE.Group();add(tapWater);tapWater.visible=false;
+const wSheet=new THREE.Mesh(new THREE.BoxGeometry(3.6,1,0.35),new THREE.MeshPhysicalMaterial({color:0xcfeeff,transparent:true,opacity:.55,roughness:.05,depthWrite:false}));tapWater.add(wSheet);
+const wSplash=new THREE.Mesh(new THREE.RingGeometry(1.2,4,28),new THREE.MeshBasicMaterial({color:0xe8f7ff,transparent:true,opacity:.6,side:THREE.DoubleSide,depthWrite:false}));wSplash.rotation.x=-Math.PI/2;tapWater.add(wSplash);
+const wRay=new THREE.Raycaster(),wDown=new THREE.Vector3(0,-1,0),shown=o=>{for(;o;o=o.parent)if(!o.visible)return false;return true;};
+function updateWater(){const x=fau.position.x,y0=fau.position.y-1.8,z=SL-0.4;wRay.set(new THREE.Vector3(x,y0,z),wDown);wRay.camera=camera;
+ const hit=wRay.intersectObjects(scene.children,true).find(h=>h.object.isMesh&&h.object.parent!==tapWater&&shown(h.object));
+ const y1=hit?hit.point.y:0;wSheet.scale.y=Math.max(y0-y1,0.1);wSheet.position.set(x,(y0+y1)/2,z);wSplash.position.set(x,y1+0.05,z);}
 const floorDrain=new THREE.Mesh(new THREE.CircleGeometry(5,24),M.chrome);floorDrain.rotation.x=-Math.PI/2;floorDrain.position.set(152,0.2,38);add(floorDrain);
 MK('cabinet');
 // open shelf under vanity (like the existing one), drain stays reachable in front
@@ -892,6 +901,7 @@ renderer.setAnimationLoop(()=>{
   cabDoors.forEach(d=>{d.visible=!st.dt.out;d.rotation.y=lerp(d.rotation.y,(st.cab||st.dt.top)?1.4:0,0.12);});
   drawers.forEach(d=>{const op=st.cab||st.dt[d.level];d.g.position.z=lerp(d.g.position.z,op?d.travel:0,0.12);d.g.visible=!st.dt.out;});
   bathDoor.rotation.y=lerp(bathDoor.rotation.y,st.door?1.45:0,0.1);doors.forEach(d=>d.p.rotation.y=lerp(d.p.rotation.y,st.mirror?-d.dir*1.35:0,0.12));
+  tapWater.visible=!!st.water;if(st.water)updateWater();
   controls.update();if(composer)composer.render();else renderer.render(scene,camera);});
 </script>
 </body>
