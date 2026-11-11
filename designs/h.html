@@ -82,6 +82,7 @@ button.on{background:#c9a46a;border-color:#c9a46a;color:#1d1f22;font-weight:600}
   <div class="row"><span>視角</span>
     <button id="moreBtn" class="on" style="background:#3a3d44;border-color:#555;color:#ddd">更多選項 ▴</button>
     <button id="shareBtn" style="background:#3a3d44;border-color:#c9a46a;color:#c9a46a">分享</button>
+    <button id="ptBtn" title="光線追蹤：鏡頭停低就慢慢變清，手機會慢啲">寫實</button>
     <button data-view="hero" class="on">效果圖</button>
     <button data-view="front">正面</button>
     <button data-view="door">門口</button>
@@ -227,7 +228,7 @@ button.on{background:#c9a46a;border-color:#c9a46a;color:#1d1f22;font-weight:600}
 </div>
 
 <script type="importmap">
-{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/"}}
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/","three/examples/jsm/":"https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/","three-mesh-bvh":"https://cdn.jsdelivr.net/npm/three-mesh-bvh@0.7.8/build/index.module.js","three-gpu-pathtracer":"https://cdn.jsdelivr.net/npm/three-gpu-pathtracer@0.0.23/build/index.module.js"}}
 </script>
 <script type="module">
 import * as THREE from 'three';
@@ -1197,6 +1198,40 @@ document.getElementById('shareBtn').onclick=async e=>{const b=e.target,u=locatio
   if(navigator.share){try{await navigator.share({title:'浴室 3D 設計 H',url:u});}catch(err){}return;}
   try{await navigator.clipboard.writeText(u);done('已複製連結');}catch(err){prompt('複製呢條連結：',u);}};
 
+// ---------- 寫實 mode: progressive path tracing (three-gpu-pathtracer), loaded only when pressed.
+// While on: camera moves restart the accumulation; any option change shows the normal view, then rebuilds ~1 s after things settle.
+const PT={on:false,busy:false,pt:null,env:null,swaps:[],sig:'',changedAt:0,max:800};
+const ptBtn=document.getElementById('ptBtn');
+const ptSig=()=>JSON.stringify(st)+camera.layers.mask+(AN.on?performance.now():'');
+function ptSwap(on){
+  if(!on){PT.swaps.reverse().forEach(([o,k,v])=>o[k]=v);PT.swaps=[];return;}
+  const mirrorM=new THREE.MeshStandardMaterial({color:0xf2f4f5,metalness:1,roughness:0.03});
+  scene.traverse(o=>{if(!o.isMesh||!shown(o))return;const m=o.material;if(!m||Array.isArray(m)||m.isMeshStandardMaterial)return;
+    if(o.isReflector||m.isShaderMaterial){PT.swaps.push([o,'material',m]);o.material=mirrorM;return;}
+    if(m.transparent&&(m.depthWrite===false||m.blending===THREE.AdditiveBlending)){PT.swaps.push([o,'visible',true]);o.visible=false;return;}
+    if(m.isMeshBasicMaterial){PT.swaps.push([o,'material',m]);o.material=new THREE.MeshStandardMaterial({color:0x000000,emissive:m.color,emissiveMap:m.map||null,emissiveIntensity:1,transparent:m.transparent,opacity:m.opacity});}});
+  PT.swaps.push([scene,'environment',scene.environment]);scene.environment=PT.env;
+  // the raster view also gets hemisphere + PMREM fill light, which the path tracer ignores: lift exposure to match
+  PT.swaps.push([renderer,'toneMappingExposure',renderer.toneMappingExposure]);renderer.toneMappingExposure*=1.5;}
+function ptBuild(){ptSwap(false);ptSwap(true);PT.pt.setScene(scene,camera);PT.sig=ptSig();}
+async function ptToggle(){if(PT.busy)return;
+  if(PT.on){PT.on=false;ptSwap(false);ptBtn.classList.remove('on');ptBtn.textContent='寫實';return;}
+  PT.busy=true;ptBtn.textContent='載入中…';
+  try{const {WebGLPathTracer,GradientEquirectTexture}=await import('three-gpu-pathtracer');
+    if(!PT.pt){const pt=PT.pt=new WebGLPathTracer(renderer);pt.tiles.set(2,2);pt.filterGlossyFactor=0.5;pt.minSamples=3;pt.fadeDuration=300;pt.renderDelay=0;
+      pt.renderScale=Math.min(1,1.25/renderer.getPixelRatio());pt.rasterizeSceneCallback=()=>{if(composer)composer.render();else renderer.render(scene,camera);};
+      const env=PT.env=new GradientEquirectTexture();env.topColor.set(0xfff3e4);env.bottomColor.set(0x2a2622);env.exponent=2;env.update();
+      controls.addEventListener('change',()=>{if(PT.on)PT.pt.updateCamera();});}
+    await new Promise(r=>requestAnimationFrame(()=>setTimeout(r,30)));
+    PT.on=true;ptBuild();ptBtn.classList.add('on');
+  }catch(e){console.error(e);PT.on=false;ptSwap(false);ptBtn.textContent='寫實（唔支援）';}
+  PT.busy=false;}
+ptBtn.onclick=ptToggle;
+function ptFrame(){const sig=ptSig(),now=performance.now();
+  if(sig!==PT.sig){if(!PT.changedAt){ptSwap(false);}PT.sig=sig;PT.changedAt=now;}
+  if(PT.changedAt){if(now-PT.changedAt<1200){if(composer)composer.render();else renderer.render(scene,camera);ptBtn.textContent='寫實…';return;}PT.changedAt=0;ptBuild();}
+  const pt=PT.pt;pt.pausePathTracing=pt.samples>=PT.max;pt.renderSample();ptBtn.textContent='寫實 '+Math.floor(pt.samples);}
+
 const lerp=(a,b,k)=>a+(b-a)*k;
 renderer.setAnimationLoop(()=>{
   if(anim){let k=Math.min(1,(performance.now()-anim.s)/700);k=k*k*(3-2*k);
@@ -1209,7 +1244,7 @@ renderer.setAnimationLoop(()=>{
   {const now=performance.now(),dt=Math.min(.05,(now-(AN.last||now))/1000);AN.last=now;stepAnim(dt);}
   tapWater.visible=!!st.water;if(st.water)updateWater();
   if(drainFlow.fg.visible!==!!st.water){const on=!!st.water,pv=drainFlow.pv;drainFlow.fg.visible=on;pv.transparent=on;pv.opacity=on?0.35:1;pv.depthWrite=!on;pv.needsUpdate=true;}
-  controls.update();if(composer)composer.render();else renderer.render(scene,camera);});
+  controls.update();if(PT.on)ptFrame();else if(composer)composer.render();else renderer.render(scene,camera);});
 </script>
 </body>
 </html>

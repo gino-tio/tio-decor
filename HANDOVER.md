@@ -28,6 +28,8 @@ Status as of 2026-11-08. This is for TIO Bot (or any Claude session) picking the
 
 - Views: 效果圖 / 正面 / 門口 / 俯視 / 座廁 / 盆位. 「收埋選項」 collapses the option rows on mobile.
 - Toggles: 開鏡櫃, 開廁所門, 全開盆櫃, 座廁蓋, 鏡櫃燈, 尺寸, 施工要點.
+- Tap a fixture in 3D (door, mirror cabinet, drawer, vanity door, tap, toilet lid) to open/close it. It presses the matching button.
+- 「寫實」 (next to 分享): progressive path tracing with three-gpu-pathtracer 0.0.23 + three-mesh-bvh 0.7.8 (the last versions that work with three 0.165), loaded only when pressed. Mirrors (Reflector) and MeshBasic materials are swapped for PBR ones while it is on. It rebuilds about 1 s after any option changes and stops at 800 samples.
 - Drawers (櫃桶): open the top, middle or bottom drawer on its own. 「拆晒櫃桶」 removes all drawers to show the P-trap and the floor-drain access hatch. The drawers are filled with everyday items.
 - Toilet: INAX SARAS 100572BW10 / **TOTO CES8E810GCN** (default).
 - Narrow ledge on/off. Mirror cabinet bottom 106 / **125** / 130 cm. Mirror doors 3 / **2**.
