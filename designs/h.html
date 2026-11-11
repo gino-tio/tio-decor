@@ -28,7 +28,7 @@ button.on{background:#c9a46a;border-color:#c9a46a;color:#1d1f22;font-weight:600}
 <div id="top">
   <a href="../" style="pointer-events:auto;color:#c9a46a;font-size:12px;text-decoration:none">← 返主頁</a>
   <h1>浴室裝修 3D 設計 H · 擬真效果圖</h1>
-  <p>擬真效果圖：暖光筒燈、軟陰影、環境光遮蔽、燈帶泛光 · 撳「尺寸」睇數</p>
+  <p>擬真效果圖：暖光筒燈、軟陰影、環境光遮蔽、燈帶泛光 · 撳「尺寸」睇數 · 直接撳門、鏡櫃、櫃桶、龍頭、廁板就開關</p>
 </div>
 <div id="info">
   <h3>已揀（11 月 7 日）</h3>
@@ -1004,6 +1004,21 @@ document.getElementById('demaBtn').onclick=()=>['[data-basin=ocean]','[data-floo
 group('[data-front]',b=>{const k=b.dataset.front;[aBig,aSmall].forEach(g=>{const fr=g.userData.fr;Object.keys(fr).forEach(n=>fr[n].visible=n===k);});
   // gold-frame style: whole cabinet (sides, lower part) in the same dark walnut as the drawer
   [aBig,aSmall,lowerA,shelfMesh].forEach(g=>g.traverse(o=>{if(!o.isMesh)return;if(o.userData.wm===undefined)o.userData.wm=o.material===M.wood;if(o.userData.wm)o.material=k==='gold'?darkWalnutM:M.wood;}));});
+// ---------- tap a fixture in 3D to open / close it (same as pressing its button, so the UI stays in sync)
+{const btn=q=>document.querySelector(q),press=q=>{const b=btn(q);if(b)b.click();};
+ const PICK=[[bathDoor,()=>press('[data-tog=door]')],[mc,()=>press('[data-tog=mirror]')],[mc2,()=>press('[data-tog=mirror]')],[mc3,()=>press('[data-tog=mirror]')],
+  [fau,()=>press('[data-tog=water]')],[toilet,()=>press(`[data-lid="${(st.lid+1)%3}"]`)],[toiletT,()=>press(`[data-lid="${(st.lid+1)%3}"]`)],
+  ...cabDoors.map(d=>[d,()=>press('[data-tog=cab]')]),[backBox,()=>press('[data-dr=bot]')]];
+ const ray=new THREE.Raycaster(),ndc=new THREE.Vector2();
+ function pick(e){const r=canvas.getBoundingClientRect();ndc.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1);ray.setFromCamera(ndc,camera);ray.layers.mask=camera.layers.mask; // items sit on render layers; only pick what is shown
+  for(const h of ray.intersectObjects(scene.children,true)){const o=h.object;if(!o.isMesh||!shown(o)||(o.material&&o.material.depthWrite===false))continue;
+   for(let a=o;a;a=a.parent){const d=drawers.find(x=>x.g===a);if(d)return()=>press(`[data-dr=${d.level}]`);const m=PICK.find(([g])=>g===a);if(m)return m[1];}
+   return null;}return null;}
+ let down=null;
+ canvas.addEventListener('pointerdown',e=>{down={x:e.clientX,y:e.clientY};});
+ canvas.addEventListener('pointerup',e=>{if(!down)return;const moved=Math.hypot(e.clientX-down.x,e.clientY-down.y);down=null;
+  if(moved<8){const f=pick(e);if(f)f();}});
+ let hov=0;canvas.addEventListener('pointermove',e=>{if(e.pointerType!=='mouse'||down)return;const n=performance.now();if(n-hov<80)return;hov=n;canvas.style.cursor=pick(e)?'pointer':'';});}
 // chosen spec: read from data/dims.json → default_view
 {const v=DIMS.default_view;[`[data-wc=${v.wc}]`,`[data-basin=${v.basin}]`,`[data-floor=${v.floor}]`,`[data-md="${v.mirror_doors}"]`,`[data-mh="${v.mirror_bottom/10}"]`,`[data-ledge=${v.ledge}]`].forEach(q=>{const b=document.querySelector(q);if(b)b.click();});}
 // ---------- people (人物) + 日常動畫: mannequin rigs with persistent meshes, re-posed every frame from a small state
