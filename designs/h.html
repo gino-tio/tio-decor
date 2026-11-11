@@ -500,6 +500,10 @@ function buildACab(g,R){const xs=141+R+0.2;const h=new THREE.Path();h.moveTo(141
  const gg=new THREE.Group();g.add(gg);g.userData.fr.gold=gg;gg.visible=false;
  {const x0=xs+0.4,x1=199.4,y0=43.3,y1=BT-0.3,ring=rxy(x0,y0,x1,y1,[3,3,3,3]);ring.holes.push(rxy(x0+1.3,y0+1.3,x1-1.3,y1-1.3,[2,2,2,2]));
   const fm=new THREE.Mesh(new THREE.ExtrudeGeometry(ring,{depth:0.8,bevelEnabled:false,curveSegments:10}),goldLedM);fm.position.z=48.6;gg.add(fm);
+  // 落地: one tall gold frame round both drawers (upper + lower part), dark walnut strip in the gap so no light carcass edge shows
+  const tr=rxy(x0,10.8,x1,y1,[3,3,3,3]);tr.holes.push(rxy(x0+1.3,12.1,x1-1.3,y1-1.3,[2,2,2,2]));
+  const ft=new THREE.Mesh(new THREE.ExtrudeGeometry(tr,{depth:0.8,bevelEnabled:false,curveSegments:10}),goldLedM);ft.position.z=48.6;gg.add(ft);
+  const fill=box(x1-x0-2.6,2.4,0.8,darkWalnutM,(x0+x1)/2,43.5,48.9,gg);gg.userData={top:fm,tall:[ft,fill]};ft.visible=fill.visible=false;
   makeDrawer(gg,x0+1.3,x1-1.3,y0+1.3,y1-1.3,49.6,36,darkWalnutM,{by0:44.5,bh:26,uCut:15,uTo:36,level:'top',noFill:true,handle:false,sideM:metalSideM,floorM:lightWoodM,extra:singleInner});}}
 buildACab(aBig,6);buildACab(aSmall,2.5);
 PART='basin';const bowl=new THREE.Mesh(new THREE.BoxGeometry(56,13,35.7),new THREE.MeshStandardMaterial({color:0xfafaf8,roughness:.08,side:THREE.BackSide}));
@@ -679,7 +683,9 @@ const lowerA=new THREE.Group(),lowerB=new THREE.Group();floorKit.add(lowerA,lowe
  [[lowerA,6,'a'],[lowerB,12,'b']].forEach(([L,R,k])=>{['big','small'].forEach(sz=>{const r=sz==='big'?R:(k==='a'?2.5:4);const g=new THREE.Group();g.userData.sz=sz;L.add(g);
    const mat=k==='a'?M.wood:walnutM,xs=k==='a'?141+r+0.2:(sz==='big'?160.5:145.5);
    carcass(g,r,xs,10.3,42.7,k==='a'?49:49.6,mat);box(0.5,31,0.6,M.black,xs,26.5,k==='a'?49.1:49.9,g);
-   makeDrawer(g,xs+0.4,199.4,10.8,42.4,k==='a'?49.6:50.2,k==='a'?36:40,mat,{by0:12.2,bh:24,div:[0.5],handle:k==='a',level:'bot'});});});}
+   const gN=new THREE.Group(),gG=new THREE.Group();g.add(gN,gG);gG.visible=false;if(k==='a')g.userData.fr={norm:gN,gold:gG};
+   makeDrawer(gN,xs+0.4,199.4,10.8,42.4,k==='a'?49.6:50.2,k==='a'?36:40,mat,{by0:12.2,bh:24,div:[0.5],handle:k==='a',level:'bot'});
+   if(k==='a')makeDrawer(gG,xs+1.7,198.1,12.1,42.2,49.6,36,darkWalnutM,{by0:13.2,bh:23,div:[0.5],handle:false,level:'bot'});});});}
 // ---------- hung option: low back cabinet 25 deep under the vanity on a 10cm waterproof stone kerb, hides the drain pipe (pipe centre 9 from back wall, 14 from right wall); floor drain stays in front
 // one door hinged on the left (opens to the left, follows 開下格／全開盆櫃); optional 20cm shelf inside, notched round the pipe
 const backBox=new THREE.Group();add(backBox);backBox.visible=false;
@@ -948,7 +954,11 @@ function setWC(v){st.wc=v;const t=v==='toto';toilet.visible=!t;toiletT.visible=t
   dims.remove(tLab);tLab=t?label('TOTO CES8E810GCN',[107.5,70,50],'692×386×512'):label('INAX SARAS 100572BW10',[107.5,64,50],'710×385×472');
   lidI.forEach(o=>o.visible=!t);lidTl.forEach(o=>o.visible=t);
   document.getElementById('trapRow').style.display=t?'none':'';setTrap(t?'400':st.trap);}
-function setFloor(v){st.floor=v==='on';st.back=v==='back';setBasin(st.basin);}
+function setFloor(v){st.floor=v==='on';st.back=v==='back';setBasin(st.basin);applyGold();}
+// 啡木＋金框: short frame when hung, tall frame + handle-less lower drawer when floor-standing
+function applyGold(){const gold=st.front==='gold',fl=!!st.floor;
+  [aBig,aSmall].forEach(g=>{const u=g.userData.fr.gold.userData;u.top.visible=!fl;u.tall.forEach(o=>o.visible=fl);});
+  lowerA.children.forEach(g=>{const f=g.userData.fr;if(f){f.norm.visible=!gold;f.gold.visible=gold;}});}
 function setCorner(c){st.corner=c;const big=c==='big';
   if(st.basin==='ocean'){aBig.visible=big;aSmall.visible=!big;}else{aBig.visible=aSmall.visible=false;}
   bBig.visible=big;bSmall.visible=!big;[lowerA,lowerB].forEach(L=>L.children.forEach(g=>{if(g.userData.sz)g.visible=(g.userData.sz==='big')===big;}));}
@@ -1002,7 +1012,7 @@ function setSize(k){const old=st.old=k==='old',s=old?39.7/40.7:1,s2=old?34.4/32.
  lowerA.scale.y=s2;lowerA.position.y=old?10.3-10.3*s2:0;backBox.scale.y=old?45/42.4:1;ledge.position.y=ledgeY0+(old?1:0);setFau(st.fau);}
 group('[data-size]',b=>setSize(b.dataset.size));
 document.getElementById('demaBtn').onclick=()=>['[data-basin=ocean]','[data-floor=off]','[data-ctop=viola]','[data-front=gold]'].forEach(q=>document.querySelector(q).click());
-group('[data-front]',b=>{const k=b.dataset.front;[aBig,aSmall].forEach(g=>{const fr=g.userData.fr;Object.keys(fr).forEach(n=>fr[n].visible=n===k);});
+group('[data-front]',b=>{const k=b.dataset.front;st.front=k;applyGold();[aBig,aSmall].forEach(g=>{const fr=g.userData.fr;Object.keys(fr).forEach(n=>fr[n].visible=n===k);});
   // gold-frame style: whole cabinet (sides, lower part) in the same dark walnut as the drawer
   [aBig,aSmall,lowerA,shelfMesh].forEach(g=>g.traverse(o=>{if(!o.isMesh)return;if(o.userData.wm===undefined)o.userData.wm=o.material===M.wood;if(o.userData.wm)o.material=k==='gold'?darkWalnutM:M.wood;}));});
 // ---------- tap a fixture in 3D to open / close it (same as pressing its button, so the UI stays in sync)
