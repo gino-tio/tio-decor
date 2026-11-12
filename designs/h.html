@@ -98,6 +98,7 @@ button.on{background:#c9a46a;border-color:#c9a46a;color:#1d1f22;font-weight:600}
     <button data-view="top">俯視</button>
     <button data-view="toilet">座廁</button>
     <button data-view="basin">盆位</button>
+    <button data-view="detail">抽屜細節</button>
   </div>
   <div class="tabs">
     <button data-tab="basin" class="on">洗手盆</button>
@@ -197,6 +198,10 @@ button.on{background:#c9a46a;border-color:#c9a46a;color:#1d1f22;font-weight:600}
     <div class="grp" id="trapRow"><b>坑距</b><div class="btns">
       <button data-trap="400" class="on">305（貼牆）</button>
       <button data-trap="305">355（後補 5cm）</button>
+    </div></div>
+    <div class="grp"><b>廁紙架</b><div class="btns">
+      <button data-paper="on" class="on">有</button>
+      <button data-paper="off">冇（移走）</button>
     </div></div>
   </div>
   <div class="panel" data-panel="people">
@@ -467,8 +472,8 @@ function carcass(g,R,xs,y0,y1,zf,mat,cutY){const h=y1-y0;
 function makeDrawer(parent,x0,x1,y0,y1,zf,depth,frontMat,opt={}){
   const g=new THREE.Group();parent.add(g);const w=x1-x0,h=y1-y0,cx=(x0+x1)/2;
   const by0=opt.by0??(y0+1.2),bh=opt.bh??(h-4),T=1.2,zF=zf-1.4,zb=zF-depth,yc=by0+bh/2,xl=x0+1.2,xr=x1-1.2,iw=xr-xl;
-  box(w-0.3,h-0.3,1.4,frontMat,cx,(y0+y1)/2,zf-0.7,g);
-  if(opt.handle!==false)box(Math.min(36,w-8),1.1,1.2,M.black,cx,y1-2.4,zf+0.5,g);
+  if(opt.front!==false)box(w-0.3,h-0.3,1.4,frontMat,cx,(y0+y1)/2,zf-0.7,g);
+  if(opt.front!==false&&opt.handle!==false)box(Math.min(36,w-8),1.1,1.2,M.black,cx,y1-2.4,zf+0.5,g);
   const sM=opt.sideM||carcassM,fM=opt.floorM||carcassM;
   box(T,bh,depth,sM,xl+T/2,yc,zF-depth/2,g);box(T,bh,depth,sM,xr-T/2,yc,zF-depth/2,g);
   if(opt.uCut){const cw=opt.uCut,uTo=opt.uTo,sw=(iw-cw)/2;
@@ -759,8 +764,18 @@ const vanityG=new THREE.Group();add(vanityG);vanityG.visible=false;
  // carcass()/makeDrawer() work in the standard 141..199.2 frame: build it 1cm to the left so the right side stops 1cm off the wall
  const cg=new THREE.Group();cg.position.x=-1;g.add(cg);
  carcass(cg,R,xs,12,TY,ZF,oakM);
- makeDrawer(cg,xs+0.4,199.4,42.2,TY-0.3,ZF,40,oakBoxM,{by0:43.4,bh:16,uCut:14,uTo:36,div:[0.25,0.75],handle:false,level:'top'});
- makeDrawer(cg,xs+0.4,199.4,12,41.8,ZF,40,oakBoxM,{by0:13.5,bh:24,div:[0.5],handle:false,level:'bot'});
+ // drawer fronts (ref MLUS 绮想 WINTER): the left edge curls back in a J (R3), leaving a 3.4cm vertical finger-pull recess beside the fixed side;
+ // the drawer boxes have thin anthracite metal sides on a light wood floor
+ const XL=xs+3.4,RJ=3,TJ=1.6,darkM=new THREE.MeshStandardMaterial({color:0x2a211a,roughness:.9});
+ const knitT=tex(64,64,(c,w,h)=>{c.fillStyle='#efebe4';c.fillRect(0,0,w,h);c.fillStyle='#d6d0c6';for(let y=0;y<h;y+=8)for(let x=(y/8%2)*4;x<w;x+=8){c.beginPath();c.arc(x+2,y+2,2.4,0,7);c.fill();}},1,1);
+ const knitM=new THREE.MeshStandardMaterial({map:knitT,roughness:1});
+ const jFront=(d,a,b)=>{const p=new THREE.Shape();p.moveTo(199.4,-ZF);p.lineTo(XL+RJ,-ZF);p.absarc(XL+RJ,-(ZF-RJ),RJ,-Math.PI/2,-Math.PI,true);p.lineTo(XL,-(ZF-RJ-3.5));
+   p.lineTo(XL+TJ,-(ZF-RJ-3.5));p.lineTo(XL+TJ,-(ZF-RJ));p.absarc(XL+RJ,-(ZF-RJ),RJ-TJ,-Math.PI,-Math.PI/2,false);p.lineTo(199.4,-(ZF-TJ));p.lineTo(199.4,-ZF);
+   const m=new THREE.Mesh(new THREE.ExtrudeGeometry(p,{depth:b-a,bevelEnabled:false,curveSegments:16}),oakM);m.rotation.x=-Math.PI/2;m.position.y=a;d.add(m);};
+ const towels=(g,o)=>{[0.22,0.5].forEach((f,i)=>box(o.iw*0.24,5,Math.min(26,o.zF-o.zb-4),knitM,o.xl+o.iw*f,o.fy+2.6,o.zF-2-Math.min(26,o.zF-o.zb-4)/2,g));};
+ [[42.2,TY-0.3,'top',{by0:43.4,bh:12,uCut:14,uTo:36,extra:towels}],[12,41.8,'bot',{by0:13.5,bh:22,div:[0.5]}]].forEach(([a,b,lv,o])=>{
+   const d=makeDrawer(cg,XL,199.4,a,b,ZF,40,oakBoxM,{...o,front:false,handle:false,level:lv,sideM:metalSideM,floorM:lightWoodM});jFront(d,a+0.15,b-0.15);
+   box(XL-xs,b-a,0.6,darkM,(xs+XL)/2,(a+b)/2,ZF-7,cg);});                                       // dark back of the finger-pull recess
  cg.add(slab(143,0,198,ZF-5,0,12,new THREE.MeshStandardMaterial({color:0x2b2622,roughness:.8}),{rFL:R-2}));}
 const under=new THREE.PointLight(0xffd9a0,0.5,90,0);under.position.set(170,40,40);add(under);
 // wall-mounted 2-hole basin mixer (like the existing hansgrohe): plate ~18 x 7, flat blade spout on the left (5 wide, 19 long to clear the 12 back deck), round lever on the right.
@@ -1015,7 +1030,7 @@ cyl(0.8,1.6,M.chrome,88.4,7,14.5,scene,'x');                                    
 {const c=new THREE.CatmullRomCurve3([[82,14.8,4.2],[82,10.5,4.6],[82.8,7.4,6],[85,6.6,8.6],[87,6.8,11.6],[87.6,7,14.5]].map(p=>new THREE.Vector3(...p)));
  add(new THREE.Mesh(new THREE.TubeGeometry(c,20,0.55,8),new THREE.MeshStandardMaterial({color:0xb8bcc0,metalness:.8,roughness:.35})));}   // braided hose to the toilet inlet
 box(7,7,2.4,M.white,152,30,1.2);box(1.6,0.4,0.3,M.black,150.5,31,2.5);box(1.6,0.4,0.3,M.black,153.5,31,2.5);box(0.4,1.2,0.3,M.black,152,28.5,2.5);box(5,5.4,2.6,M.white,152,28.6,3.7); // TOTO socket + plug inside the vanity's lower part
-box(1.4,2.4,10,M.chrome,140.3,58,40);cyl(5.5,11,M.white,135,52,40,scene,'x');cyl(1.4,12,M.chrome,135,52,40,scene,'x');box(1,1.4,1.4,M.chrome,140,52,40); // toilet-paper holder (示意) on the vanity's left side
+const paperG=new THREE.Group();add(paperG);box(1.4,2.4,10,M.chrome,140.3,58,40,paperG);cyl(5.5,11,M.white,135,52,40,paperG,'x');cyl(1.4,12,M.chrome,135,52,40,paperG,'x');box(1,1.4,1.4,M.chrome,140,52,40,paperG); // toilet-paper holder (示意) on the vanity's left side, 廁紙架 有／冇
 {const c=new THREE.CatmullRomCurve3([[126,14,8],[134,13,8],[141,16,6],[148,21,4.5],[152,25.6,4.2]].map(p=>new THREE.Vector3(...p)));
  add(new THREE.Mesh(new THREE.TubeGeometry(c,24,0.35,8),M.black));}                // TOTO power cord -> hole in the cabinet side -> socket
 
@@ -1079,7 +1094,7 @@ const tDim=dim([86,1,0],[86,1,71]);const tLen=label('71 離牆',[78,5,35]);
 const lidI=[label('開蓋頂約 92（估）',[107.5,96,22],null,5),dim([129,0,20],[129,92,20])];const lidTl=[label('開蓋頂約 114（按 CAD 估）',[107.5,118,8],null,5),dim([129,0,6],[129,114,6])];lidTl.forEach(o=>o.visible=false);
 const trapLab=label('坑距 305（貼牆）',[107.5,20,82]);
 label('全身鏡 60（離門牆 59）＋電視 27×18',[111,190,D-4],null,5);label('門 77×230，離後牆 70',[W-3,170,108.5]);dim([W-1,240-1,0],[W-1,239,70]);label('70',[W-3,232,35],null,5);
-label('置物板 59×30 圓角（離地約20）',[170,26,34],null,5);label('淡水掣（座廁左邊）',[80,27,6],null,5);label('TOTO 插蘇（盆櫃下格入面）',[160,36,4],null,5);label('電線經櫃側開孔',[133,19,10],null,5);label('廁紙架（示意）',[130,64,40],null,5);label('INAX 遙控 234×78',[136,82,24],null,5);
+label('置物板 59×30 圓角（離地約20）',[170,26,34],null,5);label('淡水掣（座廁左邊）',[80,27,6],null,5);label('TOTO 插蘇（盆櫃下格入面）',[160,36,4],null,5);label('電線經櫃側開孔',[133,19,10],null,5);const paperLbl=label('廁紙架（示意）',[130,64,40],null,5);label('INAX 遙控 234×78',[136,82,24],null,5);
 
 // ---------- state + UI
 const st={dt:{top:false,mid:false,bot:false,out:false},corner:'big',floor:false,cab:false,basin:'ocean',door:false,wc:'inax',ledge:true,mh:MY0,mlight:true,mirror:false,lid:0,dims:false,info:false,trap:'400',fau:'design'};
@@ -1130,14 +1145,17 @@ document.querySelectorAll('[data-dr]').forEach(b=>b.onclick=()=>{const k=b.datas
 group('[data-corner]',b=>setCorner(b.dataset.corner));group('[data-floor]',b=>setFloor(b.dataset.floor));group('[data-bshelf]',b=>{backBox.userData.shelf.visible=b.dataset.bshelf==='on';});group('[data-wood]',b=>setCabWood(b.dataset.wood));group('[data-basin]',b=>setBasin(b.dataset.basin));group('[data-stone]',b=>setStone(b.dataset.stone));setBasin('ocean');group('[data-md]',b=>setMirrorDoors(isNaN(+b.dataset.md)?b.dataset.md:+b.dataset.md));group('[data-mht]',b=>{st.mht=b.dataset.mht;mTall=st.mht==='80';applyMirror();});group('[data-wc]',b=>setWC(b.dataset.wc));group('[data-ledge]',b=>setLedge(b.dataset.ledge==='on'));group('[data-mh]',b=>setMirrorH(+b.dataset.mh));
 group('[data-trap]',b=>{setTrap(b.dataset.trap);dims.remove(st._tl||trapLab);st._tl=label(trapTexts[b.dataset.trap],[107.5,20,82+toilet.position.z]);});
 
-const views={hero:[[175,150,140],[95,95,30]],front:[[118,165,330],[125,95,35]],door:[[165,170,175],[100,80,10]],top:[[115,440,150],[115,0,80]],
+const views={hero:[[175,150,140],[95,95,30]],detail:[[110,92,122],[156,54,40]],front:[[118,165,330],[125,95,35]],door:[[165,170,175],[100,80,10]],top:[[115,440,150],[115,0,80]],
   toilet:[[45,145,170],[108,45,20]],basin:[[160,190,145],[170,85,25]]};
 let anim=null;
 function go(v,instant){let [p,t]=views[v];p=new THREE.Vector3(...p);t=new THREE.Vector3(...t);
   const a=camera.aspect;if(a<0.85){p.sub(t).multiplyScalar(Math.min(1.45,0.85/a*1.1)).add(t);}
   if(instant){camera.position.copy(p);controls.target.copy(t);return;}
   anim={p0:camera.position.clone(),t0:controls.target.clone(),p,t,s:performance.now()};}
-group('[data-view]',b=>go(b.dataset.view));
+group('[data-view]',b=>{go(b.dataset.view);
+  // 抽屜細節: close-up of the 冰河世紀 drawer's curled left edge, with the top drawer pulled out to show the metal inner box
+  if(b.dataset.view==='detail'&&!st.dt.top){const t=document.querySelector('[data-dr=top]');if(t)t.click();}});
+group('[data-paper]',b=>{const on=b.dataset.paper==='on';paperG.visible=on;paperLbl.visible=on;});
 group('[data-fau]',b=>setFau(b.dataset.fau));setFau('design');
 function applyCtop(){const a=st.basin==='ocean',k=st.ctop||'ceramic';vanityA.forEach(o=>{if(o.userData.ocean)o.visible=a&&k==='ceramic';});ctopG.white.visible=a&&k==='white';ctopG.brown.visible=a&&k==='brown';ctopG.viola.visible=a&&k==='viola';}
 group('[data-lid]',b=>{st.lid=+b.dataset.lid;});group('[data-ctop]',b=>{st.ctop=b.dataset.ctop;applyCtop();});
@@ -1331,7 +1349,7 @@ function resize(){const w=innerWidth,h=innerHeight;renderer.setSize(w,h,false);c
 addEventListener('resize',resize);resize();dims.visible=false;go('hero',true);
 
 // ---------- share: the link keeps every option that differs from the default (o=key.value,...) plus the camera (c=position_target)
-const SKEYS=['who','act','anim','lid','tog','ctop','size','front','fau','dr','wc','ledge','mh','basin','stone','wood','floor','bshelf','item','corner','md','mht','trap'],TOGK=['tog','dr','item'];
+const SKEYS=['who','act','anim','lid','tog','ctop','size','front','fau','dr','wc','ledge','mh','basin','stone','wood','floor','bshelf','item','corner','md','mht','trap','paper'],TOGK=['tog','dr','item'];
 const optBtns=[];SKEYS.forEach(k=>document.querySelectorAll('#bar [data-'+k+']').forEach(b=>optBtns.push({b,k,v:b.dataset[k],on0:b.classList.contains('on')})));
 function shareHash(){const o=optBtns.filter(x=>{const on=x.b.classList.contains('on');return TOGK.includes(x.k)?on!==x.on0:on&&!x.on0;}).map(x=>x.k+'.'+x.v);
   const r=v=>[v.x,v.y,v.z].map(n=>Math.round(n)).join('_');return 'o='+o.join(',')+'&c='+r(camera.position)+'_'+r(controls.target);}
