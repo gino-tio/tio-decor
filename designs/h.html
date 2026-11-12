@@ -171,6 +171,8 @@ button.on{background:#c9a46a;border-color:#c9a46a;color:#1d1f22;font-weight:600}
     <button data-basin="slab">岩板一體盆</button>
     <button data-basin="trav">洞石米黃落地櫃</button>
     <button data-basin="long">長檯面連座廁上面</button>
+    <button data-basin="ash">白蠟木竪紋＋弧形岩板</button>
+    <button data-basin="onyx">原木拼花＋透光奢石</button>
     <button data-stone="grey" class="on">原色灰</button>
     <button data-stone="muse">繆斯白</button>
     <button data-stone="fish">魚肚白</button>
@@ -632,6 +634,73 @@ const creamM=new THREE.MeshPhysicalMaterial({color:0xe8dfcf,roughness:.42,clearc
   // floor-standing: dark recessed toe-kick
   if(y0>1)g.add(slab(143,0,198,ZF-5,0,y0,new THREE.MeshStandardMaterial({color:0x2b2622,roughness:.8}),{rFL:R-2}));}
  buildDCab(dHung,CB,2);buildDCab(dFloor,10,3);}
+// ---------- vanity option E (ref video, 丽客卫浴 白蠟木竪紋＋弧形岩板台盆): solid ash cabinet with carved vertical flutes (the carving cuts the growth
+// rings into oval figure), three drawers with a finger-pull groove along each top edge, fluted toilet-side panel, rounded front-left corner;
+// thick white rock-slab top (12) with fully rounded edges and an integrated basin. Wall-hung (bottom 36) or floor-standing on a recessed toe-kick (吊櫃/落地)
+const vanityE=new THREE.Group(),eHung=new THREE.Group(),eFloor=new THREE.Group();add(vanityE);vanityE.add(eHung,eFloor);vanityE.visible=false;
+// fluted skin: w wide, h tall, ribs every ~pitch, ribs stand out `depth`; front face at local z=0..depth, origin at bottom centre
+function flutedPanel(w,h,pitch,depth,mat){const s=new THREE.Shape(),n=Math.max(2,Math.round(w/pitch)),p=w/n;s.moveTo(-w/2,-0.6);s.lineTo(-w/2,0);
+ for(let i=0;i<n;i++)for(let k=1;k<=10;k++){const t=k/10;s.lineTo(-w/2+(i+t)*p,Math.sin(Math.PI*t)*depth);}
+ s.lineTo(w/2,-0.6);s.lineTo(-w/2,-0.6);
+ const g=new THREE.ExtrudeGeometry(s,{depth:h,bevelEnabled:false,curveSegments:4});g.rotateX(Math.PI/2);g.translate(0,h,0);return new THREE.Mesh(g,mat);}
+const ashT=tex(512,512,(g,w,h)=>{g.fillStyle='#c8914f';g.fillRect(0,0,w,h);
+ for(let i=0;i<160;i++){g.globalAlpha=.08+rnd()*.15;g.strokeStyle=rnd()<.6?'#8a5a2b':'#e3b77c';g.lineWidth=.6+rnd()*1.6;let x=rnd()*w;g.beginPath();g.moveTo(x,0);for(let y=0;y<=h;y+=16){x+=(rnd()-.5)*1.2;g.lineTo(x,y);}g.stroke();}
+ for(let c=0;c<8;c++){const cx=rnd()*w,cy=rnd()*h,k=.5+rnd()*.8;for(let r=4;r<90*k;r+=4+rnd()*3){g.globalAlpha=.16+rnd()*.2;g.strokeStyle=rnd()<.5?'#7a4a22':'#e6bd84';g.lineWidth=1+rnd()*1.5;g.beginPath();g.ellipse(cx,cy,r*.7,r*1.25,0,0,7);g.stroke();}}
+ g.globalAlpha=1;},1/40,1/40);
+const ashM=new THREE.MeshStandardMaterial({map:ashT,roughness:.55}),ashPlainM=new THREE.MeshStandardMaterial({map:tex(256,256,(g,w,h)=>wood(g,w,h,'#c8914f','#8a5a2b')),roughness:.6});
+const grooveM=new THREE.MeshStandardMaterial({color:0x4a2f17,roughness:.8}),toeM=new THREE.MeshStandardMaterial({color:0x2b2622,roughness:.8});
+{const g=vanityE,B=2;PART='basin';
+ const rockM=new THREE.MeshPhysicalMaterial({map:tex(512,512,(g,w,h)=>marble(g,w,h,'#eceae6','#b5b1aa',14),1/60,1/60),roughness:.35,clearcoat:.15});
+ const cs=rr(THREE.Shape,140+B,B,200-B,51-B,8);cs.holes.push(rr(THREE.Path,146,12,194,44,6));
+ const cm=new THREE.Mesh(new THREE.ExtrudeGeometry(cs,{depth:12-2*B,bevelEnabled:true,bevelSize:B,bevelThickness:B,bevelSegments:6,curveSegments:24}),rockM);
+ cm.rotation.x=-Math.PI/2;cm.position.y=78+B;add(cm,g);
+ const bw=new THREE.Mesh(new THREE.BoxGeometry(43.6,10,27.6),new THREE.MeshStandardMaterial({color:0xf1efeb,roughness:.3,side:THREE.BackSide}));bw.position.set(170,CT-5+0.01,28);add(bw,g);
+ const dr=new THREE.Mesh(new THREE.CircleGeometry(2.2,24),M.chrome);dr.rotation.x=-Math.PI/2;dr.position.set(170,CT-10+0.03,32);add(dr,g);
+ PART=null;
+ function buildECab(g,y0){const X0=141,ZF=47,R=4,xs=X0+R+0.2,y1=77.8,ch=y1-y0,step=ch/3;
+  carcass(g,R,xs,y0,y1,ZF,ashPlainM);
+  const side=flutedPanel(ZF-R,ch,2.4,0.5,ashM);side.rotation.y=-Math.PI/2;side.position.set(X0,y0,(ZF-R)/2);g.add(side);
+  ['bot','mid','top'].forEach((lv,i)=>{const a=y0+i*step+0.3,b=y0+(i+1)*step-0.3,top=i===2,w=199.4-(xs+0.4),cx=(xs+0.4+199.4)/2;
+   const d=makeDrawer(g,xs+0.4,199.4,a,b,ZF,40,ashPlainM,top?{by0:a+1.2,bh:Math.min(12,b-a-4),uCut:14,uTo:36,div:[0.25,0.75],handle:false,level:lv}:{by0:a+1.2,bh:b-a-4.4,div:[0.33,0.66],handle:false,level:lv});
+   const f=flutedPanel(w-0.3,b-a-2,2.6,0.55,ashM);f.position.set(cx,a+0.15,ZF);d.add(f);      // carved flutes on the drawer face
+   box(w-0.3,1.6,0.9,grooveM,cx,b-0.95,ZF+0.1,d);});                                          // finger-pull groove along the top edge
+  if(y0>1)g.add(slab(143,0,198,ZF-5,0,y0,toeM,{rFL:R}));}
+ buildECab(eHung,36);buildECab(eFloor,10);}
+// ---------- vanity option F (ref video, 丽客卫浴 原木拼花＋透光奢石): backlit translucent stone top (orange/red glow, dark crystal veins) with a white
+// undermount basin; walnut carcass, three drawers faced in 3D-cube (tumbling-block) wood parquetry inside thin black metal edges; warm LED inside the drawers
+const vanityF=new THREE.Group(),fHung=new THREE.Group(),fFloor=new THREE.Group();add(vanityF);vanityF.add(fHung,fFloor);vanityF.visible=false;
+const parquetT=(()=>{const A=30.02,HW=52,W=HW*8,Hh=360;return tex(W,Hh,(g)=>{g.fillStyle='#c99258';g.fillRect(0,0,W,Hh);
+ const tones=['#ddb27a','#c28a4e','#a8743f'];
+ for(let r=-1;r<=8;r++)for(let c=-1;c<=8;c++){const cx=c*HW+(r%2?HW/2:0),cy=r*1.5*A,P=a=>[cx+A*Math.cos(a),cy-A*Math.sin(a)];
+  const T=P(Math.PI/2),UR=P(Math.PI/6),LR=P(-Math.PI/6),Bt=P(-Math.PI/2),LL=P(-5*Math.PI/6),UL=P(5*Math.PI/6),C=[cx,cy];
+  [[T,UR,C,UL],[UR,LR,Bt,C],[UL,C,Bt,LL]].forEach((q,k)=>{g.save();g.beginPath();g.moveTo(...q[0]);q.slice(1).forEach(p=>g.lineTo(...p));g.closePath();g.fillStyle=tones[k];g.fill();g.clip();
+   // grain lines run parallel to one edge of each rhombus
+   const [p0,p1]=k===0?[UL,T]:k===1?[UR,LR]:[UL,LL],dx=p1[0]-p0[0],dy=p1[1]-p0[1];g.strokeStyle='rgba(90,55,25,.35)';
+   for(let t=-1;t<=1;t+=0.07){g.lineWidth=.5+rnd()*.9;const ox=cx+t*1.2*(-dy),oy=cy+t*1.2*dx;g.beginPath();g.moveTo(ox-dx*1.5,oy-dy*1.5);g.lineTo(ox+dx*1.5,oy+dy*1.5);g.stroke();}
+   g.restore();g.strokeStyle='rgba(70,40,15,.55)';g.lineWidth=1;g.beginPath();g.moveTo(...q[0]);q.slice(1).forEach(p=>g.lineTo(...p));g.closePath();g.stroke();});}});})();
+const onyxT=tex(1024,1024,(g,w,h)=>{const gr=g.createLinearGradient(0,0,w,h);gr.addColorStop(0,'#ff6a1f');gr.addColorStop(.5,'#ff9a4d');gr.addColorStop(1,'#ff5a2a');g.fillStyle=gr;g.fillRect(0,0,w,h);
+ for(let i=0;i<70;i++){g.globalAlpha=.25+rnd()*.35;g.fillStyle=rnd()<.6?'#ffd2c2':'#ffb08a';g.beginPath();g.ellipse(rnd()*w,rnd()*h,20+rnd()*90,10+rnd()*50,rnd()*3,0,7);g.fill();}
+ // dark crystal veins: spiky clusters
+ for(let i=0;i<45;i++){let x=rnd()*w,y=rnd()*h;g.globalAlpha=.65+rnd()*.3;g.fillStyle=rnd()<.6?'#2a120a':'#5a1a0c';
+  for(let k=0;k<14;k++){const a=rnd()*6.28,l=8+rnd()*46,wd=1+rnd()*4;g.beginPath();g.moveTo(x,y);g.lineTo(x+Math.cos(a)*l-Math.sin(a)*wd,y+Math.sin(a)*l+Math.cos(a)*wd);g.lineTo(x+Math.cos(a)*l+Math.sin(a)*wd,y+Math.sin(a)*l-Math.cos(a)*wd);g.fill();
+   x+=Math.cos(a)*l*.3;y+=Math.sin(a)*l*.3;}}g.globalAlpha=1;},1/60,1/60);
+{const g=vanityF;PART='basin';
+ const onyxM=new THREE.MeshStandardMaterial({map:onyxT,emissiveMap:onyxT,emissive:0xffffff,emissiveIntensity:.85,roughness:.12});
+ add(slab(140,0,200,50.5,86,4,onyxM,{rFL:1.2,holes:[rr(THREE.Path,147,13,193,43,3)]}),g);
+ const bw=new THREE.Mesh(new THREE.BoxGeometry(45.9,13,29.9),new THREE.MeshStandardMaterial({color:0xfafaf8,roughness:.08,side:THREE.BackSide}));bw.position.set(170,CT-6.5+0.01,28);add(bw,g);
+ const dr=new THREE.Mesh(new THREE.CircleGeometry(2.2,24),M.chrome);dr.rotation.x=-Math.PI/2;dr.position.set(170,CT-13+0.03,32);add(dr,g);
+ const gl=new THREE.PointLight(0xff8a3d,.5,70,0);gl.position.set(170,96,26);g.add(gl);       // the stone's own glow on the wall / tap
+ PART=null;
+ const brownM=new THREE.MeshStandardMaterial({map:tex(256,256,(g,w,h)=>wood(g,w,h,'#7a4e2e','#3e2614')),roughness:.55}),edgeM=new THREE.MeshStandardMaterial({color:0x1c1c1e,metalness:.6,roughness:.35});
+ const glowM=new THREE.MeshStandardMaterial({color:0xd08a4a,emissive:0xff8a3d,emissiveIntensity:.45,roughness:.6});
+ function buildFCab(g,y0){const xs=141.6,ZF=49,y1=85.8,topH=13,rest=(y1-y0-topH)/2;
+  carcass(g,0,xs,y0,y1,ZF,brownM);
+  [['bot',y0,y0+rest],['mid',y0+rest,y0+2*rest],['top',y1-topH,y1]].forEach(([lv,a0,b0])=>{const a=a0+0.4,b=b0-0.4,w=199.4-(xs+0.4),cx=(xs+0.4+199.4)/2,h=b-a,top=lv==='top';
+   const d=makeDrawer(g,xs+0.4,199.4,a,b,ZF+0.4,40,edgeM,top?{by0:a+1.2,bh:8,uCut:14,uTo:36,div:[0.3],handle:false,level:lv,floorM:glowM,sideM:brownM}:{by0:a+1.2,bh:h-4.4,div:[0.35,0.7],handle:false,level:lv,floorM:glowM,sideM:brownM});
+   const pm=new THREE.MeshStandardMaterial({map:parquetT.clone(),roughness:.5});pm.map.needsUpdate=true;pm.map.repeat.set((w-1.6)/52,(h-1.6)/45);
+   box(w-1.6,h-1.6,0.3,pm,cx,(a+b)/2,ZF+0.55,d);});                                           // parquetry panel inside the black metal edge
+  if(y0>1)g.add(slab(143,0,198,ZF-5,0,y0,toeM));}
+ buildFCab(fHung,36);buildFCab(fFloor,10);}
 const under=new THREE.PointLight(0xffd9a0,0.5,90,0);under.position.set(170,40,40);add(under);
 // wall-mounted 2-hole basin mixer (like the existing hansgrohe): plate ~18 x 7, flat blade spout on the left (5 wide, 19 long to clear the 12 back deck), round lever on the right.
 // FAU = spout centre: 'design' = over the basin centre, 9 above the counter; 'site' = existing in-wall body, measured 29.5 from the right wall to the spout's left edge (spout 5 wide -> centre 27), 14.5 above the old counter (old counter 91 from floor -> 105.5)
@@ -939,6 +1008,8 @@ const _lB0=dims.children.length;label('岩板一體盆（設計師款）',[170,1
 const _lF0=dims.children.length;dim([170,CT+9,22],[170,CT,22]);label('出水 9',[166,CT+5,22],null,5);const lblFd=dims.children.slice(_lF0);
 const _lF1=dims.children.length;dim([173,105.5,22],[173,CT,22]);label('離地 105.5（舊檯 91＋14.5）',[168,CT+8,22],null,5);dim([170.5,CT+18,1],[200,CT+18,1]);label('出水嘴左邊離右牆 29.5',[185,CT+21,1],null,5);label('出水嘴 19×5',[172,CT+3,20],null,5);const lblFs=dims.children.slice(_lF1);const lblF=[...lblFd,...lblFs];
 const _lC0=dims.children.length;label('洞石米黃落地櫃',[170,104,32],'按 70cm 款縮做 590×500 · 盆 380×440 深140 · 右平台 150 · 兩格櫃桶');dim([139,70,51],[139,CT,51]);label('20',[135,80,53],null,5);const lblC=dims.children.slice(_lC0);lblC.forEach(o=>o.visible=false);
+const _lE0b=dims.children.length;label('白蠟木竪紋＋弧形岩板台盆（參考：丽客卫浴）',[170,104,32],'600×500 · 岩板厚 120 全圓邊 · 一體盆 480×320 · 三格實木坑紋櫃桶、頂邊拉手槽');const lblAsh=dims.children.slice(_lE0b);lblAsh.forEach(o=>o.visible=false);
+const _lF0b=dims.children.length;label('原木拼花＋透光奢石（參考：丽客卫浴）',[170,104,32],'600×500 · 透光石厚 40（底部燈）· 白色底盆 460×300 · 三格立方拼花櫃桶、黑金屬邊、櫃內燈');const lblOnyx=dims.children.slice(_lF0b);lblOnyx.forEach(o=>o.visible=false);
 const _lD0=dims.children.length;label('長檯面連座廁上面（參考圖）',[150,104,32],'檯面 125 長 · 盆端深50／座廁端窄身7 · 厚11 · 盆 440×380 深95 · 吊櫃（2格）或落地（3格）：每層一個全闊櫃桶');dim([139,79,51],[139,CT,51]);label('11',[135,84,53],null,5);dim([75,92,9],[141,92,9]);label('延伸 66 · 深 7',[108,97,9],null,5);const lblD=dims.children.slice(_lD0);lblD.forEach(o=>o.visible=false);
 const _lE0=dims.children.length;label('後面矮櫃 55×25 · 櫃高 32＋10 防水石邊',[170,48,26],'遮去水喉 · 喉離後牆 9／右牆 14 · 單門向左開');dim([200,2,0],[200,2,25]);label('25',[202,6,12.5],null,5);const lblE=dims.children.slice(_lE0);lblE.forEach(o=>o.visible=false);
 let tLab=label('INAX SARAS 100572BW10',[107.5,64,50],'710×385×472');
@@ -962,11 +1033,12 @@ function applyGold(){const gold=st.front==='gold',fl=!!st.floor;
 function setCorner(c){st.corner=c;const big=c==='big';
   if(st.basin==='ocean'){aBig.visible=big;aSmall.visible=!big;}else{aBig.visible=aSmall.visible=false;}
   bBig.visible=big;bSmall.visible=!big;[lowerA,lowerB].forEach(L=>L.children.forEach(g=>{if(g.userData.sz)g.visible=(g.userData.sz==='big')===big;}));}
-function setBasin(v){st.basin=v;const a=v==='ocean',b=v==='slab',c=v==='trav',d=v==='long';lowerA.visible=a;lowerB.visible=b;vanityA.forEach(o=>o.visible=a);vanityB.visible=b;vanityC.visible=c;vanityD.visible=d;dHung.visible=!st.floor;dFloor.visible=st.floor;lblA.forEach(o=>o.visible=a);lblB.forEach(o=>o.visible=b);lblC.forEach(o=>o.visible=c);lblD.forEach(o=>o.visible=d);
+function setBasin(v){st.basin=v;const a=v==='ocean',b=v==='slab',c=v==='trav',d=v==='long',e=v==='ash',f=v==='onyx';
+  vanityE.visible=e;vanityF.visible=f;eHung.visible=fHung.visible=!st.floor;eFloor.visible=fFloor.visible=!!st.floor;lblAsh.forEach(o=>o.visible=e);lblOnyx.forEach(o=>o.visible=f);lowerA.visible=a;lowerB.visible=b;vanityA.forEach(o=>o.visible=a);vanityB.visible=b;vanityC.visible=c;vanityD.visible=d;dHung.visible=!st.floor;dFloor.visible=st.floor;lblA.forEach(o=>o.visible=a);lblB.forEach(o=>o.visible=b);lblC.forEach(o=>o.visible=c);lblD.forEach(o=>o.visible=d);
   // option C is always floor-standing with its own toe-kick, so it hides the stone plinth kit and the open shelf
   // option D has its own hung/floor cabinet (no stone plinth kit) and its counter replaces the narrow ledge over the toilet
   // 吊櫃＋後面矮櫃: the 22-deep back cabinet replaces the open shelf (shelf is 30 deep)
-  floorKit.visible=st.floor&&!c&&!d;backBox.visible=st.back&&!c;lblE.forEach(o=>o.visible=st.back&&!c);shelfMesh.visible=!st.floor&&!st.back&&!c&&!d;ledge.visible=st.ledge&&!d;ledgeDims.forEach(o=>o.visible=st.ledge&&!d);
+  floorKit.visible=st.floor&&!c&&!d&&!e&&!f;backBox.visible=st.back&&!c;lblE.forEach(o=>o.visible=st.back&&!c);shelfMesh.visible=!st.floor&&!st.back&&!c&&!d;ledge.visible=st.ledge&&!d;ledgeDims.forEach(o=>o.visible=st.ledge&&!d);
   document.querySelectorAll('[data-stone]').forEach(x=>x.style.display=b?'':'none');if(typeof applyCtop==='function')applyCtop();if(typeof aBig!=='undefined')setCorner(st.corner);}
 function setStone(k){stoneM.map=stoneTex[k];stoneM.needsUpdate=true;vanityB.userData.trough.material.map=stoneTex[k];vanityB.userData.trough.material.needsUpdate=true;}
 function setCabWood(v){M.wood.map=v==='door'?doorWoodT:woodTexOwn;walnutM.map=v==='door'?doorWoodT:walnutT;M.wood.needsUpdate=walnutM.needsUpdate=true;}
