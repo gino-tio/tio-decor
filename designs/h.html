@@ -10,7 +10,16 @@ html,body{margin:0;height:100%;overflow:hidden;background:#1d1f22;font-family:-a
 #top{position:fixed;top:0;left:0;right:0;padding:10px 14px 18px;background:linear-gradient(#1d1f22f0,#1d1f2200);pointer-events:none}
 #top h1{font-size:16px;margin:0;font-weight:600}
 #top p{font-size:11.5px;margin:3px 0 0;color:#a9adb8}
-#bar.min .row:not(:first-child){display:none}
+#bar.min .tabs,#bar.min .panel{display:none}
+.tabs{display:flex;gap:4px}
+.tabs button{flex:1 1 0;padding:9px 2px;font-size:14px;border-radius:10px}
+.panel{display:none;max-height:38vh;overflow-y:auto;padding:2px 2px 4px;-webkit-overflow-scrolling:touch}
+.panel.show{display:block}
+.grp{margin:6px 0 8px}
+.grp b{display:block;font-size:12px;font-weight:600;color:#c9a46a;margin:0 0 5px 2px}
+.btns{display:flex;flex-wrap:wrap;gap:7px}
+.btns button,.lnk{padding:9px 13px;font-size:14px;min-height:38px}
+.lnk{display:inline-flex;align-items:center;border:1px solid #c9a46a;color:#c9a46a;border-radius:16px;text-decoration:none;font-size:14px;box-sizing:border-box}
 #bar{position:fixed;left:0;right:0;bottom:0;padding:8px 8px calc(8px + env(safe-area-inset-bottom));background:#1d1f22ec;display:flex;flex-direction:column;gap:6px;border-top:1px solid #2c2f35}
 .row{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;align-items:center}
 .row::-webkit-scrollbar{display:none}
@@ -90,142 +99,169 @@ button.on{background:#c9a46a;border-color:#c9a46a;color:#1d1f22;font-weight:600}
     <button data-view="toilet">座廁</button>
     <button data-view="basin">盆位</button>
   </div>
-  <div class="row"><span>開關</span>
-    <button data-tog="mirror">開鏡櫃</button>
-    <button data-tog="door">開廁所門</button>
-    <button data-tog="cab">全開盆櫃</button>
-    <button data-tog="water">出水</button>
-    <button data-tog="mlight" class="on">鏡櫃燈</button>
-    <button data-tog="dims">尺寸</button>
-    <button data-tog="info">施工要點</button>
+  <div class="tabs">
+    <button data-tab="basin" class="on">洗手盆</button>
+    <button data-tab="mirror">鏡櫃</button>
+    <button data-tab="wc">座廁</button>
+    <button data-tab="people">人物</button>
+    <button data-tab="open">開關</button>
+    <button data-tab="show">顯示</button>
   </div>
-  <div class="row"><span>檯面</span>
-    <button data-ctop="ceramic" class="on">陶瓷海洋盆</button>
-    <button data-ctop="white">白雲石檯面＋底盆</button>
-    <button data-ctop="brown">啡雲石圓邊檯面＋底盆</button>
-    <button data-ctop="viola">白底啡金紋岩板＋底盆</button>
-    <button id="demaBtn" style="border-color:#c9a46a;color:#c9a46a">一鍵：德馬款（岩板＋啡木金框）</button>
+  <div class="panel show" data-panel="basin">
+    <div class="grp"><b>款式</b><div class="btns">
+      <button data-basin="ocean" class="on">陶瓷海洋盆</button>
+      <button data-basin="slab">岩板一體盆</button>
+      <button data-basin="trav">洞石米黃落地櫃</button>
+      <button data-basin="long">長檯面連座廁上面</button>
+      <button data-basin="ash">白蠟木竪紋＋弧形岩板</button>
+      <button data-basin="onyx">原木拼花＋透光奢石</button>
+    </div></div>
+    <div class="grp" id="stoneGrp"><b>岩板顏色</b><div class="btns">
+      <button data-stone="grey" class="on">原色灰</button>
+      <button data-stone="muse">繆斯白</button>
+      <button data-stone="fish">魚肚白</button>
+      <button data-stone="green">普拉達綠</button>
+    </div></div>
+    <div class="grp"><b>吊櫃／落地</b><div class="btns">
+      <button data-floor="off" class="on">吊櫃</button>
+      <button data-floor="back">吊櫃＋後面矮櫃 25</button>
+      <button data-floor="on">落地＋防水石腳</button>
+    </div></div>
+    <div class="grp"><b>檯面（海洋盆櫃）</b><div class="btns">
+      <button data-ctop="ceramic" class="on">陶瓷海洋盆</button>
+      <button data-ctop="white">白雲石＋底盆</button>
+      <button data-ctop="brown">啡雲石圓邊＋底盆</button>
+      <button data-ctop="viola">白底啡金紋岩板＋底盆</button>
+      <button id="demaBtn" style="border-color:#c9a46a;color:#c9a46a">一鍵：德馬款</button>
+    </div></div>
+    <div class="grp"><b>櫃門（海洋盆櫃）</b><div class="btns">
+      <button data-front="two" class="on">兩格櫃桶</button>
+      <button data-front="one">一個大櫃桶</button>
+      <button data-front="door">單門向右開</button>
+      <button data-front="gold">啡木＋金色燈框</button>
+    </div></div>
+    <div class="grp"><b>木色</b><div class="btns">
+      <button data-wood="own" class="on">原木色</button>
+      <button data-wood="door">同門色</button>
+    </div></div>
+    <div class="grp"><b>櫃角</b><div class="btns">
+      <button data-corner="big" class="on">大圓角</button>
+      <button data-corner="small">細圓角（櫃桶大啲）</button>
+    </div></div>
+    <div class="grp"><b>尺寸</b><div class="btns">
+      <button data-size="now" class="on">而家（檯 90／上 47／下 42）</button>
+      <button data-size="old">舊（檯 91／上 46／下 45）</button>
+    </div></div>
+    <div class="grp"><b>後面矮櫃</b><div class="btns">
+      <button data-bshelf="off" class="on">冇層板</button>
+      <button data-bshelf="on">加 20cm 層板</button>
+    </div></div>
+    <div class="grp"><b>龍頭</b><div class="btns">
+      <button data-fau="design" class="on">盆中（設計）</button>
+      <button data-fau="site">現有入牆位（離右牆 29.5）</button>
+    </div></div>
   </div>
-  <div class="row"><span>尺寸</span>
-    <button data-size="now" class="on">而家（檯 90／上櫃 47／下櫃 42）</button>
-    <button data-size="old">舊尺寸（檯 91／上櫃 46／下櫃 45）</button>
+  <div class="panel" data-panel="mirror">
+    <div class="grp"><b>鏡櫃款</b><div class="btns">
+      <button data-md="3" class="on">三門 120×97</button>
+      <button data-md="2">兩門 120×97</button>
+      <button data-md="step">高低款（左 60×75／右 60×95）</button>
+      <button data-md="r60">靠右 60×90 單門</button>
+    </div></div>
+    <div class="grp"><b>鏡櫃高</b><div class="btns">
+      <button data-mht="full" class="on">原高</button>
+      <button data-mht="80">80</button>
+    </div></div>
+    <div class="grp"><b>鏡櫃底離地</b><div class="btns">
+      <button data-mh="106" class="on">106</button>
+      <button data-mh="125">125</button>
+      <button data-mh="130">130</button>
+      <button data-mh="140">140</button>
+    </div></div>
+    <div class="grp"><b>窄枱</b><div class="btns">
+      <button data-ledge="on" class="on">有</button>
+      <button data-ledge="off">冇</button>
+    </div></div>
   </div>
-  <div class="row"><span>盆櫃門</span>
-    <button data-front="two" class="on">兩格櫃桶（坑紋＋茶玻）</button>
-    <button data-front="one">一個大櫃桶（玻璃內托盤）</button>
-    <button data-front="door">單門向右開</button>
-    <button data-front="gold">啡木大櫃桶＋金色燈框</button>
+  <div class="panel" data-panel="wc">
+    <div class="grp"><b>座廁</b><div class="btns">
+      <button data-wc="inax" class="on">INAX SARAS</button>
+      <button data-wc="toto">TOTO CES8E810GCN</button>
+    </div></div>
+    <div class="grp"><b>蓋</b><div class="btns">
+      <button data-lid="0" class="on">冚埋</button>
+      <button data-lid="1">開面蓋</button>
+      <button data-lid="2">面蓋＋座圈都開</button>
+    </div></div>
+    <div class="grp" id="trapRow"><b>坑距</b><div class="btns">
+      <button data-trap="400" class="on">305（貼牆）</button>
+      <button data-trap="305">355（後補 5cm）</button>
+    </div></div>
   </div>
-  <div class="row"><span>龍頭</span>
-    <button data-fau="design" class="on">盆中（設計）</button>
-    <button data-fau="site">現有入牆位（離右牆 29.5）</button>
+  <div class="panel" data-panel="people">
+    <div class="grp"><b>人物</b><div class="btns">
+      <button data-who="none" class="on">冇</button>
+      <button data-who="man">男 180 健碩</button>
+      <button data-who="woman">女 165 苗條長髮</button>
+      <button data-who="both">兩個</button>
+    </div></div>
+    <div class="grp"><b>企定（唔郁）</b><div class="btns">
+      <button data-act="wash" class="on">洗手</button>
+      <button data-act="wc">去廁所</button>
+    </div></div>
+    <div class="grp"><b>日常動畫</b><div class="btns">
+      <button data-anim="stop" class="on">停</button>
+      <button data-anim="all">▶ 全部輪住播</button>
+      <button data-anim="mirror">照鏡</button>
+      <button data-anim="tap">開水喉洗手</button>
+      <button data-anim="brush">刷牙</button>
+      <button data-anim="mcab">開鏡櫃</button>
+      <button data-anim="drawer">開櫃桶</button>
+      <button data-anim="dryer">攞風筒吹頭</button>
+      <button data-anim="wc">坐廁＋攞廁紙</button>
+      <button data-anim="stand">企住去廁所（男）</button>
+      <button data-anim="shower">沖涼＋抹身</button>
+      <button data-anim="towel">抹身</button>
+    </div></div>
   </div>
-  <div class="row"><span>櫃桶</span>
-    <button data-dr="top">開上格</button>
-    <button data-dr="mid">開中格</button>
-    <button data-dr="bot">開下格</button>
-    <button data-dr="out">拆晒櫃桶（睇去水）</button>
+  <div class="panel" data-panel="open">
+    <div class="grp"><b>開／關</b><div class="btns">
+      <button data-tog="mirror">開鏡櫃</button>
+      <button data-tog="door">開廁所門</button>
+      <button data-tog="cab">全開盆櫃</button>
+      <button data-tog="water">出水</button>
+      <button data-tog="mlight" class="on">鏡櫃燈</button>
+    </div></div>
+    <div class="grp"><b>櫃桶</b><div class="btns">
+      <button data-dr="top">開上格</button>
+      <button data-dr="mid">開中格</button>
+      <button data-dr="bot">開下格</button>
+      <button data-dr="out">拆晒櫃桶（睇去水）</button>
+    </div></div>
   </div>
-  <div class="row"><span>座廁</span>
-    <button data-wc="inax" class="on">INAX SARAS</button>
-    <button data-wc="toto">TOTO CES8E810GCN</button>
-    <span style="margin-left:6px">蓋</span>
-    <button data-lid="0" class="on">冚埋</button>
-    <button data-lid="1">開面蓋</button>
-    <button data-lid="2">面蓋＋座圈都開</button>
-  </div>
-  <div class="row"><span>人物</span>
-    <button data-who="none" class="on">冇</button>
-    <button data-who="man">男 180 健碩</button>
-    <button data-who="woman">女 165 苗條長髮</button>
-    <button data-who="both">兩個</button>
-    <span style="margin-left:6px">做緊</span>
-    <button data-act="wash" class="on">洗手</button>
-    <button data-act="wc">去廁所</button>
-  </div>
-  <div class="row"><span>日常</span>
-    <button data-anim="stop" class="on">停</button>
-    <button data-anim="all">▶ 全部輪住播</button>
-    <button data-anim="mirror">照鏡</button>
-    <button data-anim="tap">開水喉洗手</button>
-    <button data-anim="brush">刷牙</button>
-    <button data-anim="mcab">開鏡櫃</button>
-    <button data-anim="drawer">開櫃桶</button>
-    <button data-anim="dryer">攞風筒吹頭</button>
-    <button data-anim="wc">坐廁＋攞廁紙</button>
-    <button data-anim="stand">企住去廁所（男）</button>
-    <button data-anim="shower">沖涼＋抹身</button>
-    <button data-anim="towel">抹身</button>
-  </div>
-  <div class="row"><span>窄枱</span>
-    <button data-ledge="on" class="on">有</button>
-    <button data-ledge="off">冇</button>
-    <span style="margin-left:6px">鏡櫃底</span>
-    <button data-mh="106" class="on">106</button>
-    <button data-mh="125">125</button>
-    <button data-mh="130">130</button>
-    <button data-mh="140">140</button>
-  </div>
-  <div class="row"><span>洗手盆</span>
-    <button data-basin="ocean" class="on">陶瓷海洋盆</button>
-    <button data-basin="slab">岩板一體盆</button>
-    <button data-basin="trav">洞石米黃落地櫃</button>
-    <button data-basin="long">長檯面連座廁上面</button>
-    <button data-basin="ash">白蠟木竪紋＋弧形岩板</button>
-    <button data-basin="onyx">原木拼花＋透光奢石</button>
-    <button data-stone="grey" class="on">原色灰</button>
-    <button data-stone="muse">繆斯白</button>
-    <button data-stone="fish">魚肚白</button>
-    <button data-stone="green">普拉達綠</button>
-  </div>
-  <div class="row"><span>盆櫃木色</span>
-    <button data-wood="own" class="on">原木色</button>
-    <button data-wood="door">同門色</button>
-    <span style="margin-left:6px">盆櫃</span>
-    <button data-floor="off" class="on">吊櫃</button>
-    <button data-floor="back">吊櫃＋後面矮櫃 25</button>
-    <button data-floor="on">落地＋防水石腳</button>
-  </div>
-  <div class="row"><span>矮櫃</span>
-    <button data-bshelf="off" class="on">冇層板</button>
-    <button data-bshelf="on">加 20cm 層板</button>
-  </div>
-  <div class="row"><span>物品</span>
-    <button data-items="all">全部顯示</button>
-    <button data-items="buy">淨睇要買</button>
-    <button data-item="basin" class="on">洗手盆</button>
-    <button data-item="cabinet" class="on">盆櫃</button>
-    <button data-item="mcab" class="on">鏡櫃</button>
-    <button data-item="toilet" class="on">座廁</button>
-    <button data-item="remote" class="on">遙控</button>
-    <button data-item="tub" class="on">浴缸</button>
-    <button data-item="shower" class="on">花灑</button>
-    <button data-item="glass" class="on">玻璃屏</button>
-    <button data-item="door" class="on">門</button>
-    <button data-item="fullmirror" class="on">全身鏡</button>
-    <button data-item="tv" class="on">電視</button>
-    <button data-item="ledge" class="on">窄枱</button>
-    <button data-item="backsplash" class="on">坑紋牆</button>
-  </div>
-  <div class="row"><span>施工圖</span>
-    <a href="h-shop.html" style="flex:0 0 auto;border:1px solid #c9a46a;color:#c9a46a;border-radius:16px;padding:7px 12px;font-size:13px;text-decoration:none">打開施工圖（有尺寸，俾廠家）→</a>
-  </div>
-  <div class="row"><span>櫃圓角</span>
-    <button data-corner="big" class="on">大圓角</button>
-    <button data-corner="small">細圓角（櫃桶大啲）</button>
-  </div>
-  <div class="row"><span>鏡櫃門</span>
-    <button data-md="3" class="on">三門</button>
-    <button data-md="2">兩門</button>
-    <button data-md="step">高低款 120×95（左60×75／右60×95）</button>
-    <button data-md="r60">靠右 60×90（單門）</button>
-    <span style="margin-left:6px">高</span>
-    <button data-mht="full" class="on">原高</button>
-    <button data-mht="80">80</button>
-  </div>
-  <div class="row" id="trapRow"><span>坑距</span>
-    <button data-trap="400" class="on">坑距 305（貼牆）</button>
-    <button data-trap="305">坑距 355（後補 5cm）</button>
+  <div class="panel" data-panel="show">
+    <div class="grp"><b>資料</b><div class="btns">
+      <button data-tog="dims">尺寸</button>
+      <button data-tog="info">施工要點</button>
+      <a class="lnk" href="h-shop.html">施工圖（俾廠家）→</a>
+    </div></div>
+    <div class="grp"><b>物品</b><div class="btns">
+      <button data-items="all">全部顯示</button>
+      <button data-items="buy">淨睇要買</button>
+      <button data-item="basin" class="on">洗手盆</button>
+      <button data-item="cabinet" class="on">盆櫃</button>
+      <button data-item="mcab" class="on">鏡櫃</button>
+      <button data-item="toilet" class="on">座廁</button>
+      <button data-item="remote" class="on">遙控</button>
+      <button data-item="tub" class="on">浴缸</button>
+      <button data-item="shower" class="on">花灑</button>
+      <button data-item="glass" class="on">玻璃屏</button>
+      <button data-item="door" class="on">門</button>
+      <button data-item="fullmirror" class="on">全身鏡</button>
+      <button data-item="tv" class="on">電視</button>
+      <button data-item="ledge" class="on">窄枱</button>
+      <button data-item="backsplash" class="on">坑紋牆</button>
+    </div></div>
   </div>
 </div>
 
@@ -1039,7 +1075,7 @@ function setBasin(v){st.basin=v;const a=v==='ocean',b=v==='slab',c=v==='trav',d=
   // option D has its own hung/floor cabinet (no stone plinth kit) and its counter replaces the narrow ledge over the toilet
   // 吊櫃＋後面矮櫃: the 22-deep back cabinet replaces the open shelf (shelf is 30 deep)
   floorKit.visible=st.floor&&!c&&!d&&!e&&!f;backBox.visible=st.back&&!c;lblE.forEach(o=>o.visible=st.back&&!c);shelfMesh.visible=!st.floor&&!st.back&&!c&&!d;ledge.visible=st.ledge&&!d;ledgeDims.forEach(o=>o.visible=st.ledge&&!d);
-  document.querySelectorAll('[data-stone]').forEach(x=>x.style.display=b?'':'none');if(typeof applyCtop==='function')applyCtop();if(typeof aBig!=='undefined')setCorner(st.corner);}
+  document.querySelectorAll('[data-stone]').forEach(x=>x.style.display=b?'':'none');{const sg=document.getElementById('stoneGrp');if(sg)sg.style.display=b?'':'none';}if(typeof applyCtop==='function')applyCtop();if(typeof aBig!=='undefined')setCorner(st.corner);}
 function setStone(k){stoneM.map=stoneTex[k];stoneM.needsUpdate=true;vanityB.userData.trough.material.map=stoneTex[k];vanityB.userData.trough.material.needsUpdate=true;}
 function setCabWood(v){M.wood.map=v==='door'?doorWoodT:woodTexOwn;walnutM.map=v==='door'?doorWoodT:walnutT;M.wood.needsUpdate=walnutM.needsUpdate=true;}
 function setLedge(on){st.ledge=on;const k=on&&st.basin!=='long';ledge.visible=k;ledgeDims.forEach(o=>o.visible=k);}
@@ -1061,6 +1097,8 @@ group('[data-top]',b=>setTop(b.dataset.top));
 const trapTexts={'400':'坑距 305（貼牆）','305':'坑距 355：後面補 5cm 平台'};
 document.querySelectorAll('[data-item]').forEach(b=>b.onclick=()=>setItem(b.dataset.item,!b.classList.contains('on')));
 document.querySelectorAll('[data-items]').forEach(b=>b.onclick=()=>{const keep=b.dataset.items==='all'?Object.keys(LAY):['basin','cabinet','remote','mcab','toilet'];Object.keys(LAY).forEach(k=>setItem(k,keep.includes(k)));});
+document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('on',x===b));
+  document.querySelectorAll('[data-panel]').forEach(p=>p.classList.toggle('show',p.dataset.panel===b.dataset.tab));});
 document.getElementById('moreBtn').onclick=e=>{const b=document.getElementById('bar');b.classList.toggle('min');e.target.textContent=b.classList.contains('min')?'更多選項 ▴':'收埋選項 ▾';};
 document.querySelectorAll('[data-dr]').forEach(b=>b.onclick=()=>{const k=b.dataset.dr;st.dt[k]=!st.dt[k];b.classList.toggle('on',st.dt[k]);});
 group('[data-corner]',b=>setCorner(b.dataset.corner));group('[data-floor]',b=>setFloor(b.dataset.floor));group('[data-bshelf]',b=>{backBox.userData.shelf.visible=b.dataset.bshelf==='on';});group('[data-wood]',b=>setCabWood(b.dataset.wood));group('[data-basin]',b=>setBasin(b.dataset.basin));group('[data-stone]',b=>setStone(b.dataset.stone));setBasin('ocean');group('[data-md]',b=>setMirrorDoors(isNaN(+b.dataset.md)?b.dataset.md:+b.dataset.md));group('[data-mht]',b=>{st.mht=b.dataset.mht;mTall=st.mht==='80';applyMirror();});group('[data-wc]',b=>setWC(b.dataset.wc));group('[data-ledge]',b=>setLedge(b.dataset.ledge==='on'));group('[data-mh]',b=>setMirrorH(+b.dataset.mh));
