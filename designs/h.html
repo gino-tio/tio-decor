@@ -759,23 +759,28 @@ const vanityG=new THREE.Group();add(vanityG);vanityG.visible=false;
  const bw=new THREE.Mesh(new THREE.BoxGeometry(45.9,15,31.9),new THREE.MeshStandardMaterial({color:0xfafaf8,roughness:.08,side:THREE.BackSide}));bw.position.set(169,CT-7.5+0.01,28);add(bw,g);
  const dr=new THREE.Mesh(new THREE.CircleGeometry(2.2,24),M.chrome);dr.rotation.x=-Math.PI/2;dr.position.set(169,CT-15+0.03,30);add(dr,g);
  PART=null;
- const oakT=tex(512,512,(c,w,h)=>wood(c,w,h,'#c49a64','#8a6338'),0.02,0.02),oakM=new THREE.MeshStandardMaterial({map:oakT,roughness:.55});
- const oakBT=oakT.clone();oakBT.repeat.set(1,0.6);oakBT.needsUpdate=true;const oakBoxM=new THREE.MeshStandardMaterial({map:oakBT,roughness:.55});   // drawer fronts are boxes (UV 0..1): horizontal grain at full size
+ // oak like Gino's floor photo (11/12): honey-brown white oak, fine straight grain with a few cathedral arches; runs horizontally on the cabinet
+ const oakT=tex(1024,512,(c,w,h)=>{c.fillStyle='#9b7650';c.fillRect(0,0,w,h);
+   for(let i=0;i<14;i++){const y=rnd()*h,hh=10+rnd()*60;c.globalAlpha=.08+rnd()*.1;c.fillStyle=rnd()<.5?'#7d5b3a':'#b48d64';c.fillRect(0,y,w,hh);}
+   for(let i=0;i<420;i++){c.globalAlpha=.10+rnd()*.28;c.strokeStyle=rnd()<.75?'#5c3f26':'#c29b70';c.lineWidth=.4+rnd()*1.1;let y=rnd()*h;c.beginPath();c.moveTo(0,y);for(let x=0;x<=w;x+=24){y+=(rnd()-.5)*.8;c.lineTo(x,y);}c.stroke();}
+   for(let k=0;k<5;k++){const cx=rnd()*w,cy=rnd()*h,dir=rnd()<.5?1:-1;for(let r=6;r<70;r+=4+rnd()*3){c.globalAlpha=.12+rnd()*.15;c.strokeStyle='#5a3d24';c.lineWidth=.8+rnd();c.beginPath();
+     for(let t=-1;t<=1.001;t+=.05){const x=cx+dir*r*2.2*(1-t*t),y=cy+t*r*.55;if(t===-1)c.moveTo(x,y);else c.lineTo(x,y);}c.stroke();}}
+   c.globalAlpha=1;},1/120,1/60),oakM=new THREE.MeshStandardMaterial({map:oakT,roughness:.5});
  // carcass()/makeDrawer() work in the standard 141..199.2 frame: build it 1cm to the left so the right side stops 1cm off the wall
  const cg=new THREE.Group();cg.position.x=-1;g.add(cg);
- carcass(cg,R,xs,12,TY,ZF,oakM);
- // drawer fronts (ref MLUS 绮想 WINTER): the left edge curls back in a J (R3), leaving a 3.4cm vertical finger-pull recess beside the fixed side;
- // the drawer boxes have thin anthracite metal sides on a light wood floor
- const XL=xs+3.4,RJ=3,TJ=1.6,darkM=new THREE.MeshStandardMaterial({color:0x2a211a,roughness:.9});
+ // the drawer fronts ARE the rounded corner: each front wraps round the front-left corner (R6) and returns 9cm along the side, like a bent panel;
+ // the fixed side panel is flat and starts right behind the return, so the cabinet reads as one rounded corner
+ const RET=9,T=1.8,XC=141;
+ carcass(cg,0,XC+T,12,TY,ZF-RET-0.3,oakM);
  const knitT=tex(64,64,(c,w,h)=>{c.fillStyle='#efebe4';c.fillRect(0,0,w,h);c.fillStyle='#d6d0c6';for(let y=0;y<h;y+=8)for(let x=(y/8%2)*4;x<w;x+=8){c.beginPath();c.arc(x+2,y+2,2.4,0,7);c.fill();}},1,1);
  const knitM=new THREE.MeshStandardMaterial({map:knitT,roughness:1});
- const jFront=(d,a,b)=>{const p=new THREE.Shape();p.moveTo(199.4,-ZF);p.lineTo(XL+RJ,-ZF);p.absarc(XL+RJ,-(ZF-RJ),RJ,-Math.PI/2,-Math.PI,true);p.lineTo(XL,-(ZF-RJ-3.5));
-   p.lineTo(XL+TJ,-(ZF-RJ-3.5));p.lineTo(XL+TJ,-(ZF-RJ));p.absarc(XL+RJ,-(ZF-RJ),RJ-TJ,-Math.PI,-Math.PI/2,false);p.lineTo(199.4,-(ZF-TJ));p.lineTo(199.4,-ZF);
-   const m=new THREE.Mesh(new THREE.ExtrudeGeometry(p,{depth:b-a,bevelEnabled:false,curveSegments:16}),oakM);m.rotation.x=-Math.PI/2;m.position.y=a;d.add(m);};
+ const wrapFront=(d,a,b)=>{const p=new THREE.Shape();p.moveTo(199.4,-ZF);p.lineTo(XC+R,-ZF);p.absarc(XC+R,-(ZF-R),R,-Math.PI/2,-Math.PI,true);p.lineTo(XC,-(ZF-RET));
+   p.lineTo(XC+T,-(ZF-RET));p.lineTo(XC+T,-(ZF-R));p.absarc(XC+R,-(ZF-R),R-T,-Math.PI,-Math.PI/2,false);p.lineTo(199.4,-(ZF-T));p.lineTo(199.4,-ZF);
+   const m=new THREE.Mesh(new THREE.ExtrudeGeometry(p,{depth:b-a,bevelEnabled:false,curveSegments:20}),oakM);m.rotation.x=-Math.PI/2;m.position.y=a;d.add(m);};
  const towels=(g,o)=>{[0.22,0.5].forEach((f,i)=>box(o.iw*0.24,5,Math.min(26,o.zF-o.zb-4),knitM,o.xl+o.iw*f,o.fy+2.6,o.zF-2-Math.min(26,o.zF-o.zb-4)/2,g));};
+ // drawer boxes: thin anthracite metal sides on a light wood floor (ref MLUS 绮想 WINTER)
  [[42.2,TY-0.3,'top',{by0:43.4,bh:12,uCut:14,uTo:36,extra:towels}],[12,41.8,'bot',{by0:13.5,bh:22,div:[0.5]}]].forEach(([a,b,lv,o])=>{
-   const d=makeDrawer(cg,XL,199.4,a,b,ZF,40,oakBoxM,{...o,front:false,handle:false,level:lv,sideM:metalSideM,floorM:lightWoodM});jFront(d,a+0.15,b-0.15);
-   box(XL-xs,b-a,0.6,darkM,(xs+XL)/2,(a+b)/2,ZF-7,cg);});                                       // dark back of the finger-pull recess
+   const d=makeDrawer(cg,XC+T+0.4,199.4,a,b,ZF,40,oakM,{...o,front:false,handle:false,level:lv,sideM:metalSideM,floorM:lightWoodM});wrapFront(d,a+0.15,b-0.15);});
  cg.add(slab(143,0,198,ZF-5,0,12,new THREE.MeshStandardMaterial({color:0x2b2622,roughness:.8}),{rFL:R-2}));}
 const under=new THREE.PointLight(0xffd9a0,0.5,90,0);under.position.set(170,40,40);add(under);
 // wall-mounted 2-hole basin mixer (like the existing hansgrohe): plate ~18 x 7, flat blade spout on the left (5 wide, 19 long to clear the 12 back deck), round lever on the right.
