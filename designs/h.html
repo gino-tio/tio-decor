@@ -115,6 +115,7 @@ button.on{background:#c9a46a;border-color:#c9a46a;color:#1d1f22;font-weight:600}
       <button data-basin="long">長檯面連座廁上面</button>
       <button data-basin="ash">白蠟木竪紋＋弧形岩板</button>
       <button data-basin="onyx">原木拼花＋透光奢石</button>
+      <button data-basin="glacier">冰河世紀（手繪）</button>
     </div></div>
     <div class="grp" id="stoneGrp"><b>岩板顏色</b><div class="btns">
       <button data-stone="grey" class="on">原色灰</button>
@@ -737,6 +738,30 @@ const onyxT=tex(1024,1024,(g,w,h)=>{const gr=g.createLinearGradient(0,0,w,h);gr.
    box(w-1.6,h-1.6,0.3,pm,cx,(a+b)/2,ZF+0.55,d);});                                           // parquetry panel inside the black metal edge
   if(y0>1)g.add(slab(143,0,198,ZF-5,0,y0,toeM));}
  buildFCab(fHung,36);buildFCab(fFloor,10);}
+// ---------- vanity option G「冰河世紀」(Gino's sketch, 11/12): 冰河世紀 stone top 60x50 with front + side aprons 18 deep (mitred, reads seamless),
+// seamless undermount basin; oak cabinet with horizontal grain, two drawers 30 + 30, toe-kick 12; always floor-standing.
+// 1cm clear of the right wall (door frame) so the drawers can open: x 139..199. Front-left (toilet side) corner rounded like the sketch
+const vanityG=new THREE.Group();add(vanityG);vanityG.visible=false;
+{const g=vanityG,X0=139,X1=199,ZS=50,ZF=48.6,R=6,TY=72,xs=141+R+0.2;PART='basin';
+ // ice-age stone: pale grey-green, soft white clouds, fine grey veins
+ const iceT=tex(1024,1024,(c,w,h)=>{marble(c,w,h,'#e2e8e4','#a7b3ad',16,0);
+   for(let i=0;i<30;i++){c.globalAlpha=.08+rnd()*.1;c.fillStyle='#c3d3cc';c.beginPath();c.ellipse(rnd()*w,rnd()*h,40+rnd()*160,15+rnd()*60,rnd()*3,0,7);c.fill();}
+   for(let i=0;i<55;i++){c.globalAlpha=.10+rnd()*.14;c.fillStyle=rnd()<.7?'#ffffff':'#bfcfc8';c.beginPath();c.ellipse(rnd()*w,rnd()*h,30+rnd()*140,12+rnd()*60,rnd()*3,0,7);c.fill();}c.globalAlpha=1;},1/70,1/70);
+ const iceM=new THREE.MeshPhysicalMaterial({map:iceT,roughness:.12,clearcoat:.8,clearcoatRoughness:.08});
+ const ss=new THREE.Shape();ss.moveTo(X0,0);ss.lineTo(X1,0);ss.lineTo(X1,-ZS);ss.lineTo(X0+R,-ZS);ss.absarc(X0+R,-(ZS-R),R,-Math.PI/2,-Math.PI,true);ss.lineTo(X0,0);
+ ss.holes.push(rr(THREE.Path,146,12,192,44,3));
+ const sm=new THREE.Mesh(new THREE.ExtrudeGeometry(ss,{depth:CT-TY,bevelEnabled:false,curveSegments:24}),iceM);sm.rotation.x=-Math.PI/2;sm.position.y=TY;add(sm,g);
+ const bw=new THREE.Mesh(new THREE.BoxGeometry(45.9,15,31.9),new THREE.MeshStandardMaterial({color:0xfafaf8,roughness:.08,side:THREE.BackSide}));bw.position.set(169,CT-7.5+0.01,28);add(bw,g);
+ const dr=new THREE.Mesh(new THREE.CircleGeometry(2.2,24),M.chrome);dr.rotation.x=-Math.PI/2;dr.position.set(169,CT-15+0.03,30);add(dr,g);
+ PART=null;
+ const oakT=tex(512,512,(c,w,h)=>wood(c,w,h,'#c49a64','#8a6338'),0.02,0.02),oakM=new THREE.MeshStandardMaterial({map:oakT,roughness:.55});
+ const oakBT=oakT.clone();oakBT.repeat.set(1,0.6);oakBT.needsUpdate=true;const oakBoxM=new THREE.MeshStandardMaterial({map:oakBT,roughness:.55});   // drawer fronts are boxes (UV 0..1): horizontal grain at full size
+ // carcass()/makeDrawer() work in the standard 141..199.2 frame: build it 1cm to the left so the right side stops 1cm off the wall
+ const cg=new THREE.Group();cg.position.x=-1;g.add(cg);
+ carcass(cg,R,xs,12,TY,ZF,oakM);
+ makeDrawer(cg,xs+0.4,199.4,42.2,TY-0.3,ZF,40,oakBoxM,{by0:43.4,bh:16,uCut:14,uTo:36,div:[0.25,0.75],handle:false,level:'top'});
+ makeDrawer(cg,xs+0.4,199.4,12,41.8,ZF,40,oakBoxM,{by0:13.5,bh:24,div:[0.5],handle:false,level:'bot'});
+ cg.add(slab(143,0,198,ZF-5,0,12,new THREE.MeshStandardMaterial({color:0x2b2622,roughness:.8}),{rFL:R-2}));}
 const under=new THREE.PointLight(0xffd9a0,0.5,90,0);under.position.set(170,40,40);add(under);
 // wall-mounted 2-hole basin mixer (like the existing hansgrohe): plate ~18 x 7, flat blade spout on the left (5 wide, 19 long to clear the 12 back deck), round lever on the right.
 // FAU = spout centre: 'design' = over the basin centre, 9 above the counter; 'site' = existing in-wall body, measured 29.5 from the right wall to the spout's left edge (spout 5 wide -> centre 27), 14.5 above the old counter (old counter 91 from floor -> 105.5)
@@ -1046,6 +1071,7 @@ const _lF1=dims.children.length;dim([173,105.5,22],[173,CT,22]);label('離地 10
 const _lC0=dims.children.length;label('洞石米黃落地櫃',[170,104,32],'按 70cm 款縮做 590×500 · 盆 380×440 深140 · 右平台 150 · 兩格櫃桶');dim([139,70,51],[139,CT,51]);label('20',[135,80,53],null,5);const lblC=dims.children.slice(_lC0);lblC.forEach(o=>o.visible=false);
 const _lE0b=dims.children.length;label('白蠟木竪紋＋弧形岩板台盆（參考：丽客卫浴）',[170,104,32],'600×500 · 岩板厚 120 全圓邊 · 一體盆 480×320 · 三格實木坑紋櫃桶、頂邊拉手槽');const lblAsh=dims.children.slice(_lE0b);lblAsh.forEach(o=>o.visible=false);
 const _lF0b=dims.children.length;label('原木拼花＋透光奢石（參考：丽客卫浴）',[170,104,32],'600×500 · 透光石厚 40（底部燈）· 白色底盆 460×300 · 三格立方拼花櫃桶、黑金屬邊、櫃內燈');const lblOnyx=dims.children.slice(_lF0b);lblOnyx.forEach(o=>o.visible=false);
+const _lG0=dims.children.length;label('冰河世紀（手繪最新設計）',[169,104,32],'石檯面 600×500 連前／側裙邊厚 180（車石無縫）· 無縫底盆 · 橡木橫紋抽屜 300＋300 · 底腳 120 · 右邊離牆 10 留門框位');dim([139,72,52],[139,CT,52]);label('18',[135,81,53],null,5);const lblG=dims.children.slice(_lG0);lblG.forEach(o=>o.visible=false);
 const _lD0=dims.children.length;label('長檯面連座廁上面（參考圖）',[150,104,32],'檯面 125 長 · 盆端深50／座廁端窄身7 · 厚11 · 盆 440×380 深95 · 吊櫃（2格）或落地（3格）：每層一個全闊櫃桶');dim([139,79,51],[139,CT,51]);label('11',[135,84,53],null,5);dim([75,92,9],[141,92,9]);label('延伸 66 · 深 7',[108,97,9],null,5);const lblD=dims.children.slice(_lD0);lblD.forEach(o=>o.visible=false);
 const _lE0=dims.children.length;label('後面矮櫃 55×25 · 櫃高 32＋10 防水石邊',[170,48,26],'遮去水喉 · 喉離後牆 9／右牆 14 · 單門向左開');dim([200,2,0],[200,2,25]);label('25',[202,6,12.5],null,5);const lblE=dims.children.slice(_lE0);lblE.forEach(o=>o.visible=false);
 let tLab=label('INAX SARAS 100572BW10',[107.5,64,50],'710×385×472');
@@ -1069,12 +1095,12 @@ function applyGold(){const gold=st.front==='gold',fl=!!st.floor;
 function setCorner(c){st.corner=c;const big=c==='big';
   if(st.basin==='ocean'){aBig.visible=big;aSmall.visible=!big;}else{aBig.visible=aSmall.visible=false;}
   bBig.visible=big;bSmall.visible=!big;[lowerA,lowerB].forEach(L=>L.children.forEach(g=>{if(g.userData.sz)g.visible=(g.userData.sz==='big')===big;}));}
-function setBasin(v){st.basin=v;const a=v==='ocean',b=v==='slab',c=v==='trav',d=v==='long',e=v==='ash',f=v==='onyx';
+function setBasin(v){st.basin=v;const a=v==='ocean',b=v==='slab',c=v==='trav',d=v==='long',e=v==='ash',f=v==='onyx',gl=v==='glacier';vanityG.visible=gl;lblG.forEach(o=>o.visible=gl);
   vanityE.visible=e;vanityF.visible=f;eHung.visible=fHung.visible=!st.floor;eFloor.visible=fFloor.visible=!!st.floor;lblAsh.forEach(o=>o.visible=e);lblOnyx.forEach(o=>o.visible=f);lowerA.visible=a;lowerB.visible=b;vanityA.forEach(o=>o.visible=a);vanityB.visible=b;vanityC.visible=c;vanityD.visible=d;dHung.visible=!st.floor;dFloor.visible=st.floor;lblA.forEach(o=>o.visible=a);lblB.forEach(o=>o.visible=b);lblC.forEach(o=>o.visible=c);lblD.forEach(o=>o.visible=d);
   // option C is always floor-standing with its own toe-kick, so it hides the stone plinth kit and the open shelf
   // option D has its own hung/floor cabinet (no stone plinth kit) and its counter replaces the narrow ledge over the toilet
   // 吊櫃＋後面矮櫃: the 22-deep back cabinet replaces the open shelf (shelf is 30 deep)
-  floorKit.visible=st.floor&&!c&&!d&&!e&&!f;backBox.visible=st.back&&!c;lblE.forEach(o=>o.visible=st.back&&!c);shelfMesh.visible=!st.floor&&!st.back&&!c&&!d;ledge.visible=st.ledge&&!d;ledgeDims.forEach(o=>o.visible=st.ledge&&!d);
+  floorKit.visible=st.floor&&!c&&!d&&!e&&!f&&!gl;backBox.visible=st.back&&!c&&!gl;lblE.forEach(o=>o.visible=st.back&&!c&&!gl);shelfMesh.visible=!st.floor&&!st.back&&!c&&!d&&!gl;ledge.visible=st.ledge&&!d;ledgeDims.forEach(o=>o.visible=st.ledge&&!d);
   document.querySelectorAll('[data-stone]').forEach(x=>x.style.display=b?'':'none');{const sg=document.getElementById('stoneGrp');if(sg)sg.style.display=b?'':'none';}if(typeof applyCtop==='function')applyCtop();if(typeof aBig!=='undefined')setCorner(st.corner);}
 function setStone(k){stoneM.map=stoneTex[k];stoneM.needsUpdate=true;vanityB.userData.trough.material.map=stoneTex[k];vanityB.userData.trough.material.needsUpdate=true;}
 function setCabWood(v){M.wood.map=v==='door'?doorWoodT:woodTexOwn;walnutM.map=v==='door'?doorWoodT:walnutT;M.wood.needsUpdate=walnutM.needsUpdate=true;}
