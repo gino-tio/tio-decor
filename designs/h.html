@@ -771,7 +771,10 @@ const vanityG=new THREE.Group();add(vanityG);vanityG.visible=false;
  // the drawer fronts ARE the rounded corner: each front wraps round the front-left corner (R6) and returns 9cm along the side, like a bent panel;
  // the fixed side panel is flat and starts right behind the return, so the cabinet reads as one rounded corner
  const RET=9,T=1.8,XC=141;
- carcass(cg,0,XC+T,12,TY,ZF-RET-0.3,oakM);
+ // full-depth carcass, then swap its two side panels: left = flat panel stopping behind the drawer-front returns, right = full depth to the front
+ // (as slabs, so the oak grain is in cm and runs horizontally like the fronts)
+ const n0=cg.children.length;carcass(cg,0,XC+T,12,TY,ZF,oakM);const [lp,rp]=[cg.children[n0],cg.children[n0+1]];cg.remove(lp);cg.remove(rp);
+ cg.add(slab(XC,0,XC+T,ZF-RET-0.3,12,TY-12,oakM));cg.add(slab(198.4,0,200,ZF,12,TY-12,oakM));
  const knitT=tex(64,64,(c,w,h)=>{c.fillStyle='#efebe4';c.fillRect(0,0,w,h);c.fillStyle='#d6d0c6';for(let y=0;y<h;y+=8)for(let x=(y/8%2)*4;x<w;x+=8){c.beginPath();c.arc(x+2,y+2,2.4,0,7);c.fill();}},1,1);
  const knitM=new THREE.MeshStandardMaterial({map:knitT,roughness:1});
  const wrapFront=(d,a,b)=>{const p=new THREE.Shape();p.moveTo(199.4,-ZF);p.lineTo(XC+R,-ZF);p.absarc(XC+R,-(ZF-R),R,-Math.PI/2,-Math.PI,true);p.lineTo(XC,-(ZF-RET));
