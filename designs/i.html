@@ -478,6 +478,8 @@ function carcass(g,R,xs,y0,y1,zf,mat,cutY){const h=y1-y0;
  box(198.4-xs,h,1.6,carcassM,(xs+198.4)/2,y0+h/2,0.8,g);
  box(198.4-xs,1.4,zf-1.6,carcassM,(xs+198.4)/2,y0+0.7,(zf+1.6)/2,g);}
 // real drawer: front panel + 1.2cm-wall box (by0..by0+bh), optional U-cut from the back up to z=uTo to clear the trap
+// 方案G: drawer U-cut from plumbing.json (trap body + clearance), so every cabinet clears the same trap
+const CUT=k=>{const c=(PLUMB.basins[k]||PLUMB.basins.ocean).drawer_cut;return {uCut:(c.x1-c.x0)/10,uTo:c.z_to/10,uX:(c.x0+c.x1)/20};};
 function makeDrawer(parent,x0,x1,y0,y1,zf,depth,frontMat,opt={}){
   const g=new THREE.Group();parent.add(g);const w=x1-x0,h=y1-y0,cx=(x0+x1)/2;
   const by0=opt.by0??(y0+1.2),bh=opt.bh??(h-4),T=1.2,zF=zf-1.4,zb=zF-depth,yc=by0+bh/2,xl=x0+1.2,xr=x1-1.2,iw=xr-xl;
@@ -485,18 +487,19 @@ function makeDrawer(parent,x0,x1,y0,y1,zf,depth,frontMat,opt={}){
   if(opt.front!==false&&opt.handle!==false)box(Math.min(36,w-8),1.1,1.2,M.black,cx,y1-2.4,zf+0.5,g);
   const sM=opt.sideM||carcassM,fM=opt.floorM||carcassM;
   box(T,bh,depth,sM,xl+T/2,yc,zF-depth/2,g);box(T,bh,depth,sM,xr-T/2,yc,zF-depth/2,g);
-  if(opt.uCut){const cw=opt.uCut,uTo=opt.uTo,sw=(iw-cw)/2;
-    box(sw,T,depth,fM,xl+sw/2,by0+T/2,zF-depth/2,g);box(sw,T,depth,fM,xr-sw/2,by0+T/2,zF-depth/2,g);
-    box(cw,T,zF-uTo,fM,cx,by0+T/2,(zF+uTo)/2,g);
-    box(sw,bh,T,carcassM,xl+sw/2,yc,zb+T/2,g);box(sw,bh,T,carcassM,xr-sw/2,yc,zb+T/2,g);
-    box(T,bh,uTo-zb,carcassM,cx-cw/2-T/2,yc,(zb+uTo)/2,g);box(T,bh,uTo-zb,carcassM,cx+cw/2+T/2,yc,(zb+uTo)/2,g);
-    box(cw+2*T,bh,T,carcassM,cx,yc,uTo+T/2,g);}
+  const ux=opt.uCut?Math.min(Math.max(opt.uX??cx,xl+opt.uCut/2+2),xr-opt.uCut/2-2):cx;
+  if(opt.uCut){const cw=opt.uCut,uTo=opt.uTo,swl=ux-cw/2-xl,swr=xr-(ux+cw/2); // 方案G: U centred on the trap from plumbing.json
+    box(swl,T,depth,fM,xl+swl/2,by0+T/2,zF-depth/2,g);box(swr,T,depth,fM,xr-swr/2,by0+T/2,zF-depth/2,g);
+    box(cw,T,zF-uTo,fM,ux,by0+T/2,(zF+uTo)/2,g);
+    box(swl,bh,T,carcassM,xl+swl/2,yc,zb+T/2,g);box(swr,bh,T,carcassM,xr-swr/2,yc,zb+T/2,g);
+    box(T,bh,uTo-zb,carcassM,ux-cw/2-T/2,yc,(zb+uTo)/2,g);box(T,bh,uTo-zb,carcassM,ux+cw/2+T/2,yc,(zb+uTo)/2,g);
+    box(cw+2*T,bh,T,carcassM,ux,yc,uTo+T/2,g);}
   else{box(iw,T,depth,fM,cx,by0+T/2,zF-depth/2,g);box(iw,bh,T,carcassM,cx,yc,zb+T/2,g);}
   const z0=opt.uCut?opt.uTo+T:zb+T,dl=zF-z0;
   (opt.div||[]).forEach(fx=>box(0.8,bh*0.75,dl,carcassM,xl+iw*fx,by0+T+bh*0.375,(zF+z0)/2,g));
   if(opt.cross)box(iw,bh*0.75,0.8,carcassM,cx,by0+T+bh*0.375,z0+dl*opt.cross,g);
   if(opt.level&&!opt.noFill)fillItems(g,opt.level,xl+T,iw-2*T,by0+T,zb+T,zF,opt);
-  if(opt.extra)opt.extra(g,{xl:xl+T,xr:xr-T,iw:iw-2*T,fy:by0+T,top:by0+bh,zb:zb+T,zF,cx,cw:opt.uCut||0,uTo:opt.uTo});
+  if(opt.extra)opt.extra(g,{xl:xl+T,xr:xr-T,iw:iw-2*T,fy:by0+T,top:by0+bh,zb:zb+T,zF,cx:ux,cw:opt.uCut||0,uTo:opt.uTo});
   drawers.push({g,level:opt.level,travel:opt.travel||Math.min(30,depth*0.75)});return g;}
 const woodTexOwn=M.wood.map,doorWoodT=tex(512,512,(g,w,h)=>wood(g,w,h,'#a98762','#6d4e30'),0.02,0.02);
 MK('cabinet');
@@ -541,9 +544,9 @@ function buildACab(g,R){const xs=141+R+0.2;const h=new THREE.Path();h.moveTo(141
  box(0.5,40,0.6,M.black,xs,63.3,49.1,g);
  // front options (盆櫃門): two drawers / one big drawer / one door hinged on the right. Drawer boxes 36 deep so the trap's back arm + down pipe (z=9) pass behind them
  const g2=new THREE.Group(),g1=new THREE.Group(),gd=new THREE.Group();g.add(g2,g1,gd);g.userData.fr={two:g2,one:g1,door:gd};g1.visible=gd.visible=false;
- makeDrawer(g2,xs+0.4,199.4,63.8,BT-0.3,49.6,36,M.wood,{by0:65,bh:8,uCut:15,uTo:36,level:'top',noFill:true,floorM:flutedWoodM,sideM:metalSideM,extra:topInner});
+ makeDrawer(g2,xs+0.4,199.4,63.8,BT-0.3,49.6,36,M.wood,{by0:65,bh:8,...CUT('ocean'),level:'top',noFill:true,floorM:flutedWoodM,sideM:metalSideM,extra:topInner});
  makeDrawer(g2,xs+0.4,199.4,43.3,63.4,49.6,36,M.wood,{by0:44.5,bh:9,div:[0.62],level:'mid',noFill:true,sideM:smokeM,floorM:lightWoodM,extra:midInner});
- makeDrawer(g1,xs+0.4,199.4,43.3,BT-0.3,49.6,36,M.wood,{by0:44.5,bh:26,uCut:15,uTo:36,level:'top',noFill:true,sideM:metalSideM,floorM:lightWoodM,extra:singleInner});
+ makeDrawer(g1,xs+0.4,199.4,43.3,BT-0.3,49.6,36,M.wood,{by0:44.5,bh:26,...CUT('ocean'),level:'top',noFill:true,sideM:metalSideM,floorM:lightWoodM,extra:singleInner});
  // single door, hinge on the right edge, opens to the right; one shelf below the trap (bottle bottom 55)
  const dw=199.4-(xs+0.4),dh=BT-0.3-43.3,dr=new THREE.Group();dr.position.set(199.4,0,49.6);gd.add(dr);
  box(dw-0.3,dh-0.3,1.4,M.wood,-dw/2,43.3+dh/2,-0.7,dr);box(0.6,14,0.6,M.black,-dw+3,43.3+dh/2,0.3,dr);
@@ -557,7 +560,7 @@ function buildACab(g,R){const xs=141+R+0.2;const h=new THREE.Path();h.moveTo(141
   const tr=rxy(x0,10.8,x1,y1,[3,3,3,3]);tr.holes.push(rxy(x0+1.3,12.1,x1-1.3,y1-1.3,[2,2,2,2]));
   const ft=new THREE.Mesh(new THREE.ExtrudeGeometry(tr,{depth:0.8,bevelEnabled:false,curveSegments:10}),goldLedM);ft.position.z=48.6;gg.add(ft);
   const fill=box(x1-x0-2.6,2.4,0.8,darkWalnutM,(x0+x1)/2,43.5,48.9,gg);gg.userData={top:fm,tall:[ft,fill]};ft.visible=fill.visible=false;
-  makeDrawer(gg,x0+1.3,x1-1.3,y0+1.3,y1-1.3,49.6,36,darkWalnutM,{by0:44.5,bh:26,uCut:15,uTo:36,level:'top',noFill:true,handle:false,sideM:metalSideM,floorM:lightWoodM,extra:singleInner});}}
+  makeDrawer(gg,x0+1.3,x1-1.3,y0+1.3,y1-1.3,49.6,36,darkWalnutM,{by0:44.5,bh:26,...CUT('ocean'),level:'top',noFill:true,handle:false,sideM:metalSideM,floorM:lightWoodM,extra:singleInner});}}
 buildACab(aBig,6);buildACab(aSmall,2.5);
 PART='basin';const bowl=new THREE.Mesh(new THREE.BoxGeometry(56,13,35.7),new THREE.MeshStandardMaterial({color:0xfafaf8,roughness:.08,side:THREE.BackSide}));
 bowl.position.set(170,CT-6.5+0.01,30.15);add(bowl);bowl.userData.ocean=1;
@@ -620,7 +623,7 @@ function buildBCorner(g,R,xs){const SY=72,ST=18;
  PART='basin';g.add(slab(141,0,200,50,SY,ST,stoneM,{rFL:R,holes:[rr(THREE.Path,147,13,194,44,1)]}));PART=null;
  carcass(g,R,xs,43,SY-0.6,49.6,walnutM);
  box(0.5,SY-43-1.6,0.6,M.black,xs,43+(SY-43)/2,49.9,g);
- makeDrawer(g,xs+0.5,199.4,43.4,SY-1.2,50.2,40,walnutM,{by0:44.5,bh:19,uCut:12,uTo:16,div:[0.25,0.75],handle:false,level:'top'});}
+ makeDrawer(g,xs+0.5,199.4,43.4,SY-1.2,50.2,40,walnutM,{by0:44.5,bh:19,...CUT('slab'),div:[0.25,0.75],handle:false,level:'top'});}
 buildBCorner(bBig,12,160.5);buildBCorner(bSmall,4,145.5);
 {const SY=72,ST=18,R=12;
  // GAODUO designer basin: 18cm stone slab + walnut cabinet, big rounded corner on the toilet side (front-left)
@@ -656,7 +659,7 @@ const travM=new THREE.MeshPhysicalMaterial({map:travT,roughness:.62,clearcoat:.1
  const dr=new THREE.Mesh(new THREE.CircleGeometry(2.2,24),M.chrome);dr.rotation.x=-Math.PI/2;dr.position.set(152,CT-BD+0.03,36);add(dr,vanityC);
  PART=null;
  carcass(vanityC,0,141.6,10,TY,48.6,travM);
- makeDrawer(vanityC,141.3,199.7,40.4,TY-0.6,50,40,travM,{by0:41.6,bh:22,uCut:12,uTo:16,div:[0.25,0.75],handle:false,level:'top'});
+ makeDrawer(vanityC,141.3,199.7,40.4,TY-0.6,50,40,travM,{by0:41.6,bh:22,...CUT('trav'),div:[0.25,0.75],handle:false,level:'top'});
  makeDrawer(vanityC,141.3,199.7,10.4,40,50,40,travM,{by0:11.6,bh:24,div:[0.5],handle:false,level:'bot'});
  box(56,10,44,travM,170.5,5,22,vanityC);}
 // ---------- vanity option D: long cream counter running over the toilet (based on a product photo)
@@ -712,7 +715,7 @@ const grooveM=new THREE.MeshStandardMaterial({color:0x4a2f17,roughness:.8}),toeM
   carcass(g,R,xs,y0,y1,ZF,ashPlainM);
   const side=flutedPanel(ZF-R,ch,2.4,0.5,ashM);side.rotation.y=-Math.PI/2;side.position.set(X0,y0,(ZF-R)/2);g.add(side);
   ['bot','mid','top'].forEach((lv,i)=>{const a=y0+i*step+0.3,b=y0+(i+1)*step-0.3,top=i===2,w=199.4-(xs+0.4),cx=(xs+0.4+199.4)/2;
-   const d=makeDrawer(g,xs+0.4,199.4,a,b,ZF,40,ashPlainM,top?{by0:a+1.2,bh:Math.min(12,b-a-4),uCut:14,uTo:36,div:[0.25,0.75],handle:false,level:lv}:{by0:a+1.2,bh:b-a-4.4,div:[0.33,0.66],handle:false,level:lv});
+   const d=makeDrawer(g,xs+0.4,199.4,a,b,ZF,40,ashPlainM,top?{by0:a+1.2,bh:Math.min(12,b-a-4),...CUT('ash'),div:[0.25,0.75],handle:false,level:lv}:{by0:a+1.2,bh:b-a-4.4,div:[0.33,0.66],handle:false,level:lv});
    const f=flutedPanel(w-0.3,b-a-2,2.6,0.55,ashM);f.position.set(cx,a+0.15,ZF);d.add(f);      // carved flutes on the drawer face
    box(w-0.3,1.6,0.9,grooveM,cx,b-0.95,ZF+0.1,d);});                                          // finger-pull groove along the top edge
   if(y0>1)g.add(slab(143,0,198,ZF-5,0,y0,toeM,{rFL:R}));}
@@ -747,7 +750,7 @@ const onyxT=tex(1024,1024,(g,w,h)=>{const gr=g.createLinearGradient(0,0,w,h);gr.
  function buildFCab(g,y0){const xs=141.6,ZF=49,y1=85.8,topH=13,rest=(y1-y0-topH)/2;
   carcass(g,0,xs,y0,y1,ZF,brownM);
   [['bot',y0,y0+rest],['mid',y0+rest,y0+2*rest],['top',y1-topH,y1]].forEach(([lv,a0,b0])=>{const a=a0+0.4,b=b0-0.4,w=199.4-(xs+0.4),cx=(xs+0.4+199.4)/2,h=b-a,top=lv==='top';
-   const d=makeDrawer(g,xs+0.4,199.4,a,b,ZF+0.4,40,edgeM,top?{by0:a+1.2,bh:8,uCut:14,uTo:36,div:[0.3],handle:false,level:lv,floorM:glowM,sideM:brownM}:{by0:a+1.2,bh:h-4.4,div:[0.35,0.7],handle:false,level:lv,floorM:glowM,sideM:brownM});
+   const d=makeDrawer(g,xs+0.4,199.4,a,b,ZF+0.4,40,edgeM,top?{by0:a+1.2,bh:8,...CUT('onyx'),div:[0.3],handle:false,level:lv,floorM:glowM,sideM:brownM}:{by0:a+1.2,bh:h-4.4,div:[0.35,0.7],handle:false,level:lv,floorM:glowM,sideM:brownM});
    const pm=new THREE.MeshStandardMaterial({map:parquetT.clone(),roughness:.5});pm.map.needsUpdate=true;pm.map.repeat.set((w-1.6)/52,(h-1.6)/45);
    box(w-1.6,h-1.6,0.3,pm,cx,(a+b)/2,ZF+0.55,d);});                                           // parquetry panel inside the black metal edge
   if(y0>1)g.add(slab(143,0,198,ZF-5,0,y0,toeM));}
@@ -791,7 +794,7 @@ const vanityG=new THREE.Group();add(vanityG);vanityG.visible=false;
    const m=new THREE.Mesh(new THREE.ExtrudeGeometry(p,{depth:b-a,bevelEnabled:false,curveSegments:20}),oakM);m.rotation.x=-Math.PI/2;m.position.y=a;d.add(m);};
  const towels=(g,o)=>{[0.22,0.5].forEach((f,i)=>box(o.iw*0.24,5,Math.min(26,o.zF-o.zb-4),knitM,o.xl+o.iw*f,o.fy+2.6,o.zF-2-Math.min(26,o.zF-o.zb-4)/2,g));};
  // drawer boxes: thin anthracite metal sides on a light wood floor (ref MLUS 绮想 WINTER)
- [[42.2,TY-0.3,'top',{by0:43.4,bh:12,uCut:14,uTo:36,extra:towels}],[12,41.8,'bot',{by0:13.5,bh:22,div:[0.5]}]].forEach(([a,b,lv,o])=>{
+ [[42.2,TY-0.3,'top',{by0:43.4,bh:12,...CUT('glacier'),extra:towels}],[12,41.8,'bot',{by0:13.5,bh:22,div:[0.5]}]].forEach(([a,b,lv,o])=>{
    const d=makeDrawer(cg,XC+T+0.4,199.4,a,b,ZF,40,oakM,{...o,front:false,handle:false,level:lv,sideM:metalSideM,floorM:lightWoodM});wrapFront(d,a+0.15,b-0.15);});
  cg.add(slab(143,0,198,ZF-5,0,12,new THREE.MeshStandardMaterial({color:0x2b2622,roughness:.8}),{rFL:R-2}));}
 const under=new THREE.PointLight(0xffd9a0,0.5,90,0);under.position.set(170,40,40);add(under);
@@ -848,6 +851,12 @@ function buildPlumb(){plumbG.clear();const k=plumbKey(),R=PLUMB.basins[k];if(!R)
  // outlet arm back to the wall line, across to the white floor pipe, down to the floor
  pipe(P.arm_start,P.arm_corner,pr,pvcM,g);joint(P.arm_corner,pr*1.2,pvcM,g);pipe(P.arm_corner,P.stack_top,pr,pvcM,g);joint(P.stack_top,sr*1.15,pvcM,g);
  pipe(P.stack_top,P.stack_floor,sr,pvcM,g);pipe({...P.stack_floor,y:0},{...P.stack_floor,y:25},sr*1.25,pvcM,g); // floor collar
+ // where the white floor pipe passes a cabinet shelf / bottom panel: a drilled hole with a dark grommet ring (top face), found by a ray down the pipe axis
+ {const rc=new THREE.Raycaster(new THREE.Vector3(P.stack_top.x/10,P.stack_top.y/10-sr*1.3,P.stack_top.z/10),new THREE.Vector3(0,-1,0));rc.camera=camera;rc.layers.enableAll();
+  const vis=o=>{for(;o;o=o.parent)if(!o.visible)return false;return true;},ringM=new THREE.MeshStandardMaterial({color:0x2a2a2a,roughness:.7});
+  let hits=[];try{hits=rc.intersectObjects(scene.children,true);}catch(e){}
+  hits.filter(h=>h.object.isMesh&&!plumbG.getObjectById(h.object.id)&&vis(h.object)&&h.face&&Math.abs(h.face.normal.y)>0.7&&h.point.y>1).forEach(h=>{
+   const r=new THREE.Mesh(new THREE.RingGeometry(sr*1.02,sr+0.55,28),ringM);r.rotation.x=-Math.PI/2;r.position.set(P.stack_top.x/10,h.point.y+0.03,P.stack_top.z/10);g.add(r);});}
  // 出水 flow follows the same points
  const fm=new THREE.MeshBasicMaterial({color:0x4aa8ff,transparent:true,opacity:.8,depthWrite:false}),fg=new THREE.Group();fg.visible=false;g.add(fg);
  const pool=new THREE.Mesh(new THREE.CircleGeometry(1,28),new THREE.MeshBasicMaterial({color:0x9fd4ff,transparent:true,opacity:.55,depthWrite:false}));pool.scale.set(9,6,1);pool.rotation.x=-Math.PI/2;pool.position.set(P.drain.x/10,P.drain.y/10+0.2,P.drain.z/10-3);fg.add(pool);
@@ -1231,6 +1240,10 @@ group('[data-front]',b=>{const k=b.dataset.front;st.front=k;applyGold();[aBig,aS
  canvas.addEventListener('pointerup',e=>{if(!down)return;const moved=Math.hypot(e.clientX-down.x,e.clientY-down.y);down=null;
   if(moved<8){const f=pick(e);if(f)f();}});
  let hov=0;canvas.addEventListener('pointermove',e=>{if(e.pointerType!=='mouse'||down)return;const n=performance.now();if(n-hov<80)return;hov=n;canvas.style.cursor=pick(e)?'pointer':'';});}
+// 方案G: surface relief — every wood / stone / tile material uses its own colour texture as a bump map, so grain, veins and grout catch the light
+{const seen=new Set();scene.traverse(o=>{if(!o.isMesh)return;(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>{
+  if(!m||seen.has(m)||!m.map||m.bumpMap||m.transparent||m.isMeshBasicMaterial||m.emissiveMap||(m.metalness||0)>0.5||m.map.isCanvasTexture===false&&!m.map.image)return;seen.add(m);
+  m.bumpMap=m.map;m.bumpScale=1.2;m.needsUpdate=true;});});}
 // chosen spec: read from data/dims.json → default_view
 {const v=DIMS.default_view;[`[data-wc=${v.wc}]`,`[data-basin=${v.basin}]`,`[data-floor=${v.floor}]`,`[data-md="${v.mirror_doors}"]`,`[data-mh="${v.mirror_bottom/10}"]`,`[data-ledge=${v.ledge}]`].forEach(q=>{const b=document.querySelector(q);if(b)b.click();});}
 // ---------- people (人物) + 日常動畫: mannequin rigs with persistent meshes, re-posed every frame from a small state
