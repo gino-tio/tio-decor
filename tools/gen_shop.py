@@ -11,6 +11,11 @@ ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 OUT = os.path.join(ROOT, "designs", "h-shop.html")
 DXF_DIR = os.path.join(ROOT, "files", "dxf")
 DIMS = json.load(open(os.path.join(ROOT, "data", "dims.json"), encoding="utf-8"))
+# 喉位、地台去水、TOTO 入水由 tools/plumbing.py 計（同 3D 共用），唔好喺度手寫
+PL = json.load(open(os.path.join(ROOT, "data", "plumbing.json"), encoding="utf-8"))
+FD = PL["floor_drain"]; OC = PL["basins"]["ocean"]; INLET = PL["supply"]["toto_inlet"]
+_hatch = DIMS_HATCH = (1450, 200, 1670, 420)
+FD_UNDER_HATCH = _hatch[0] <= FD["x"] - FD["d"] / 2 and FD["x"] + FD["d"] / 2 <= _hatch[2] and _hatch[1] <= FD["z"] - FD["d"] / 2 and FD["z"] + FD["d"] / 2 <= _hatch[3]
 
 # ---------- drawing helpers ----------
 class SVG:
@@ -196,11 +201,15 @@ s.circle(TOILET_CX, 305, 50, "o2"); s.text(TOILET_CX, 250, "去水（坑距待�
 s.path(plan_corner(750, 0, 1400, 100, 40), "o"); s.text(1075, 60, "窄枱 650×100（可選）", "sm")
 # vanity
 s.path(plan_corner(VX0, 0, VX1, VD, 60), "o"); s.text(1700, 230, "洗手盆櫃 600×500（落地）", "lbl")
-s.rect(1450, 200, 220, 220, "dash"); s.text(1560, 180, "櫃底維修口", "sm")
+if FD_UNDER_HATCH: s.rect(1450, 200, 220, 220, "dash"); s.text(1560, 180, "櫃底維修口", "sm")
+# basin waste: drain -> trap -> back -> right to the white floor pipe (plan view)
+_wp = OC["waste_path"]; s.path("M" + " L".join(f"{p['x']},{p['z']}" for p in _wp[2:5]), "red"); s.circle(_wp[0]["x"], _wp[0]["z"], 36, "red")
+s.circle(PL["drain_stack"]["x"], PL["drain_stack"]["z"], 20, "red"); s.text(PL["drain_stack"]["x"], PL["drain_stack"]["z"] + 60, "落地白喉", "sm")
 # remote
 s.line(VX0 - 8, 125, VX0 - 8, 359, "red"); s.text(VX0 - 30, 242, "遙控", "sm", "end")
 # floor drain
-s.circle(1520, 380, 50, "o2"); s.text(1520, 470, "地台去水", "sm")
+s.circle(FD["x"], FD["z"], FD["d"] / 2, "o2"); s.text(FD["x"], FD["z"] + 95, "地台去水" + ("" if FD_UNDER_HATCH else "（櫃左邊外）"), "sm")
+s.dimH(FD["x"], W, FD["z"] + 160, f"{W-FD['x']}"); s.dimV(FD["x"] - 90, 0, FD["z"], f"{FD['z']}")
 # door
 s.line(W, DOOR_Z0, W, DOOR_Z1, "wall2"); s.path(f"M{W},{1455} L{W-740},{1455}", "o"); s.path(f"M{W-740},{1455} A740,740 0 0 1 {W},{715}", "arc")
 s.text(W - 380, 1420, "門 770（向內開，鉸近全身鏡）", "sm")
@@ -237,7 +246,7 @@ def elev(mc_bottom, ledge=True, toilet="TOTO", doors=2, floor=True):
     s.path(f"M{TOILET_CX-192},{H} V{Y(th-40)} Q{TOILET_CX-192},{Y(th)} {TOILET_CX-150},{Y(th)} H{TOILET_CX+150} Q{TOILET_CX+192},{Y(th)} {TOILET_CX+192},{Y(th-40)} V{H}", "o")
     s.text(TOILET_CX, Y(th / 2), f"座廁 {toilet}", "lbl"); s.dimV(TOILET_CX + 260, Y(0), Y(th), f"{th}")
     # inlet + socket
-    s.circle(960, Y(175), 18, "red"); s.text(870, Y(175) + 10, "淡水入水 Rc½ 離地 175", "sm", "end")
+    s.circle(INLET["x"], Y(INLET["y"]), 18, "red"); s.text(INLET["x"] - 90, Y(INLET["y"]) + 10, f"淡水入水 Rc½ 離地 {INLET['y']}（角掣同位）", "sm", "end")
     s.rect(1485, Y(335), 70, 70, "red"); s.text(1590, Y(300), "TOTO 插蘇（盆櫃下格內）離地 ~300", "sm", "start")
     # vanity
     base = 103 if floor else 430
@@ -250,7 +259,11 @@ def elev(mc_bottom, ledge=True, toilet="TOTO", doors=2, floor=True):
     else:
         s.rect(VX0 + 5, Y(212), 590, 25, "o2"); s.text(1700, Y(150), "置物板 離地 ~190", "sm")
     # tap
-    s.rect(1670, Y(1040), 60, 100, "o2"); s.text(1700, Y(1060), "入牆龍頭", "sm")
+    # basin waste in elevation: tail + bottle, arm to the white floor pipe, down to the floor
+    _wp = OC["waste_path"]; s.path("M" + " L".join(f"{p['x']},{Y(p['y'])}" for p in _wp), "red")
+    s.rect(OC["trap"]["x"] - 36, Y(OC["trap"]["top"] - 55), 72, OC["trap"]["top"] - 55 - OC["trap"]["bottom"], "red")
+    s.rect(1485, Y(335), 70, 70, "red")
+    _t = OC["tap"]["design"]; s.rect(_t["x"] - 90, Y(_t["y"] + 35), 180, 70, "o2"); s.text(_t["x"], Y(_t["y"] + 60), "入牆龍頭（對準盆中）", "sm")
     # mirror cabinet
     s.path(rr_path(MCX0, Y(mc_bottom + MC_H), MCX1, Y(mc_bottom), 70), "o")
     for i in range(1, doors): s.line(MCX0 + i * 1200 / doors, Y(mc_bottom + MC_H) + 10, MCX0 + i * 1200 / doors, Y(mc_bottom) - 10, "o2")
@@ -301,22 +314,26 @@ def vanity(kind, R):
     # side section (right)
     sx = 1650
     s.rect(sx, 0, 500, top, "o"); s.rect(sx, top, 500, Hh - top, "o")
-    s.path(f"M{sx+250},{top} v120 q0,60 -60,60 h-190", "red")
-    s.rect(sx + 160, top + 30, 180, 220, "dash"); s.text(sx + 250, top + 290, "U 位 160 闊", "sm")
+    # same route as the 3D (data/plumbing.json): drain -> bottle trap -> arm back -> white floor pipe -> floor
+    r = PL["basins"]["ocean"]; Yc = lambda y: CT - y
+    s.path("M" + " L".join(f"{sx+p['z']},{Yc(p['y'])}" for p in r["waste_path"] if p["at"] not in ("stack_top", "stack_floor")) + f" L{sx+r['waste_path'][-1]['z']},{Hh}", "red")
+    s.rect(sx + r["trap"]["z"] - 36, Yc(r["trap"]["top"] - 55), 72, r["trap"]["top"] - 55 - r["trap"]["bottom"], "red")
+    c = r["drawer_cut"]; s.rect(sx, top + 20, c["z_to"], Yc(c["y0"]) - top - 20, "dash"); s.text(sx + c["z_to"] / 2, Yc(c["y0"]) + 40, f"U 位 {c['x1']-c['x0']} 闊，到離牆 {c['z_to']}", "sm")
+    s.text(sx + r["waste_path"][-1]["z"] + 30, Hh - 20, "落地白喉 ↓", "sm", "start")
     s.dimH(sx, sx + 500, Hh + 90, "500")
-    s.text(sx + 250, Hh + 260, "側面剖面（去水入牆）", "lbl")
+    s.text(sx + 250, Hh + 260, "側面剖面（去水經隔氣入落地白喉）", "lbl")
     return s.svg()
 
-add_drawing("3a. 洗手盆櫃 · 陶瓷海洋盆（上半，盆面離地 900）", "三格拉櫃（落地版）：上格面板 196 高、內箱 80 高，後面 U 位 140 闊伸到離牆 360 避開去水尾喉；中格面板 201、內箱 140（喺存水彎橫喉 620 之下）；下格面板 316、內箱 240。拉櫃深 400，全部三節路軌。圓角未揀：R25 拉櫃約 570 闊；R60 約 535 闊。", vanity("ocean", 25))
+add_drawing("3a. 洗手盆櫃 · 陶瓷海洋盆（上半，盆面離地 900）", "三格拉櫃（落地版）：上格面板 196 高、內箱 80 高，後面 U 位 " + f"{OC['drawer_cut']['x1']-OC['drawer_cut']['x0']} 闊伸到離牆 {OC['drawer_cut']['z_to']}" + " 避開隔氣（去水經隔氣、橫喉入落地白喉，離後牆 90／右牆 140）；中格面板 201、內箱 140（喺存水彎橫喉 620 之下）；下格面板 316、內箱 240。拉櫃深 400，全部三節路軌。圓角未揀：R25 拉櫃約 570 闊；R60 約 535 闊。", vanity("ocean", 25))
 
 # floor-standing option
 s = SVG(700, 950, 200)
 s.rect(0, 0, 600, 63, "o"); s.rect(0, 63, 600, 787 - 63, "o")
 s.line(0, 470, 600, 470, "o2"); s.line(0, 270, 600, 270, "o2")
 s.rect(20, 850, 550, 100, "hatch"); s.line(0, 950, 700, 950, "floor")
-s.text(300, 900, "石材防水腳 高 100（退入 50，中空）", "sm"); s.rect(80, 830, 220, 20, "red"); s.text(190, 815, "維修口", "sm"); s.text(300, 380, "拉櫃", "sm"); s.text(300, 650, "落地加多格拉櫃", "sm")
+s.text(300, 900, "石材防水腳 高 100（退入 50，中空）", "sm"); (s.rect(80, 830, 220, 20, "red"), s.text(190, 815, "維修口", "sm")) if FD_UNDER_HATCH else None; s.text(300, 380, "拉櫃", "sm"); s.text(300, 650, "落地加多格拉櫃", "sm")
 s.dimV(-80, 0, 950, "900"); s.dimV(680, 850, 950, "100"); s.dimH(570, 600, 990, "50")
-add_drawing("3b. 盆櫃落地（側面）", "櫃身唔掂地；石腳中空，櫃底留 220×220 維修口通地台去水；石腳同地之間打防霉膠。", s.svg())
+add_drawing("3b. 盆櫃落地（側面）", ("櫃身唔掂地；石腳中空，櫃底留 220×220 維修口通地台去水；石腳同地之間打防霉膠。" if FD_UNDER_HATCH else f"櫃身唔掂地；石腳中空；石腳同地之間打防霉膠。地台去水喺盆櫃左邊外面（離後牆 {FD['z']}、右牆 {W-FD['x']}），唔使櫃底維修口。"), s.svg())
 
 # =============== 4. MIRROR CABINET ===============
 def mcab(n):
@@ -357,7 +374,7 @@ add_drawing("5. 座廁位置", "紅點＝淡水入水（偏左 115，離地 175�
 bom = [
     ("座廁", "TOTO CES8E810GCN（NEOREST AS）", "692 × 386 × 512；去水件 HP102T3 (305) 或 HP102T4 (400)", "1", "坑距拆廁實量先揀去水件；淡水 Rc½ 離地 175 偏左 115"),
     ("洗手盆", "陶瓷海洋盆 8260", "600 × 500，盆深 130，前邊厚 63，無龍頭孔", "1", "淘寶 MF937；確認實闊 600／605"),
-    ("洗手盆櫃", "訂造落地櫃＋石材防水腳", "600 × 500，盆面離地 900；石腳 550 × 440 × 100 退入 50", "1", "上格 U 位避去水；櫃底 220×220 維修口；圓角／木色未定"),
+    ("洗手盆櫃", "訂造落地櫃＋石材防水腳", "600 × 500，盆面離地 900；石腳 550 × 440 × 100 退入 50", "1", "上格 U 位避隔氣；" + ("櫃底 220×220 維修口；" if FD_UNDER_HATCH else "地台去水喺櫃左邊外，唔使維修口；") + "圓角／木色未定"),
     ("入牆龍頭", "入牆式", "出水嘴長 ~200（要過 120 後平台）", "1", "出水對準盆中"),
     ("鏡櫃", f"訂造鏡櫃 {DOORS_ZH}門", f"{MCX1-MCX0} × {MC_H} × {MC_D}，R70，四邊透光燈帶", "1", f"底離地 {MC_BOTTOM}；內置防水插蘇；玻璃層板 ×2；打底板"),
     ("窄枱（可選）", "白色陶瓷／石", "650 × 100 × 30，面離地 900", "1", "陳列室試 TOTO 開蓋會唔會撞先決定"),

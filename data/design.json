@@ -231,6 +231,22 @@
         "r": 70,
         "doors": 2
       }
+    },
+    "cabinet": {
+      "_note": "落地盆櫃（海洋盆／長檯面共用規則）",
+      "x0": 1400,
+      "x1": 2000,
+      "front_z": 496,
+      "panel_t": 18,
+      "plinth_h": 100,
+      "plinth_setback": 50,
+      "drawer_depth": 360,
+      "hatch": {
+        "x0": 1450,
+        "x1": 1670,
+        "z0": 200,
+        "z1": 420
+      }
     }
   },
   "rules": {
@@ -240,10 +256,10 @@
     "tap_land_margin": 30
   },
   "options": {
-    "_note": "Gino 2026-11-14 喺計劃 doc 剔走之後留低嘅 option。海洋盆係咪保留待確認（暫時保留）。",
+    "_note": "Gino 2026-11-14 喺計劃 doc 剔走之後留低嘅 option；海洋盆確認保留（主方案）。",
     "basin": [
-      "long",
-      "ocean"
+      "ocean",
+      "long"
     ],
     "ocean_top": [
       "ceramic",
@@ -297,7 +313,7 @@
     "people": false,
     "default": {
       "wc": "toto",
-      "basin": "long",
+      "basin": "ocean",
       "mount": "floor",
       "front": "two",
       "mirror": "two",
