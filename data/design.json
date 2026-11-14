@@ -241,12 +241,7 @@
       "plinth_h": 100,
       "plinth_setback": 50,
       "drawer_depth": 360,
-      "hatch": {
-        "x0": 1450,
-        "x1": 1670,
-        "z0": 200,
-        "z1": 420
-      }
+      "_hatch_note": "櫃底維修口唔做（Gino 2026-11-14）：地台去水喺盆櫃左邊外面"
     }
   },
   "rules": {

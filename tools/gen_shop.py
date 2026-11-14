@@ -15,7 +15,7 @@ DIMS = json.load(open(os.path.join(ROOT, "data", "dims.json"), encoding="utf-8")
 PL = json.load(open(os.path.join(ROOT, "data", "plumbing.json"), encoding="utf-8"))
 FD = PL["floor_drain"]; OC = PL["basins"]["ocean"]; INLET = PL["supply"]["toto_inlet"]
 _hatch = DIMS_HATCH = (1450, 200, 1670, 420)
-FD_UNDER_HATCH = _hatch[0] <= FD["x"] - FD["d"] / 2 and FD["x"] + FD["d"] / 2 <= _hatch[2] and _hatch[1] <= FD["z"] - FD["d"] / 2 and FD["z"] + FD["d"] / 2 <= _hatch[3]
+FD_UNDER_HATCH = False  # 櫃底維修口唔做（Gino 2026-11-14）：地台去水喺盆櫃左邊外面
 
 # ---------- drawing helpers ----------
 class SVG:
