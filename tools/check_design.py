@@ -51,12 +51,9 @@ def main():
 
     fd = PL["floor_drain"]
     fx0, fx1, fz0, fz1 = fd["x"] - fd["d"] / 2, fd["x"] + fd["d"] / 2, fd["z"] - fd["d"] / 2, fd["z"] + fd["d"] / 2
-    h = cab["hatch"]
-    under_hatch = h["x0"] <= fx0 and fx1 <= h["x1"] and h["z0"] <= fz0 and fz1 <= h["z1"]
     plinth_x0 = cab["x0"] + cab["plinth_setback"]
-    chk(under_hatch, f"地台去水（x {fx0:.0f}–{fx1:.0f}）{'喺' if under_hatch else '唔喺'}櫃底維修口（x {h['x0']}–{h['x1']}）下面", warn=True)
-    if not under_hatch:
-        chk(fx1 <= plinth_x0, f"地台去水喺盆櫃左邊外面，同石腳隙 {plinth_x0-fx1:.0f}；櫃身懸空蓋住佢 {max(0, fx1-cab['x0']):.0f}，維修口可以唔使做", warn=True)
+    # 冇櫃底維修口（Gino 2026-11-14）→ 地台去水一定要喺石腳外面，唔可以被櫃封住
+    chk(fx1 <= plinth_x0, f"地台去水（x {fx0:.0f}–{fx1:.0f}）喺盆櫃石腳外面，隙 {plinth_x0-fx1:.0f}；櫃身懸空蓋住 {max(0, fx1-cab['x0']):.0f}")
 
     for s_, w in res:
         print(f"[{s_:4}] {w}")
