@@ -118,7 +118,7 @@
       }
     },
     "basin": {
-      "_note": "bowl = 盆內（相對盆櫃 x0=1400, z=0, 檯面頂）；drain = 去水孔中心；depth = 檯面頂到盆底。統一規則：去水孔喺盆內中心。",
+      "_note": "bowl = 盆內（相對盆櫃 x0=1400, z=0）；depth = 檯面頂到盆底；去水孔預設喺盆內中心，斜底盆用 drain_at（絕對 mm）；underside = 厚石檯面底（隔氣要喺佢下面，去水尾喉穿過石）",
       "ocean": {
         "name": "陶瓷海洋盆 8260",
         "w": 600,
@@ -168,7 +168,14 @@
       "slab": {
         "name": "岩板一體盆",
         "top_t": 180,
-        "_todo": "盆內尺寸由 h.html vanityB 抄"
+        "bowl": {
+          "x0": 70,
+          "x1": 540,
+          "z0": 130,
+          "z1": 440
+        },
+        "depth": 120,
+        "underside": 720
       },
       "trav": {
         "name": "洞石米黃落地櫃",
@@ -178,7 +185,12 @@
           "z0": 30,
           "z1": 470
         },
-        "depth": 140
+        "depth": 140,
+        "drain_at": {
+          "x": 1520,
+          "z": 360
+        },
+        "underside": 700
       },
       "long": {
         "name": "長檯面連座廁上面",
@@ -198,7 +210,11 @@
           "z0": 142,
           "z1": 418
         },
-        "depth": 100
+        "depth": 100,
+        "drain_at": {
+          "x": 1700,
+          "z": 320
+        }
       },
       "onyx": {
         "name": "原木拼花＋透光奢石",
@@ -208,7 +224,11 @@
           "z0": 130,
           "z1": 430
         },
-        "depth": 130
+        "depth": 130,
+        "drain_at": {
+          "x": 1700,
+          "z": 320
+        }
       },
       "glacier": {
         "name": "冰河世紀（手繪）",
@@ -218,7 +238,11 @@
           "z0": 120,
           "z1": 439
         },
-        "depth": 150
+        "depth": 150,
+        "drain_at": {
+          "x": 1690,
+          "z": 300
+        }
       }
     },
     "mirror_cabinet": {
@@ -251,28 +275,42 @@
     "tap_land_margin": 30
   },
   "options": {
-    "_note": "Gino 2026-11-14 喺計劃 doc 剔走之後留低嘅 option；海洋盆確認保留（主方案）。",
+    "_note": "Gino 2026-11-14 第二次揀（剔 = 保留）。第一次嘅清單意思調轉咗，作廢。",
+    "toilet": [
+      "toto"
+    ],
     "basin": [
       "ocean",
-      "long"
+      "slab",
+      "trav",
+      "ash",
+      "onyx",
+      "glacier"
     ],
     "ocean_top": [
       "ceramic",
-      "viola"
+      "white",
+      "brown"
     ],
     "cabinet": {
       "mount": [
-        "floor"
+        "off",
+        "back",
+        "on"
       ],
       "front": [
-        "two"
+        "two",
+        "one",
+        "door"
       ],
       "size": [
-        "now"
+        "now",
+        "old"
       ]
     },
     "tap": [
-      "design"
+      "design",
+      "site"
     ],
     "corner": [
       "big",
@@ -284,34 +322,34 @@
     ],
     "mirror": {
       "type": [
-        "three",
-        "two",
-        "step"
+        "2",
+        "r60"
       ],
       "height": [
-        "full"
+        "full",
+        "80"
       ],
       "bottom": [
-        1250
+        1060,
+        1250,
+        1300,
+        1400
       ]
     },
     "ledge": [
+      "on"
+    ],
+    "paper_holder": [
       "on",
       "off"
     ],
-    "toilet": [
-      "toto"
-    ],
-    "paper_holder": [
-      "on"
-    ],
-    "people": false,
+    "people": true,
     "default": {
       "wc": "toto",
       "basin": "ocean",
-      "mount": "floor",
+      "floor": "on",
       "front": "two",
-      "mirror": "two",
+      "mirror": "2",
       "mirror_bottom": 1250,
       "ledge": "on",
       "tap": "design"

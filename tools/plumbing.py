@@ -17,9 +17,10 @@ def basin_drain(key):
     """去水孔 = 盆內中心（統一規則）。"""
     b = P["basin"][key]
     bw = b["bowl"]
+    at = b.get("drain_at")  # 斜底盆：去水孔唔喺中心
     return {
-        "x": VX0 + (bw["x0"] + bw["x1"]) / 2,
-        "z": (bw["z0"] + bw["z1"]) / 2,
+        "x": at["x"] if at else VX0 + (bw["x0"] + bw["x1"]) / 2,
+        "z": at["z"] if at else (bw["z0"] + bw["z1"]) / 2,
         "y": CT - b["depth"],
         "bowl": {"x0": VX0 + bw["x0"], "x1": VX0 + bw["x1"], "z0": bw["z0"], "z1": bw["z1"]},
     }
@@ -30,10 +31,12 @@ def route(key):
     d = basin_drain(key)
     t = P["trap"]["bottle"]
     st = S["drain_stack"]
-    arm_y = d["y"] - t["outlet_drop"]
+    top = min(d["y"], P["basin"][key].get("underside", d["y"]))  # 厚石檯面：尾喉穿石，隔氣喺石底下
+    arm_y = top - t["outlet_drop"]
     pts = [
         ("drain", d["x"], d["y"], d["z"]),
-        ("trap_bottom", d["x"], d["y"] - t["h"], d["z"]),
+        ("trap_top", d["x"], top, d["z"]),
+        ("trap_bottom", d["x"], top - t["h"], d["z"]),
         ("arm_start", d["x"], arm_y, d["z"]),
         ("arm_corner", d["x"], arm_y, st["z"]),
         ("stack_top", st["x"], arm_y, st["z"]),
@@ -43,7 +46,7 @@ def route(key):
     tp = P["tap"]["wall2hole"]
     return {
         "drain": d,
-        "trap": {"x": d["x"], "z": d["z"], "top": d["y"], "bottom": d["y"] - t["h"], "body_d": t["body_d"]},
+        "trap": {"x": d["x"], "z": d["z"], "top": top, "bottom": top - t["h"], "body_d": t["body_d"]},
         "waste_path": [{"at": n, "x": round(x, 1), "y": round(y, 1), "z": round(z, 1)} for n, x, y, z in pts],
         "pipe_od": t["pipe_od"],
         "stack_od": st["od"],
@@ -57,7 +60,7 @@ def route(key):
             "x0": round(d["x"] - t["body_d"] / 2 - R["drawer_clearance"]),
             "x1": round(d["x"] + t["body_d"] / 2 + R["drawer_clearance"]),
             "z_to": round(d["z"] + t["body_d"] / 2 + R["drawer_clearance"]),
-            "y0": round(d["y"] - t["h"]),
+            "y0": round(top - t["h"]),
         },
     }
 
@@ -84,7 +87,7 @@ def supply():
 
 def build():
     basins = DESIGN["options"]["basin"]
-    tops = [t for t in DESIGN["options"].get("ocean_top", []) if t != "ceramic"]
+    tops = [t for t in DESIGN["options"].get("ocean_top", []) if t != "ceramic"]  # 海洋盆櫃配石檯面＋底盆
     keys = list(basins) + [t for t in tops if t in P["basin"]]
     return {
         "_note": "由 tools/plumbing.py 生成，唔好手改。改 data/design.json 再跑。",
