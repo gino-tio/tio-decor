@@ -30,8 +30,8 @@ button.on{background:#c9a46a;border-color:#c9a46a;color:#1d1f22;font-weight:600}
 #info.show{display:block}
 #info h3{font-size:13px;margin:6px 0 2px;color:#c9a46a}
 #info ul{margin:2px 0 6px;padding-left:16px}
-/* 方案G：Gino 2026-11-14 揀走嘅選項（code 保留，掣收埋） */
-[data-wc=inax],#trapRow,[data-tab=people],[data-basin=slab],[data-basin=trav],[data-basin=ash],[data-basin=onyx],[data-basin=glacier],#stoneGrp,[data-ctop=white],[data-ctop=brown],[data-floor=off],[data-floor=back],[data-front=one],[data-front=door],[data-front=gold],[data-size=old],[data-fau=site],[data-md=r60],[data-mht="80"],[data-mh="106"],[data-mh="130"],[data-mh="140"],[data-paper=off]{display:none!important}
+/* 方案G：Gino 2026-11-14 第二次揀（剔 = 保留）之後拎走嘅選項（code 保留，掣收埋） */
+[data-wc=inax],#trapRow,[data-basin=long],[data-ctop=viola],#demaBtn,[data-front=gold],[data-md="3"],[data-md=step],[data-ledge],.grp:has([data-ledge]){display:none!important}
 </style>
 </head>
 <body>
@@ -674,7 +674,7 @@ const creamM=new THREE.MeshPhysicalMaterial({color:0xe8dfcf,roughness:.42,clearc
  const cm=new THREE.Mesh(new THREE.ExtrudeGeometry(s,{depth:CH,bevelEnabled:false,curveSegments:20}),creamM);cm.rotation.x=-Math.PI/2;cm.position.y=CY;add(cm,g);
  const bw=new THREE.Mesh(new THREE.BoxGeometry(BX1-BX0-0.1,BD,BZ1-BZ0-0.1),new THREE.MeshPhysicalMaterial({color:0xefe8da,roughness:.35,side:THREE.BackSide}));
  bw.position.set((BX0+BX1)/2,CT-BD/2+0.01,(BZ0+BZ1)/2);add(bw,g);
- const dr=new THREE.Mesh(new THREE.CircleGeometry(2.2,24),M.chrome);dr.rotation.x=-Math.PI/2;dr.position.set(PLUMB.basins.long.drain.x/10,CT-BD+0.03,PLUMB.basins.long.drain.z/10);add(dr,g);
+ const dr=new THREE.Mesh(new THREE.CircleGeometry(2.2,24),M.chrome);dr.rotation.x=-Math.PI/2;dr.position.set(177,CT-BD+0.03,28);add(dr,g);
  PART=null;
  function buildDCab(g,y0,n){const y1=CY-0.2,ch=y1-y0,step=ch/n,xs=141+R+0.2;
   // fixed curved side panel on the toilet side + one full-width drawer per level (top one cut for the trap)
@@ -838,11 +838,11 @@ const plumbG=new THREE.Group();add(plumbG);
 function pipe(a,b,r,mat,g){const A=new THREE.Vector3(a.x/10,a.y/10,a.z/10),B=new THREE.Vector3(b.x/10,b.y/10,b.z/10),L=A.distanceTo(B);if(L<0.01)return;
  const m=new THREE.Mesh(new THREE.CylinderGeometry(r,r,L,24),mat);m.position.copy(A).add(B).multiplyScalar(.5);m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),B.clone().sub(A).normalize());m.castShadow=true;g.add(m);}
 function joint(p,r,mat,g){const m=new THREE.Mesh(new THREE.SphereGeometry(r,20,12),mat);m.position.set(p.x/10,p.y/10,p.z/10);g.add(m);}
-function plumbKey(){return st.basin==='long'?'long':(st.ctop==='viola'?'viola':'ocean');}
+function plumbKey(){if(st.basin!=='ocean')return st.basin;const k=st.ctop||'ceramic';return k==='ceramic'?'ocean':k;}
 function buildPlumb(){plumbG.clear();const k=plumbKey(),R=PLUMB.basins[k];if(!R)return;const g=new THREE.Group();plumbG.add(g);
  const P=Object.fromEntries(R.waste_path.map(p=>[p.at,p])),t=R.trap,pr=R.pipe_od/20,sr=R.stack_od/20,br=t.body_d/20;
  // chrome tail from the basin outlet, nut, then the bottle (cap + body + rounded bottom)
- pipe(P.drain,{...P.drain,y:t.top-40},1.6,trapM,g);cyl(2.4,0.8,trapM,t.x/10,t.top/10-0.4,t.z/10,g);
+ pipe(P.drain,{...P.drain,y:t.top-40},1.6,trapM,g); // tail runs through a thick stone top down to the trapcyl(2.4,0.8,trapM,t.x/10,t.top/10-0.4,t.z/10,g);
  pipe({x:t.x,y:t.top-40,z:t.z},{x:t.x,y:t.top-60,z:t.z},2.6,pvcM,g);pipe({x:t.x,y:t.top-60,z:t.z},{x:t.x,y:t.bottom+15,z:t.z},br,pvcM,g);
  const bb=new THREE.Mesh(new THREE.SphereGeometry(br,24,12,0,Math.PI*2,Math.PI/2,Math.PI/2),pvcM);bb.scale.y=.42;bb.position.set(t.x/10,(t.bottom+15)/10,t.z/10);g.add(bb);
  // outlet arm back to the wall line, across to the white floor pipe, down to the floor
@@ -851,11 +851,14 @@ function buildPlumb(){plumbG.clear();const k=plumbKey(),R=PLUMB.basins[k];if(!R)
  // 出水 flow follows the same points
  const fm=new THREE.MeshBasicMaterial({color:0x4aa8ff,transparent:true,opacity:.8,depthWrite:false}),fg=new THREE.Group();fg.visible=false;g.add(fg);
  const pool=new THREE.Mesh(new THREE.CircleGeometry(1,28),new THREE.MeshBasicMaterial({color:0x9fd4ff,transparent:true,opacity:.55,depthWrite:false}));pool.scale.set(9,6,1);pool.rotation.x=-Math.PI/2;pool.position.set(P.drain.x/10,P.drain.y/10+0.2,P.drain.z/10-3);fg.add(pool);
- R.waste_path.slice(0,-1).forEach((a,i)=>{if(a.at==='trap_bottom')return;const b=i===0?P.arm_start:R.waste_path[i+1];pipe(a,b,1,fm,fg);});
+ R.waste_path.slice(0,-1).forEach((a,i)=>{if(a.at==='trap_bottom')return;const b=a.at==='trap_top'?P.arm_start:R.waste_path[i+1];pipe(a,b,1,fm,fg);});
  drainFlow={fg,pv:pvcM};
  // tap: 「盆中」 follows this basin's drain centre; 「現有入牆位」 stays fixed
  FAU.design.x=R.tap.design.x/10;FAU.design.y=R.tap.design.y/10;if(typeof setFau==='function'&&st.fau)setFau(st.fau);
- plumbG.visible=['ocean','long'].includes(st.basin);}
+ // chrome drain disc on the bowl floor at the same point the pipe starts (shared ocean disc follows the counter-top choice)
+ const dd=new THREE.Mesh(new THREE.CircleGeometry(2.2,28),M.chrome);dd.rotation.x=-Math.PI/2;dd.position.set(P.drain.x/10,P.drain.y/10+0.04,P.drain.z/10);g.add(dd);
+ if(typeof drain!=='undefined')drain.visible=false;
+ plumbG.visible=!!PLUMB.basins[k];}
 
 MK('cabinet');
 // open shelf under vanity (like the existing one), drain stays reachable in front
