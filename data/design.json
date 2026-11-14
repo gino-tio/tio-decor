@@ -1,0 +1,84 @@
+{
+  "_note": "方案G single source of truth (mm). x = from tub wall (0) to door wall (2000); z = from mirror-cabinet/back wall (0) toward the full-length mirror (1485); y = up from floor. Layer 1 'site' = fixed things in the room (Gino's measurements). Layer 2 'products' = catalogue items with their own local geometry. Layer 3 'options' = only picks a product and where it sits; options never draw pipes. Plumbing is derived from site + chosen basin by one function (designs/i.html plumbing(), tools/check_design.py).",
+  "version": 1,
+
+  "site": {
+    "room": { "w": 2000, "d": 1485, "h": 2300, "_src": "實量 2026-11-07" },
+    "tub": { "x1": 730, "h": 450, "inner_w": 600, "rim_front": 80, "rim_other": 50 },
+    "glass_screen": { "x": 690, "z1": 735, "h_above_tub": 1800 },
+    "door": { "z0": 707, "z1": 1462, "w": 770, "h": 2300, "swing": "in", "hinge": "full_mirror_side" },
+    "full_mirror": { "w": 600, "from_door_wall": 590 },
+    "tv": { "w": 270, "h": 180 },
+    "counter_h": 900,
+    "vanity_zone": { "x0": 1400, "x1": 2000, "d": 500 },
+
+    "drain_stack": {
+      "_what": "白色 PVC 落地去水喉（盆去水經隔氣入呢條，落地）",
+      "x": 1860, "z": 90, "od": 40,
+      "_src": "離後牆 90、右牆 140，Gino 2026-11-10 實量，2026-11-14 確認"
+    },
+    "floor_drain": {
+      "_what": "地台去水（盆櫃底維修口對住佢）",
+      "x": 1360, "z": 350, "d": 100,
+      "_src": "離後牆 350、右牆 640，Gino 2026-11-14（H 舊位 1520/380 係錯）"
+    },
+    "wall_tap_existing": {
+      "_what": "現有入牆龍頭（hansgrohe 兩孔）",
+      "spout_cx": 1730, "spout_y": 1055,
+      "_src": "出水嘴左邊離右牆 295（嘴闊 50 → 中心 270），離舊檯面 145，舊檯面 910"
+    },
+    "cold_supply": {
+      "_what": "盆位冷水喉，開三通＋獨立掣駁去 TOTO（唔准駁海水喉）",
+      "tee_x": 1420, "tee_y": 300, "tee_z": 20
+    },
+    "toilet_drain": { "cx": 1075, "pit": null, "_note": "坑距拆廁先量；TOTO 去水件 HP102T3 (305) / HP102T4 (400)" },
+    "socket_toto": { "x": 1520, "y": 300, "z": 12, "_note": "盆櫃下格入面，後牆，防水插蘇" }
+  },
+
+  "products": {
+    "toilet": {
+      "toto": {
+        "name": "TOTO CES8E810GCN", "l": 692, "w": 386, "h": 512,
+        "inlet": { "dx": -115, "y": 175, "_note": "相對座廁中線，偏左 115，離地 175，Rc½" },
+        "remote_wall_y": [770, 950]
+      }
+    },
+    "trap": {
+      "bottle": {
+        "_what": "樽型隔氣（實量）", "h": 220, "body_d": 72, "outlet_drop": 85, "pipe_od": 32,
+        "_src": "盆出水口到樽底 220，連落地喉約 200 闊"
+      }
+    },
+    "tap": {
+      "wall2hole": { "plate_w": 180, "plate_h": 70, "spout_l": 190, "spout_w": 50, "design_above_counter": 90 }
+    },
+    "basin": {
+      "_note": "bowl = 盆內（相對盆櫃 x0=1400, z=0, 檯面頂）；drain = 去水孔中心；depth = 檯面頂到盆底。統一規則：去水孔喺盆內中心。",
+      "ocean":   { "name": "陶瓷海洋盆 8260", "w": 600, "d": 500, "rim_front": 63, "bowl": { "x0": 15, "x1": 585, "z0": 120, "z1": 490 }, "depth": 130 },
+      "white":   { "name": "白雲石＋底盆",    "top_t": 63, "bowl": { "x0": 70, "x1": 530, "z0": 140, "z1": 440 }, "depth": 130 },
+      "brown":   { "name": "啡雲石圓邊＋底盆", "top_t": 63, "bowl": { "x0": 70, "x1": 530, "z0": 140, "z1": 440 }, "depth": 130 },
+      "viola":   { "name": "白底啡金紋岩板＋底盆", "top_t": 63, "bowl": { "x0": 70, "x1": 530, "z0": 140, "z1": 440 }, "depth": 130 },
+      "slab":    { "name": "岩板一體盆", "top_t": 180, "_todo": "盆內尺寸由 h.html vanityB 抄" },
+      "trav":    { "name": "洞石米黃落地櫃", "bowl": { "x0": 40, "x1": 420, "z0": 30, "z1": 470 }, "depth": 140 },
+      "long":    { "name": "長檯面連座廁上面", "bowl": { "x0": 140, "x1": 580, "z0": 60, "z1": 440 }, "depth": 95 },
+      "ash":     { "name": "白蠟木竪紋＋弧形岩板", "bowl": { "x0": 82, "x1": 518, "z0": 142, "z1": 418 }, "depth": 100 },
+      "onyx":    { "name": "原木拼花＋透光奢石", "bowl": { "x0": 70, "x1": 530, "z0": 130, "z1": 430 }, "depth": 130 },
+      "glacier": { "name": "冰河世紀（手繪）", "bowl": { "x0": 61, "x1": 520, "z0": 120, "z1": 439 }, "depth": 150 }
+    },
+    "mirror_cabinet": {
+      "two":  { "name": "兩門 120×97", "x0": 780, "x1": 1980, "h": 970, "d": 130, "r": 70, "doors": 2 }
+    }
+  },
+
+  "rules": {
+    "trap_clearance": 15,
+    "drawer_clearance": 15,
+    "toilet_side_clear": 70,
+    "tap_land_margin": 30
+  },
+
+  "options": {
+    "_note": "Gino 2026-11-14：INAX 同坑距切換唔要。其餘待 Gino 喺計劃 doc 剔走。",
+    "default": { "wc": "toto", "basin": "ocean", "floor": "on", "mirror": "two", "mirror_bottom": 1250, "ledge": "on", "tap": "design" }
+  }
+}
