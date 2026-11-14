@@ -59,8 +59,8 @@
     "wall_tap_existing": {
       "_what": "現有入牆龍頭（hansgrohe 兩孔）",
       "spout_cx": 1730,
-      "spout_y": 1055,
-      "_src": "出水嘴左邊離右牆 295（嘴闊 50 → 中心 270），離舊檯面 145，舊檯面 910"
+      "spout_y": 1040,
+      "_src": "出水嘴左邊離右牆 295（嘴闊 50 → 中心 270）；出水嘴離地 1040（Gino 2026-11-14 更正，舊 1055 偏高）"
     },
     "cold_supply": {
       "_what": "盆位冷水喉，開三通＋獨立掣駁去 TOTO（唔准駁海水喉）",
@@ -95,7 +95,17 @@
         "remote_wall_y": [
           770,
           950
-        ]
+        ],
+        "remote": {
+          "_what": "橫向遙控，銀色（TOTO 規格書）",
+          "mount": "側面離地 770–950（說明書）",
+          "size_est": [
+            190,
+            66,
+            22
+          ],
+          "_note": "尺寸未有文件，暫估"
+        }
       }
     },
     "trap": {
@@ -293,10 +303,11 @@
       "brown"
     ],
     "vanity_cabinet": {
-      "_note": "Gino 2026-11-14：盆櫃款式（海洋盆＋冰河世紀）— 離地 15（黑腳）、櫃底燈帶、參考相款（淺橡山紋＋圓柱角框＋拉手槽）",
+      "_note": "Gino 2026-11-14：盆櫃款式（海洋盆＋冰河世紀）— 離地 15（黑腳）、櫃底燈帶、參考相款（淺橡山紋＋圓柱角框＋拉手槽）；11/14 第三輪：雲石板離地 15、兩／三個櫃桶、靠牆（右）角圓／直、參考相款櫃頂加木圈封盆底",
       "base": [
         "plinth",
-        "leg15"
+        "leg15",
+        "stone15"
       ],
       "led": [
         "off",
@@ -309,6 +320,14 @@
       "applies_to": [
         "ocean",
         "glacier"
+      ],
+      "drawers": [
+        2,
+        3
+      ],
+      "wall_corner": [
+        "round",
+        "square"
       ]
     },
     "cabinet": {
@@ -350,6 +369,7 @@
       ],
       "bottom": [
         1060,
+        1200,
         1250,
         1300,
         1400
@@ -371,7 +391,8 @@
       "mirror": "2",
       "mirror_bottom": 1250,
       "ledge": "on",
-      "tap": "design"
+      "tap": "design",
+      "_link": "o=fau.site,item.tub,item.shower,item.glass,item.door,item.fullmirror,item.tv,item.ledge,item.backsplash,paper.off,gbase.leg15,gled.on,gstyle.ref&c=120_95_156_156_54_40"
     }
   }
 }
