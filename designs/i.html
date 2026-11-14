@@ -814,7 +814,7 @@ const vanityG=new THREE.Group();add(vanityG);vanityG.visible=false;const gCab={}
      c.strokeStyle=band>.6?'#93673a':(rnd()<.5?'#b0844f':'#dcbb8c');c.lineWidth=.5+rnd()*1.2;c.beginPath();
      for(let x=0;x<=w;x+=8){const y=y0+dy(x,y0);if(x===0)c.moveTo(x,y);else c.lineTo(x,y);}c.stroke();}
    for(let i=0;i<6;i++){c.globalAlpha=.3;c.fillStyle='#7d5634';c.beginPath();c.ellipse(rnd()*w,rnd()*h,2+rnd()*3,1.5+rnd()*2,0,0,7);c.fill();}
-   c.globalAlpha=1;},1/120,1/60),refM=new THREE.MeshStandardMaterial({map:refT,roughness:.55}),refFT=(()=>{const t=refT.clone();t.repeat.set(0.45,0.45);t.needsUpdate=true;return t;})(),refFM=new THREE.MeshStandardMaterial({map:refFT,roughness:.55}),refFM2=(()=>{const t=refFT.clone();t.offset.set(.43,.5);t.needsUpdate=true;return new THREE.MeshStandardMaterial({map:t,roughness:.55});})(),pullM=new THREE.MeshStandardMaterial({color:0x2a2119,roughness:.9});
+   c.globalAlpha=1;},1/120,1/60),refM=new THREE.MeshStandardMaterial({map:refT,roughness:.55}),refFT=(()=>{const t=refT.clone();t.repeat.set(0.45,0.45);t.needsUpdate=true;return t;})(),refFM=new THREE.MeshStandardMaterial({map:refFT,roughness:.55}),refFM2=(()=>{const t=refFT.clone();t.offset.set(.43,.5);t.needsUpdate=true;return new THREE.MeshStandardMaterial({map:t,roughness:.55});})(),pullM=new THREE.MeshStandardMaterial({map:refT,color:0xa89580,roughness:.6}); // finger-pull recess: same oak, only darker because it's in shadow (Gino 11/14)
  const knitT=tex(64,64,(c,w,h)=>{c.fillStyle='#efebe4';c.fillRect(0,0,w,h);c.fillStyle='#d6d0c6';for(let y=0;y<h;y+=8)for(let x=(y/8%2)*4;x<w;x+=8){c.beginPath();c.arc(x+2,y+2,2.4,0,7);c.fill();}},1,1);
  const knitM=new THREE.MeshStandardMaterial({map:knitT,roughness:1});
  const TYg=TY,ZFg=ZF;
@@ -848,7 +848,7 @@ const vanityG=new THREE.Group();add(vanityG);vanityG.visible=false;const gCab={}
    if(!ref){const d=makeDrawer(cg,XC+T+0.4,199.4,a,b,ZF,34,oakM,{...o,front:false,handle:false,level:lv,sideM:metalSideM,floorM:lightWoodM});wrapFront(d,a+0.15,b-0.15);return;}
    // front stops GAP below its opening: the gap shows a dark recess = finger pull
    makeDrawer(cg,FX0,FX1,a,b-GAP,ZF-0.3,34,i%2?refFM2:refFM,{...o,handle:false,level:lv,sideM:metalSideM,floorM:lightWoodM});
-   box(FX1-FX0,GAP+0.6,0.6,pullM,(FX0+FX1)/2,b-GAP/2,ZF-2.2,cg);});
+   box(FX1-FX0,GAP+0.6,0.6,pullM,(FX0+FX1)/2,b-GAP/2,ZF-3.2,cg);});
  if(plinth)cg.add(slab(143,0,198,ZF-5,0,12,new THREE.MeshStandardMaterial({color:0x2b2622,roughness:.8}),{rFL:R-2}));return cg;};
  // drawer lists: hung = one drawer (U-cut round the trap); floor = top drawer + the lower part as one (2 櫃桶) or two (3 櫃桶) drawers
  // drawer lists (Gino 11/14): hung = one drawer; floor = 2 or 3 drawers of EQUAL height from the cabinet bottom to the top.
@@ -894,23 +894,25 @@ box(5,1.6,SL,M.chrome,0,-0.5,SL/2+0.8,fau);box(5,0.4,1.2,M.black,0,-1.35,SL-0.4,
 cyl(2.6,1.4,M.chrome,PW-6.5,0,1.5,fau,'z');box(1,1,8,M.chrome,PW-6.5,-1.6,5.5,fau);PART=null;
 function setFau(k){st.fau=k;fau.position.set(FAU[k].x,FAU[k].y+(k==='design'&&st.old?1:0),0);lblF.forEach(o=>o.visible=false);(k==='site'?lblFs:lblFd).forEach(o=>o.visible=true);}
 MK('remote');
-// TOTO CES8E810GCN wall remote: TOTO spec sheet says "horizontal remote control", silver body; manual: on the side wall 770–950 above the floor.
-// Size not in the documents we could read: drawn ~190 x 66 x 22 (estimate). Mounted on the vanity side facing the toilet, bottom edge at 77
-// (inside 770–950), on the wood ring / cabinet side; remoteG.x follows the cabinet side (applyCabOpts)
+// TOTO remote, look per Gino's photo (TCM6864 style, 11/14): slim brushed-stainless bar 290 x 43 x 22 mm, labels on the upper part,
+// a row of grey keys along the bottom (STOP, rear/soft, front, pressure −/+, position ▲/▼, user 1/2). Manual: side wall 770–950 above floor.
+// Mounted lengthwise on the vanity side facing the toilet, bottom edge at 77; remoteG.x follows the cabinet side (applyCabOpts)
 const remoteG=new THREE.Group();add(remoteG);
-{const RW=19,RH=6.6,RD=2.2,Y=77+RH/2,Z=38,c=document.createElement('canvas');c.width=760;c.height=264;const g=c.getContext('2d');
- const gr=g.createLinearGradient(0,0,0,264);gr.addColorStop(0,'#e9ebec');gr.addColorStop(.5,'#cfd3d6');gr.addColorStop(1,'#b9bec2');g.fillStyle=gr;g.beginPath();g.roundRect(0,0,760,264,60);g.fill();
- g.fillStyle='#2b2f33';g.beginPath();g.roundRect(150,40,460,184,30);g.fill(); // black display / button panel
- g.textAlign='center';g.font='bold 22px sans-serif';
- const rb=(x,y,r,col,t,tc)=>{g.fillStyle=col;g.beginPath();g.arc(x,y,r,0,7);g.fill();g.fillStyle=tc||'#fff';g.fillText(t,x,y+8);};
- rb(80,132,48,'#e8742a','停止');                    // stop (orange)
- rb(250,105,34,'#d9dde0','臀洗','#333');rb(340,105,34,'#d9dde0','女洗','#333');rb(430,105,34,'#d9dde0','暖風','#333');rb(520,105,34,'#d9dde0','節電','#333');
- g.font='18px sans-serif';g.fillStyle='#9fc9e8';['−','水壓','+','位置'].forEach((t,k)=>g.fillText(t,250+k*90,185));
- g.font='bold 24px sans-serif';rb(682,92,46,'#3b7fc4','大');rb(682,186,36,'#5d9ad6','小');   // flush big / small (blue)
- g.fillStyle='#8a8f93';g.font='bold 18px sans-serif';g.fillText('TOTO',380,252);
+{const RW=29,RH=4.3,RD=2.2,Y=77+RH/2,Z=31,c=document.createElement('canvas');c.width=1160;c.height=172;const g=c.getContext('2d');
+ // brushed steel
+ g.fillStyle='#b9bcbe';g.fillRect(0,0,1160,172);for(let k=0;k<900;k++){const r=()=>Math.random();g.globalAlpha=.08+r()*.12;g.fillStyle=r()<.5?'#e6e8ea':'#8e9294';g.fillRect(0,r()*172,1160,0.6+r());}g.globalAlpha=1;
+ const KY=112,KH=56,keys=[[0,90],[92,220],[222,340],[342,460],[462,580],[582,700],[702,820],[822,1160]];
+ g.fillStyle='#5d6164';g.fillRect(0,KY-2,1160,KH+2);
+ keys.forEach(([x0,x1],k)=>{const gr=g.createLinearGradient(0,KY,0,KY+KH);gr.addColorStop(0,'#a6aaad');gr.addColorStop(1,'#8b8f92');g.fillStyle=gr;g.fillRect(x0+2,KY,x1-x0-4,KH);
+   if(k===0){g.fillStyle='#f4f4f4';g.fillRect(25,KY+KH/2-2,40,4);}else if(k<7){g.fillStyle='#5a5e61';g.fillRect((x0+x1)/2-2,KY+10,4,KH-20);}});
+ g.fillStyle='#2c2f31';g.textAlign='center';g.font='bold 15px Arial';
+ [['STOP',45],['REAR/SOFT',156],['FRONT',281],['PRESSURE',401],['POSITION',521],['USER',641]].forEach(([t,x])=>g.fillText(t,x,30));
+ g.font='bold 26px Arial';[['■',45],['Y',156],['♀',281],['−',372],['+',430],['▲',492],['▼',550],['①',612],['②',670]].forEach(([t,x])=>g.fillText(t,x,80));
+ g.font='bold 20px Arial';g.fillText('TOTO',1080,80);
  const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=8;
- const body=new THREE.Mesh(new RoundedBoxGeometry(RD,RH,RW,3,0.8),new THREE.MeshStandardMaterial({color:0xc9cdd0,metalness:.75,roughness:.28}));body.position.set(141-RD/2,Y,Z);remoteG.add(body);
- const face=new THREE.Mesh(new THREE.PlaneGeometry(RW-0.4,RH-0.3),new THREE.MeshStandardMaterial({map:t,roughness:.35,metalness:.3,transparent:true}));
+ const steel=new THREE.MeshStandardMaterial({color:0xc3c6c8,metalness:.85,roughness:.32});
+ const body=new THREE.Mesh(new RoundedBoxGeometry(RD,RH,RW,3,0.3),steel);body.position.set(141-RD/2,Y,Z);remoteG.add(body);
+ const face=new THREE.Mesh(new THREE.PlaneGeometry(RW-0.2,RH-0.1),new THREE.MeshStandardMaterial({map:t,metalness:.6,roughness:.35}));
  face.rotation.y=-Math.PI/2;face.position.set(141-RD-0.02,Y,Z);remoteG.add(face);}
 MK(null);
 // 出水: water sheet from the blade spout straight down to the first visible surface below (basin floor, rim or counter), so the landing point follows the tap / basin options
