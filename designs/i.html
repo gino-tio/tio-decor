@@ -830,7 +830,14 @@ const vanityG=new THREE.Group();add(vanityG);vanityG.visible=false;const gCab={}
    // wall-side (right) corner: round post or square (靠牆邊直角 option)
    const rpR=new THREE.Mesh(new THREE.CylinderGeometry(PR,PR,TY-Y0,24),refM);rpR.position.set(200-PR,(Y0+TY)/2,ZF-PR);cg.add(rpR);wallRound.push(rpR);
    const rpS=box(2*PR,TY-Y0,2*PR,refM,200-PR,(Y0+TY)/2,ZF-PR,cg);rpS.visible=false;wallSquare.push(rpS);}
- if(o.rim){const [a,b]=o.rim;cg.add(slab(XC,0,200,ZF,a,b-a,wm,{holes:[rr(THREE.Path,XC+1.7,1.6,200-0.8,ZF-0.9,0.5)]}));}
+ // ring round the basin bowl: its front corners follow the cabinet corners (round post r=PR on the toilet side; wall side round or square with 靠牆角)
+ if(o.rim){const [a,b]=o.rim,rc=ref?PR:0;['round','square'].forEach(wc=>{const sh=new THREE.Shape(),rr2=wc==='round'?rc:0;
+   sh.moveTo(XC,0);sh.lineTo(200,0);
+   if(rr2){sh.lineTo(200,-(ZF-rr2));sh.absarc(200-rr2,-(ZF-rr2),rr2,0,-Math.PI/2,true);}else sh.lineTo(200,-ZF);
+   if(rc){sh.lineTo(XC+rc,-ZF);sh.absarc(XC+rc,-(ZF-rc),rc,-Math.PI/2,-Math.PI,true);}else sh.lineTo(XC,-ZF);sh.lineTo(XC,0);
+   sh.holes.push(rr(THREE.Path,XC+1.7,1.6,200-0.8,ZF-0.9,0.5));
+   const m=new THREE.Mesh(new THREE.ExtrudeGeometry(sh,{depth:b-a,bevelEnabled:false,curveSegments:16}),wm);m.rotation.x=-Math.PI/2;m.position.y=a;cg.add(m);
+   if(ref)(wc==='round'?wallRound:wallSquare).push(m);m.visible=wc==='round';});}
  const wrapFront=(d,a,b)=>{const p=new THREE.Shape();p.moveTo(199.4,-ZF);p.lineTo(XC+R,-ZF);p.absarc(XC+R,-(ZF-R),R,-Math.PI/2,-Math.PI,true);p.lineTo(XC,-(ZF-RET));
    p.lineTo(XC+T,-(ZF-RET));p.lineTo(XC+T,-(ZF-R));p.absarc(XC+R,-(ZF-R),R-T,-Math.PI,-Math.PI/2,false);p.lineTo(199.4,-(ZF-T));p.lineTo(199.4,-ZF);
    const m=new THREE.Mesh(new THREE.ExtrudeGeometry(p,{depth:b-a,bevelEnabled:false,curveSegments:20}),oakM);m.rotation.x=-Math.PI/2;m.position.y=a;d.add(m);};
@@ -838,15 +845,19 @@ const vanityG=new THREE.Group();add(vanityG);vanityG.visible=false;const gCab={}
  // drawer boxes: thin anthracite metal sides on a light wood floor (ref MLUS 绮想 WINTER)
  const FX0=XC+2*PR+0.3,FX1=200-2*PR-0.3,GAP=2.4;
  drawers(towels).forEach(([a,b,lv,o],i)=>{
-   if(!ref){const d=makeDrawer(cg,XC+T+0.4,199.4,a,b,ZF,40,oakM,{...o,front:false,handle:false,level:lv,sideM:metalSideM,floorM:lightWoodM});wrapFront(d,a+0.15,b-0.15);return;}
+   if(!ref){const d=makeDrawer(cg,XC+T+0.4,199.4,a,b,ZF,34,oakM,{...o,front:false,handle:false,level:lv,sideM:metalSideM,floorM:lightWoodM});wrapFront(d,a+0.15,b-0.15);return;}
    // front stops GAP below its opening: the gap shows a dark recess = finger pull
-   makeDrawer(cg,FX0,FX1,a,b-GAP,ZF-0.3,40,i%2?refFM2:refFM,{...o,handle:false,level:lv,sideM:metalSideM,floorM:lightWoodM});
+   makeDrawer(cg,FX0,FX1,a,b-GAP,ZF-0.3,34,i%2?refFM2:refFM,{...o,handle:false,level:lv,sideM:metalSideM,floorM:lightWoodM});
    box(FX1-FX0,GAP+0.6,0.6,pullM,(FX0+FX1)/2,b-GAP/2,ZF-2.2,cg);});
  if(plinth)cg.add(slab(143,0,198,ZF-5,0,12,new THREE.MeshStandardMaterial({color:0x2b2622,roughness:.8}),{rFL:R-2}));return cg;};
  // drawer lists: hung = one drawer (U-cut round the trap); floor = top drawer + the lower part as one (2 櫃桶) or two (3 櫃桶) drawers
- mkDrawers=(key,Y0,top,n)=>tw=>{const t=[42.2,top-0.3,'top',{by0:43.4,bh:12,...CUT(key),extra:tw}];if(Y0>=40)return [[43.2,top-0.3,'top',{by0:44.6,bh:12,...CUT(key),extra:tw}]];
-   if(n===2)return [t,[Y0,41.8,'bot',{by0:Y0+1.5,bh:41.8-Y0-5,div:[0.5]}]];
-   const m=(Y0+41.8)/2;return [t,[m+0.2,41.8,'mid',{by0:m+1.5,bh:41.8-m-5}],[Y0,m-0.2,'bot',{by0:Y0+1.5,bh:m-Y0-5}]];};
+ // drawer lists (Gino 11/14): hung = one drawer; floor = 2 or 3 drawers of EQUAL height from the cabinet bottom to the top.
+ // the top drawer gets the U-cut round the trap; lower drawer boxes stop 1.5 below the trap bottom; all boxes 34 deep so they end in front of the floor pipe (z 9)
+ mkDrawers=(key,Y0,top,n)=>tw=>{const yb=PLUMB.basins[key].trap.bottom/10,T0=top-0.3;
+   if(Y0>=40)return [[Y0+0.2,T0,'top',{by0:Y0+1.6,bh:Math.min(12,T0-Y0-4),...CUT(key),extra:tw}]];
+   const h=(T0-Y0)/n;return [...Array(n)].map((_,i)=>{const b=T0-i*h-(i?0.2:0),a=T0-(i+1)*h+(i<n-1?0.2:0),lv=i===0?'top':i===n-1?'bot':'mid';
+     if(i===0)return [a,b,lv,{by0:a+1.2,bh:Math.min(12,b-a-4),...CUT(key),extra:tw}];
+     return [a,b,lv,{by0:a+1.2,bh:Math.max(4,Math.min(b-a-4,yb-1.5-(a+1.2)))}];});};
  legM=new THREE.MeshStandardMaterial({color:0x1d1d1d,roughness:.4,metalness:.6});
  {const mt=wallTex.clone();mt.needsUpdate=true;mt.repeat.set(0.02,0.02);marbleM=new THREE.MeshPhysicalMaterial({map:mt,roughness:.3,clearcoat:.6,clearcoatRoughness:.12});}
  // 櫃底燈帶 option: warm LED strip under the cabinet front (behind the plinth/drawer line), lighting the floor or the shelf below
