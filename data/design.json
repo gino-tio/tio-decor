@@ -292,8 +292,8 @@
       "white",
       "brown"
     ],
-    "glacier_cabinet": {
-      "_note": "Gino 2026-11-14：冰河世紀櫃 落地離地 15（黑腳）、櫃底燈帶、參考相款（淺橡山紋＋圓柱角框＋拉手槽）",
+    "vanity_cabinet": {
+      "_note": "Gino 2026-11-14：盆櫃款式（海洋盆＋冰河世紀）— 離地 15（黑腳）、櫃底燈帶、參考相款（淺橡山紋＋圓柱角框＋拉手槽）",
       "base": [
         "plinth",
         "leg15"
@@ -305,6 +305,10 @@
       "style": [
         "wrap",
         "ref"
+      ],
+      "applies_to": [
+        "ocean",
+        "glacier"
       ]
     },
     "cabinet": {
