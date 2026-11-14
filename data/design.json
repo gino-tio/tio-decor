@@ -292,6 +292,21 @@
       "white",
       "brown"
     ],
+    "glacier_cabinet": {
+      "_note": "Gino 2026-11-14：冰河世紀櫃 落地離地 15（黑腳）、櫃底燈帶、參考相款（淺橡山紋＋圓柱角框＋拉手槽）",
+      "base": [
+        "plinth",
+        "leg15"
+      ],
+      "led": [
+        "off",
+        "on"
+      ],
+      "style": [
+        "wrap",
+        "ref"
+      ]
+    },
     "cabinet": {
       "mount": [
         "off",
