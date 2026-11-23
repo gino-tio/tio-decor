@@ -117,6 +117,7 @@ button.on{background:#c9a46a;border-color:#c9a46a;color:#1d1f22;font-weight:600}
       <button data-basin="ash">白蠟木竪紋＋弧形岩板</button>
       <button data-basin="onyx">原木拼花＋透光奢石</button>
       <button data-basin="glacier">冰河世紀（手繪）</button>
+      <button data-basin="factory">廠圖白蠟木 600</button>
     </div></div>
     <div class="grp" id="stoneGrp"><b>岩板顏色</b><div class="btns">
       <button data-stone="grey" class="on">原色灰</button>
@@ -785,6 +786,42 @@ const vanityG=new THREE.Group();add(vanityG);vanityG.visible=false;
  [[42.2,TY-0.3,'top',{by0:43.4,bh:12,uCut:14,uTo:36,extra:towels}],[12,41.8,'bot',{by0:13.5,bh:22,div:[0.5]}]].forEach(([a,b,lv,o])=>{
    const d=makeDrawer(cg,XC+T+0.4,199.4,a,b,ZF,40,oakM,{...o,front:false,handle:false,level:lv,sideM:metalSideM,floorM:lightWoodM});wrapFront(d,a+0.15,b-0.15);});
  cg.add(slab(143,0,198,ZF-5,0,12,new THREE.MeshStandardMaterial({color:0x2b2622,roughness:.8}),{rFL:R-2}));}
+// ---------- vanity option H「廠圖白蠟木 600」(factory drawing 2026-11-23): 600 x 500 x 900,
+// 65-thick ceramic one-piece top with a single tap hole, 715-high ash / plywood cabinet, 120 toe-kick;
+// one metal-sided top drawer, a lower right-hinged door, left curved fronts and a fixed curved right side.
+const vanityH=new THREE.Group(),factoryTap=new THREE.Group();add(vanityH);vanityH.add(factoryTap);vanityH.visible=false;
+{const g=vanityH,X0=140,X1=200,ZF=50,R=3,T=1.6,RET=5,Y0=12,Y1=83.5;PART='basin';
+ const ashFactoryT=tex(1024,512,(c,w,h)=>{c.fillStyle='#c9a476';c.fillRect(0,0,w,h);
+   for(let i=0;i<320;i++){c.globalAlpha=.10+rnd()*.18;c.strokeStyle=rnd()<.7?'#8f6842':'#ead0a9';c.lineWidth=.5+rnd();let y=rnd()*h;c.beginPath();c.moveTo(0,y);for(let x=0;x<=w;x+=24){y+=(rnd()-.5)*.7;c.lineTo(x,y);}c.stroke();}
+   for(let k=0;k<4;k++){const cx=rnd()*w,cy=rnd()*h;for(let r=8;r<60;r+=5+rnd()*3){c.globalAlpha=.1;c.strokeStyle='#795535';c.beginPath();c.ellipse(cx,cy,r*1.8,r*.45,0,0,7);c.stroke();}}c.globalAlpha=1;},1/100,1/55);
+ const ashFactoryM=new THREE.MeshStandardMaterial({map:ashFactoryT,roughness:.52});
+ const ceramicFactoryM=new THREE.MeshPhysicalMaterial({color:0xf7f7f3,roughness:.12,clearcoat:.65,clearcoatRoughness:.08});
+ const top=new THREE.Shape();top.moveTo(X0,0);top.lineTo(X1,0);top.lineTo(X1,-(ZF-R));top.absarc(X1-R,-(ZF-R),R,0,-Math.PI/2,true);
+ top.lineTo(X0+R,-ZF);top.absarc(X0+R,-(ZF-R),R,-Math.PI/2,-Math.PI,true);top.lineTo(X0,0);top.holes.push(rr(THREE.Path,147,13,193,44,5));
+ const tm=new THREE.Mesh(new THREE.ExtrudeGeometry(top,{depth:6.5,bevelEnabled:false,curveSegments:24}),ceramicFactoryM);tm.rotation.x=-Math.PI/2;tm.position.y=Y1;add(tm,g);
+ const bowl=new THREE.Mesh(new THREE.BoxGeometry(45.9,13,30.9),new THREE.MeshStandardMaterial({color:0xfafaf8,roughness:.08,side:THREE.BackSide}));bowl.position.set(170,83.5,28.5);add(bowl,g);
+ const dr=new THREE.Mesh(new THREE.CircleGeometry(2.2,24),M.chrome);dr.rotation.x=-Math.PI/2;dr.position.set(170,77.03,32);add(dr,g);
+ // deck-mounted single-hole mixer, as shown on the factory plan (not the wall tap used by the other options)
+ cyl(2.3,1,M.chrome,170,90.5,6.5,factoryTap);cyl(1.6,13,M.chrome,170,97,6.5,factoryTap);
+ box(3,2,13,M.chrome,170,103,12,factoryTap);box(2.2,.5,1.2,M.black,170,101.8,18.2,factoryTap);box(1,1,7,M.chrome,174,104.5,7,factoryTap);
+ PART=null;
+ // left side stops behind the curved drawer / door returns; right side includes the fixed front-right arc
+ g.add(slab(X0,0,X0+T,ZF-RET-.2,Y0,Y1-Y0,ashFactoryM));
+ const rp=new THREE.Shape();rp.moveTo(X1-T,0);rp.lineTo(X1,0);rp.lineTo(X1,-(ZF-R));rp.absarc(X1-R,-(ZF-R),R,0,-Math.PI/2,true);
+ rp.lineTo(X1-R,-(ZF-T));rp.absarc(X1-R,-(ZF-R),R-T,-Math.PI/2,0,false);rp.lineTo(X1-T,0);
+ const rpm=new THREE.Mesh(new THREE.ExtrudeGeometry(rp,{depth:Y1-Y0,bevelEnabled:false,curveSegments:20}),ashFactoryM);rpm.rotation.x=-Math.PI/2;rpm.position.y=Y0;g.add(rpm);
+ box(X1-X0-2*T,Y1-Y0,T,carcassM,(X0+X1)/2,(Y0+Y1)/2,T/2,g);box(X1-X0-2*T,T,ZF-T,carcassM,(X0+X1)/2,Y0+T/2,(ZF-T)/2,g);
+ // the curved left front is part of the moving drawer / door, while the right arc stays fixed
+ function curvedFront(parent,a,b,door){const p=new THREE.Shape();p.moveTo(X1-R,-ZF);p.lineTo(X0+R,-ZF);p.absarc(X0+R,-(ZF-R),R,-Math.PI/2,-Math.PI,true);
+   p.lineTo(X0,-(ZF-RET));p.lineTo(X0+T,-(ZF-RET));p.lineTo(X0+T,-(ZF-R));p.absarc(X0+R,-(ZF-R),R-T,-Math.PI,-Math.PI/2,false);p.lineTo(X1-R,-(ZF-T));p.lineTo(X1-R,-ZF);
+   const m=new THREE.Mesh(new THREE.ExtrudeGeometry(p,{depth:b-a,bevelEnabled:false,curveSegments:20}),ashFactoryM);m.rotation.x=-Math.PI/2;
+   if(door){m.position.set(-(X1-T),a,-ZF);}else m.position.y=a;parent.add(m);return m;}
+ const topDrawer=makeDrawer(g,X0+T+1,X1-R-1,58.5,83.1,ZF-.4,36,ashFactoryM,{front:false,handle:false,by0:59.7,bh:12,uCut:14,uTo:34,level:'top',sideM:metalSideM,floorM:lightWoodM});
+ curvedFront(topDrawer,58.5,83.1,false);const pull=box(42,.8,1.3,M.black,170,81.9,ZF-.1,topDrawer);pull.rotation.x=Math.PI/4;
+ const door=new THREE.Group();door.position.set(X1-T,0,ZF);door.userData.level='bot';g.add(door);curvedFront(door,12.4,57.9,true);
+ const dp=box(42,.8,1.3,M.black,-28.4,56.3,.4,door);dp.rotation.x=Math.PI/4;cabDoors.push(door);
+ box(52,1.2,37,lightWoodM,170,34,27,g);[[153,IM.te],[185,IM.yl]].forEach(([x,m])=>{cyl(2.8,12,m,x,40.6,20,g);cyl(1.3,2,M.black,x,47.6,20,g);});
+ g.add(slab(143,0,197,44,0,12,toeM,{rFL:1.5}));}
 const under=new THREE.PointLight(0xffd9a0,0.5,90,0);under.position.set(170,40,40);add(under);
 // wall-mounted 2-hole basin mixer (like the existing hansgrohe): plate ~18 x 7, flat blade spout on the left (5 wide, 19 long to clear the 12 back deck), round lever on the right.
 // FAU = spout centre: 'design' = over the basin centre, 9 above the counter; 'site' = existing in-wall body, measured 29.5 from the right wall to the spout's left edge (spout 5 wide -> centre 27), 14.5 above the old counter (old counter 91 from floor -> 105.5)
@@ -818,7 +855,7 @@ const tapWater=new THREE.Group();add(tapWater);tapWater.visible=false;
 const wSheet=new THREE.Mesh(new THREE.BoxGeometry(3.6,1,0.35),new THREE.MeshPhysicalMaterial({color:0xcfeeff,transparent:true,opacity:.55,roughness:.05,depthWrite:false}));tapWater.add(wSheet);
 const wSplash=new THREE.Mesh(new THREE.RingGeometry(1.2,4,28),new THREE.MeshBasicMaterial({color:0xe8f7ff,transparent:true,opacity:.6,side:THREE.DoubleSide,depthWrite:false}));wSplash.rotation.x=-Math.PI/2;tapWater.add(wSplash);
 const wRay=new THREE.Raycaster(),wDown=new THREE.Vector3(0,-1,0),shown=o=>{for(;o;o=o.parent)if(!o.visible)return false;return true;};
-function updateWater(){const x=fau.position.x,y0=fau.position.y-1.8,z=SL-0.4;wRay.set(new THREE.Vector3(x,y0,z),wDown);wRay.camera=camera;wRay.layers.mask=camera.layers.mask;
+function updateWater(){const fac=st.basin==='factory',x=fac?170:fau.position.x,y0=fac?101.4:fau.position.y-1.8,z=fac?18.2:SL-0.4;wRay.set(new THREE.Vector3(x,y0,z),wDown);wRay.camera=camera;wRay.layers.mask=camera.layers.mask;
  const hit=wRay.intersectObjects(scene.children,true).find(h=>h.object.isMesh&&h.object.parent!==tapWater&&shown(h.object));
  const y1=hit?hit.point.y:0;wSheet.scale.y=Math.max(y0-y1,0.1);wSheet.position.set(x,(y0+y1)/2,z);wSplash.position.set(x,y1+0.05,z);}
 const floorDrain=new THREE.Mesh(new THREE.CircleGeometry(5,24),M.chrome);floorDrain.rotation.x=-Math.PI/2;floorDrain.position.set(152,0.2,38);add(floorDrain);
@@ -1095,6 +1132,7 @@ const _lC0=dims.children.length;label('洞石米黃落地櫃',[170,104,32],'按 
 const _lE0b=dims.children.length;label('白蠟木竪紋＋弧形岩板台盆（參考：丽客卫浴）',[170,104,32],'600×500 · 岩板厚 120 全圓邊 · 一體盆 480×320 · 三格實木坑紋櫃桶、頂邊拉手槽');const lblAsh=dims.children.slice(_lE0b);lblAsh.forEach(o=>o.visible=false);
 const _lF0b=dims.children.length;label('原木拼花＋透光奢石（參考：丽客卫浴）',[170,104,32],'600×500 · 透光石厚 40（底部燈）· 白色底盆 460×300 · 三格立方拼花櫃桶、黑金屬邊、櫃內燈');const lblOnyx=dims.children.slice(_lF0b);lblOnyx.forEach(o=>o.visible=false);
 const _lG0=dims.children.length;label('冰河世紀（手繪最新設計）',[169,104,32],'石檯面 600×500 連前／側裙邊厚 180（車石無縫）· 無縫底盆 · 橡木橫紋抽屜 300＋300 · 底腳 120 · 右邊離牆 10 留門框位');dim([139,72,52],[139,CT,52]);label('18',[135,81,53],null,5);const lblG=dims.children.slice(_lG0);lblG.forEach(o=>o.visible=false);
+const _lH0=dims.children.length;label('廠圖白蠟木 600（2026-11-23 更改01）',[170,104,32],'600×500×900 · 陶瓷一體盆厚 65、單孔龍頭 · 白蠟木＋多層實木櫃 715 · 上金屬櫃桶＋下右開門 · 黑45度斜拉手 · 底腳 120 · 左抽面弧度／右固定圓弧');dim([140,83.5,52],[140,CT,52]);label('6.5',[135,87,53],null,5);const lblH=dims.children.slice(_lH0);lblH.forEach(o=>o.visible=false);
 const _lD0=dims.children.length;label('長檯面連座廁上面（參考圖）',[150,104,32],'檯面 125 長 · 盆端深50／座廁端窄身7 · 厚11 · 盆 440×380 深95 · 吊櫃（2格）或落地（3格）：每層一個全闊櫃桶');dim([139,79,51],[139,CT,51]);label('11',[135,84,53],null,5);dim([75,92,9],[141,92,9]);label('延伸 66 · 深 7',[108,97,9],null,5);const lblD=dims.children.slice(_lD0);lblD.forEach(o=>o.visible=false);
 const _lE0=dims.children.length;label('後面矮櫃 55×25 · 櫃高 32＋10 防水石邊',[170,48,26],'遮去水喉 · 喉離後牆 9／右牆 14 · 單門向左開');dim([200,2,0],[200,2,25]);label('25',[202,6,12.5],null,5);const lblE=dims.children.slice(_lE0);lblE.forEach(o=>o.visible=false);
 let tLab=label('INAX SARAS 100572BW10',[107.5,64,50],'710×385×472');
@@ -1118,12 +1156,12 @@ function applyGold(){const gold=st.front==='gold',fl=!!st.floor;
 function setCorner(c){st.corner=c;const big=c==='big';
   if(st.basin==='ocean'){aBig.visible=big;aSmall.visible=!big;}else{aBig.visible=aSmall.visible=false;}
   bBig.visible=big;bSmall.visible=!big;[lowerA,lowerB].forEach(L=>L.children.forEach(g=>{if(g.userData.sz)g.visible=(g.userData.sz==='big')===big;}));}
-function setBasin(v){st.basin=v;const a=v==='ocean',b=v==='slab',c=v==='trav',d=v==='long',e=v==='ash',f=v==='onyx',gl=v==='glacier';vanityG.visible=gl;lblG.forEach(o=>o.visible=gl);
+function setBasin(v){st.basin=v;const a=v==='ocean',b=v==='slab',c=v==='trav',d=v==='long',e=v==='ash',f=v==='onyx',gl=v==='glacier',fac=v==='factory';vanityG.visible=gl;lblG.forEach(o=>o.visible=gl);vanityH.visible=fac;lblH.forEach(o=>o.visible=fac);fau.visible=!fac;
   vanityE.visible=e;vanityF.visible=f;eHung.visible=fHung.visible=!st.floor;eFloor.visible=fFloor.visible=!!st.floor;lblAsh.forEach(o=>o.visible=e);lblOnyx.forEach(o=>o.visible=f);lowerA.visible=a;lowerB.visible=b;vanityA.forEach(o=>o.visible=a);vanityB.visible=b;vanityC.visible=c;vanityD.visible=d;dHung.visible=!st.floor;dFloor.visible=st.floor;lblA.forEach(o=>o.visible=a);lblB.forEach(o=>o.visible=b);lblC.forEach(o=>o.visible=c);lblD.forEach(o=>o.visible=d);
   // option C is always floor-standing with its own toe-kick, so it hides the stone plinth kit and the open shelf
   // option D has its own hung/floor cabinet (no stone plinth kit) and its counter replaces the narrow ledge over the toilet
   // 吊櫃＋後面矮櫃: the 22-deep back cabinet replaces the open shelf (shelf is 30 deep)
-  floorKit.visible=st.floor&&!c&&!d&&!e&&!f&&!gl;backBox.visible=st.back&&!c&&!gl;lblE.forEach(o=>o.visible=st.back&&!c&&!gl);shelfMesh.visible=!st.floor&&!st.back&&!c&&!d&&!gl;ledge.visible=st.ledge&&!d;ledgeDims.forEach(o=>o.visible=st.ledge&&!d);
+  floorKit.visible=st.floor&&!c&&!d&&!e&&!f&&!gl&&!fac;backBox.visible=st.back&&!c&&!gl&&!fac;lblE.forEach(o=>o.visible=st.back&&!c&&!gl&&!fac);shelfMesh.visible=!st.floor&&!st.back&&!c&&!d&&!gl&&!fac;ledge.visible=st.ledge&&!d;ledgeDims.forEach(o=>o.visible=st.ledge&&!d);
   document.querySelectorAll('[data-stone]').forEach(x=>x.style.display=b?'':'none');{const sg=document.getElementById('stoneGrp');if(sg)sg.style.display=b?'':'none';}if(typeof applyCtop==='function')applyCtop();if(typeof aBig!=='undefined')setCorner(st.corner);}
 function setStone(k){stoneM.map=stoneTex[k];stoneM.needsUpdate=true;vanityB.userData.trough.material.map=stoneTex[k];vanityB.userData.trough.material.needsUpdate=true;}
 function setCabWood(v){M.wood.map=v==='door'?doorWoodT:woodTexOwn;walnutM.map=v==='door'?doorWoodT:walnutT;M.wood.needsUpdate=walnutM.needsUpdate=true;}
@@ -1180,7 +1218,7 @@ group('[data-front]',b=>{const k=b.dataset.front;st.front=k;applyGold();[aBig,aS
 // ---------- tap a fixture in 3D to open / close it (same as pressing its button, so the UI stays in sync)
 {const btn=q=>document.querySelector(q),press=q=>{const b=btn(q);if(b)b.click();};
  const PICK=[[bathDoor,()=>press('[data-tog=door]')],[mc,()=>press('[data-tog=mirror]')],[mc2,()=>press('[data-tog=mirror]')],[mc3,()=>press('[data-tog=mirror]')],
-  [fau,()=>press('[data-tog=water]')],[toilet,()=>press(`[data-lid="${(st.lid+1)%3}"]`)],[toiletT,()=>press(`[data-lid="${(st.lid+1)%3}"]`)],
+  [fau,()=>press('[data-tog=water]')],[factoryTap,()=>press('[data-tog=water]')],[toilet,()=>press(`[data-lid="${(st.lid+1)%3}"]`)],[toiletT,()=>press(`[data-lid="${(st.lid+1)%3}"]`)],
   ...cabDoors.map(d=>[d,()=>press('[data-tog=cab]')]),[backBox,()=>press('[data-dr=bot]')]];
  const ray=new THREE.Raycaster(),ndc=new THREE.Vector2();
  function pick(e){const r=canvas.getBoundingClientRect();ndc.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1);ray.setFromCamera(ndc,camera);ray.layers.mask=camera.layers.mask; // items sit on render layers; only pick what is shown
@@ -1266,7 +1304,7 @@ function poseRig(r,S,time=0){const d=r.d,H=d.H,g=r.g;g.visible=true;g.position.s
  return {eye:g.localToWorld(Hc.clone().add(hd.clone().multiplyScalar(.05*d.hr))),top:g.localToWorld(Hc.clone().add(hd.clone().multiplyScalar(d.hr)))};}
 const rigs={man:makeRig('man'),woman:makeRig('woman')};
 const seatTop=()=>st.wc==='toto'?40.9:43;
-const SPOUT=s=>({w:()=>V3(fau.position.x-s*3.5,CT+(st.old?1:0)+1,30)});                     // hands under the spout, just above the basin rim
+const SPOUT=s=>({w:()=>st.basin==='factory'?V3(170-s*3.5,CT+1,23):V3(fau.position.x-s*3.5,CT+(st.old?1:0)+1,30)}); // hands under the active spout, just above the basin rim
 const THIGH={l:(J,s)=>{const i=s>0?1:0;return J.hips[i].clone().lerp(J.knees[i],.7).add(V3(s*.01*J.H,(J.d.R.th+.012)*J.H,0));}};
 function staticPose(k,pose){const m=PPL[k].m;
  return pose==='wash'?{x:170,z:72,ry:Math.PI,lean:m?.36:.28,tilt:.35,hB:[SPOUT(-1),SPOUT(1)]}
@@ -1410,7 +1448,7 @@ renderer.setAnimationLoop(()=>{
     camera.position.lerpVectors(anim.p0,anim.p,k);controls.target.lerpVectors(anim.t0,anim.t,k);if(k>=1)anim=null;}
   lid.rotation.x=lerp(lid.rotation.x,st.lid?LID_OPEN:LID_CLOSED,0.12);lidT.rotation.x=lerp(lidT.rotation.x,st.lid?LIDT_OPEN:LIDT_CLOSED,0.12);seatT.rotation.x=lerp(seatT.rotation.x,st.lid===2?SEATT_OPEN:0,0.12);
   {const bd=backBox.userData.door;bd.visible=!st.dt.out;bd.rotation.y=lerp(bd.rotation.y,(st.cab||st.dt.bot)?-1.4:0,0.12);}
-  cabDoors.forEach(d=>{d.visible=!st.dt.out;d.rotation.y=lerp(d.rotation.y,(st.cab||st.dt.top)?1.4:0,0.12);});
+  cabDoors.forEach(d=>{d.visible=!st.dt.out;d.rotation.y=lerp(d.rotation.y,(st.cab||st.dt[d.userData.level||'top'])?1.4:0,0.12);});
   drawers.forEach(d=>{const op=st.cab||st.dt[d.level];d.g.position.z=lerp(d.g.position.z,op?d.travel:0,0.12);d.g.visible=!st.dt.out;});
   bathDoor.rotation.y=lerp(bathDoor.rotation.y,st.door?1.45:0,0.1);doors.forEach(d=>d.p.rotation.y=lerp(d.p.rotation.y,st.mirror?-d.dir*1.35:0,0.12));
   {const now=performance.now(),dt=Math.min(.05,(now-(AN.last||now))/1000);AN.last=now;stepAnim(dt);}
